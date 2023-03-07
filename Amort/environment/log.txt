@@ -1,0 +1,30 @@
+Requirement already satisfied: fsspec>=0.3.3 in c:\users\jank9\appdata\local\packages\pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0\localcache\local-packages\python39\site-packages (from -r requirements.txt (line 1)) (2022.8.2)
+Requirement already satisfied: requests in c:\users\jank9\appdata\local\packages\pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0\localcache\local-packages\python39\site-packages (from -r requirements.txt (line 2)) (2.27.1)
+Requirement already satisfied: numpy in c:\users\jank9\appdata\local\packages\pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0\localcache\local-packages\python39\site-packages (from -r requirements.txt (line 3)) (1.22.1)
+Requirement already satisfied: pandas in c:\users\jank9\appdata\local\packages\pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0\localcache\local-packages\python39\site-packages (from -r requirements.txt (line 4)) (1.4.0)
+Collecting datetime
+  Using cached DateTime-4.7-py2.py3-none-any.whl (52 kB)
+Collecting jsons
+  Using cached jsons-1.6.3-py3-none-any.whl (60 kB)
+Requirement already satisfied: BeautifulSoup4 in c:\users\jank9\appdata\local\packages\pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0\localcache\local-packages\python39\site-packages (from -r requirements.txt (line 7)) (4.11.1)
+Collecting asyncio
+  Using cached asyncio-3.4.3-py3-none-any.whl (101 kB)
+Collecting dataclasses
+  Using cached dataclasses-0.6-py3-none-any.whl (14 kB)
+Requirement already satisfied: urllib3<1.27,>=1.21.1 in c:\users\jank9\appdata\local\packages\pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0\localcache\local-packages\python39\site-packages (from requests->-r requirements.txt (line 2)) (1.26.8)
+Requirement already satisfied: idna<4,>=2.5 in c:\users\jank9\appdata\local\packages\pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0\localcache\local-packages\python39\site-packages (from requests->-r requirements.txt (line 2)) (3.3)
+Requirement already satisfied: charset-normalizer~=2.0.0 in c:\users\jank9\appdata\local\packages\pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0\localcache\local-packages\python39\site-packages (from requests->-r requirements.txt (line 2)) (2.0.10)
+Requirement already satisfied: certifi>=2017.4.17 in c:\users\jank9\appdata\local\packages\pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0\localcache\local-packages\python39\site-packages (from requests->-r requirements.txt (line 2)) (2021.10.8)
+Requirement already satisfied: python-dateutil>=2.8.1 in c:\users\jank9\appdata\local\packages\pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0\localcache\local-packages\python39\site-packages (from pandas->-r requirements.txt (line 4)) (2.8.2)
+Requirement already satisfied: pytz>=2020.1 in c:\users\jank9\appdata\local\packages\pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0\localcache\local-packages\python39\site-packages (from pandas->-r requirements.txt (line 4)) (2021.3)
+Collecting zope.interface
+  Downloading zope.interface-5.4.0-cp39-cp39-win_amd64.whl (210 kB)
+     ------------------------------------- 210.7/210.7 kB 93.0 kB/s eta 0:00:00
+Collecting typish>=1.9.2
+  Downloading typish-1.9.3-py3-none-any.whl (45 kB)
+     -------------------------------------- 45.1/45.1 kB 247.0 kB/s eta 0:00:00
+Requirement already satisfied: soupsieve>1.2 in c:\users\jank9\appdata\local\packages\pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0\localcache\local-packages\python39\site-packages (from BeautifulSoup4->-r requirements.txt (line 7)) (2.3.2.post1)
+Requirement already satisfied: six>=1.5 in c:\users\jank9\appdata\local\packages\pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0\localcache\local-packages\python39\site-packages (from python-dateutil>=2.8.1->pandas->-r requirements.txt (line 4)) (1.16.0)
+Requirement already satisfied: setuptools in c:\program files\windowsapps\pythonsoftwarefoundation.python.3.9_3.9.3568.0_x64__qbz5n2kfra8p0\lib\site-packages (from zope.interface->datetime->-r requirements.txt (line 5)) (58.1.0)
+Installing collected packages: typish, dataclasses, asyncio, zope.interface, jsons, datetime
+Successfully installed asyncio-3.4.3 dataclasses-0.6 datetime-4.7 jsons-1.6.3 typish-1.9.3 zope.interface-5.4.0

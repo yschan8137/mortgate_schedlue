@@ -1,0 +1,45 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../Practice"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "env_1111001",
+		"terminal.integrated.automationProfile.linux": {},
+		"terminal.integrated.confirmOnExit": "never",
+		"terminal.integrated.defaultLocation": "editor",
+		"terminal.integrated.enableBell": true,
+		"terminal.integrated.smoothScrolling": true,
+		"editor.wordWrap": "bounded",
+		"editor.autoIndent": "full",
+		"editor.columnSelection": false,
+		"editor.inlayHints.padding": true,
+		"editor.linkedEditing": true,
+		"editor.scrollbar.scrollByPage": true,
+		"editor.smoothScrolling": true,
+		"editor.stickyScroll.enabled": true,
+		"editor.stickyTabStops": true,
+		"editor.tabCompletion": "on",
+		"editor.unfoldOnClickAfterEndOfLine": true,
+		"debug.terminal.clearBeforeReusing": true,
+		"terminal.integrated.copyOnSelection": true,
+		"editor.comments.insertSpace": true,
+		"editor.comments.ignoreEmptyLines": true,
+		"editor.cursorStyle": "line",
+		"editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+		"editor.definitionLinkOpensInPeek": true,
+		"powershell.buttons.showPanelMovementButtons": true,
+		"emmet.triggerExpansionOnTab": true,
+		"workbench.editor.scrollToSwitchTabs": true,
+		"workbench.editor.wrapTabs": false,
+		"editor.wordWrapColumn": 150,
+		"debug.console.wordWrap": false,
+		"editor.wrappingIndent": "same",
+		"workbench.panel.opensMaximized": "never",
+		"workbench.panel.defaultLocation": "bottom",
+	}
+}

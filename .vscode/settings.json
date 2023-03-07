@@ -1,0 +1,17 @@
+{
+    "terminal.integrated.tabs.defaultColor": "terminal.ansiBlack",
+    "editor.wordWrap": "on",
+    "editor.bracketPairColorization.enabled": false,
+    "editor.folding": false,
+    "editor.glyphMargin": false,
+    "editor.multiCursorMergeOverlapping": false,
+    "editor.smoothScrolling": false,
+    "editor.smartSelect.selectLeadingAndTrailingWhitespace": false,
+    "editor.comments.ignoreEmptyLines": false,
+    "editor.roundedSelection": true,
+    "editor.columnSelection": true,
+    "editor.scrollBeyondLastLine": false,
+    "editor.cursorStyle": "line",
+    "jupyter.interactiveWindow.textEditor.executeSelection": true,
+    "python.analysis.typeCheckingMode": "basic"
+}

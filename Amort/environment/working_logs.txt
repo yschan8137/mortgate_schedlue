@@ -1,0 +1,9 @@
+1111109
+1. Enabling Ipython kernel:
+(1) To check whether the ipython module was installed. If not, use pip by entering 'py -m install Ipython'.
+
+(2) If installed, Entering 'ipython' in terminal to activate the Ipython kernel.
+
+2. autoreload the python modules:
+
+(1) Entering '%load_ext autoreload, then entering '%autoreload 2'.
