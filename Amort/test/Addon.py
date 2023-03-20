@@ -68,11 +68,10 @@ def addon(
         memory
     ):
         global dropdown_items
-        dropdown_items = {f'{ids.DROPDOWN.MENU}_{i}': item for i,
-                          item in enumerate([str(v) for v in dropdown_list]) if item not in memory}
+        dropdown_items = {f'{ids.DROPDOWN.MENU}_{i}': item for i, item in enumerate([str(v) for v in dropdown_list]) if item not in memory}
         return [dbc.DropdownMenuItem(
             dropdown_value,
-            id={"index": int(dropdown_value), "type": dropdown_key},
+            id={"index": dropdown_value, "type": ids.DROPDOWN.MENU},
             # id=dropdown_key,
             style={'width': '100%'},
             n_clicks=0,
