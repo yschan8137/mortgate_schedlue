@@ -1,7 +1,14 @@
+from os import O_TRUNC
 from dash import Dash, dcc, html, Input, Output, State, callback, callback_context, ALL, MATCH, Patch
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
 import json
+
+# 2023/03/13-2023/03/20
+# This is a custom component that allows you to add and delete items from a list of items. The list of items is passed as a parameter to the component.
+# The component is a combination of dbc.DropdownMenu, dcc.Input, dbc.Button, dcc.Store, and html.Div.
+# The dropdown is made up of dbc.DropdownMenu and dbc.DropdownMenuItem. The label of the former will be updated by the latter, and will be removed from from the latter after it was selected to be stored in the memory.
+# The memory will be updated by the add and delete button. The items in the memory will be removed if the delete button is clicked, and the items in the memory will be added to the list of items if the add button is clicked.
 
 
 class ids:
@@ -190,11 +197,13 @@ def addon(
 # callback for delete button
     @callback(
         Output(ids.NEW_ITEMS, 'children', allow_duplicate=True),
+        Output(ids.MEMORY, 'data', allow_duplicate=True),
         Input(ids.DELETE, 'n_clicks'),
         State({'index': ALL, 'type': 'done'}, 'value'),
+        State(ids.MEMORY, 'data'),
         prevent_initial_call=True
     )
-    def delete_items(_, state):
+    def delete_items(_, state, memory):
         patched_item = Patch()
         values_to_remove = []
         for i, value in enumerate(state):
@@ -202,7 +211,9 @@ def addon(
                 values_to_remove.insert(0, i)
         for i in values_to_remove:
             del patched_item[i]
-        return patched_item
+            # remove corresponding items from the memory.
+            del memory[list(memory.keys())[i]]
+        return patched_item, memory
 
     return layout
 
