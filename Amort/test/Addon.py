@@ -1,4 +1,3 @@
-import re
 from dash import Dash, dcc, html, Input, Output, State, callback, callback_context, ALL, MATCH, Patch
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
@@ -88,24 +87,26 @@ def addon(
     @callback(
         Output(ids.DROPDOWN.MENU, 'label'),
         Input({"index": ALL, "type": ids.DROPDOWN.MENU}, 'n_clicks'),
-        Input(ids.DROPDOWN.MENU, 'children'),
+        State(ids.MEMORY, 'data'),
         # [Input(dropdown_key, 'n_clicks')
         #  for dropdown_key in dropdown_items.keys()],
         prevent_initial_call=True
     )
-    def update_dropdown_label(n_clicks, menu):
+    def update_dropdown_label(_, memory):
         ctx = callback_context
         if not ctx.triggered or (len(ctx.triggered) > 1):
             raise PreventUpdate
         else:
-            dropdown_item = ctx.triggered[0]['prop_id'].split('.')[0]
-            triggered_index = ids.DROPDOWN.MENU + '_' + \
-                json.loads(dropdown_item)['index']
-            print('triggered_index:', triggered_index)
-            if triggered_index in dropdown_items.keys():
-                return dropdown_items.get(triggered_index, '')
+            if len(memory) == dropdown_list:
+                return [v for v in dropdown_list if v not in memory][0]
             else:
-                raise PreventUpdate
+                dropdown_item = ctx.triggered[0]['prop_id'].split('.')[0]
+                triggered_index = ids.DROPDOWN.MENU + \
+                    '_' + json.loads(dropdown_item)['index']
+                if triggered_index in dropdown_items.keys():
+                    return dropdown_items.get(triggered_index, '')
+                else:
+                    raise PreventUpdate
 
 
 # callback for add button.
