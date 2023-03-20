@@ -166,13 +166,6 @@ def addon(
                     ),
                 ],
             )
-        # to_delete = []
-        # for k, v in dropdown_items.items():
-            # if v in memory:
-            # to_delete.append(k)
-        # for k in to_delete:
-            # del dropdown_items[k]
-        # print('memory:', memory)
         if (current_label and current_label != dropdown_label) and current_input:
             patched_item.append(new_checklist_item())
         return patched_item, "", dropdown_label, memory
@@ -195,7 +188,7 @@ def addon(
         return style
 
 # callback for delete button
-    @ callback(
+    @callback(
         Output(ids.NEW_ITEMS, 'children', allow_duplicate=True),
         Input(ids.DELETE, 'n_clicks'),
         State({'index': ALL, 'type': 'done'}, 'value'),
