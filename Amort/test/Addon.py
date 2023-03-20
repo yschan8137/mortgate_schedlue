@@ -59,7 +59,7 @@ def addon(
         ]
     )
 
-# load for initial layout
+# Insert the list of DropdownMenuItem components as a callback function to enable the pattern matching function of the callback to work properly.
     @callback(
         Output(ids.DROPDOWN.MENU, 'children'),
         Input(ids.DROPDOWN.MENU, 'children'),
@@ -83,6 +83,7 @@ def addon(
 
 
 # update the label of the dbc.DropdownMenu to selected children in dbc.DropdownMenuItem.
+
 
     @callback(
         Output(ids.DROPDOWN.MENU, 'label'),
@@ -108,7 +109,6 @@ def addon(
 
 
 # callback for add button.
-
 
     @ callback(
         [
