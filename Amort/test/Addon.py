@@ -2,6 +2,7 @@ import re
 from dash import Dash, dcc, html, Input, Output, State, callback, callback_context, ALL, MATCH, Patch
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
+import json
 
 
 class ids:
@@ -23,8 +24,9 @@ def addon(
 ):
     dropdown_list = [str(element) for element in dropdown_list]
 
-    # global dropdown_items
-    dropdown_items = {f'{ids.DROPDOWN.MENU}_{i}': item for i,
+    def dropdown_key_format(n):
+        return f'{ids.DROPDOWN.MENU}_{n}'
+    dropdown_items = {dropdown_key_format(i + 1): item for i,
                       item in enumerate([str(v) for v in dropdown_list])}
 
     layout = html.Div(
@@ -68,7 +70,8 @@ def addon(
         memory
     ):
         global dropdown_items
-        dropdown_items = {f'{ids.DROPDOWN.MENU}_{i}': item for i, item in enumerate([str(v) for v in dropdown_list]) if item not in memory}
+        dropdown_items = {f'{ids.DROPDOWN.MENU}_{i}': item for i, item in enumerate(
+            [str(v) for v in dropdown_list]) if item not in memory}
         return [dbc.DropdownMenuItem(
             dropdown_value,
             id={"index": dropdown_value, "type": ids.DROPDOWN.MENU},
@@ -83,7 +86,7 @@ def addon(
 
     @callback(
         Output(ids.DROPDOWN.MENU, 'label'),
-        Input({"index": MATCH}, 'n_clicks'),
+        Input({"index": ALL, "type": ids.DROPDOWN.MENU}, 'n_clicks'),
         Input(ids.DROPDOWN.MENU, 'children'),
         # [Input(dropdown_key, 'n_clicks')
         #  for dropdown_key in dropdown_items.keys()],
@@ -91,13 +94,15 @@ def addon(
     )
     def update_dropdown_label(n_clicks, menu):
         ctx = callback_context
-        print('triggered: ', ctx.triggered)
-        if not ctx.triggered:
+        if not ctx.triggered or (len(ctx.triggered) > 1):
             raise PreventUpdate
         else:
-            dropdown_key = ctx.triggered[0]['prop_id'].split('.')[0]
-            if dropdown_key in dropdown_items.keys():
-                return dropdown_items.get(dropdown_key, '')
+            dropdown_item = ctx.triggered[0]['prop_id'].split('.')[0]
+            triggered_index = ids.DROPDOWN.MENU + '_' + \
+                json.loads(dropdown_item)['index']
+            print('triggered_index:', triggered_index)
+            if triggered_index in dropdown_items.keys():
+                return dropdown_items.get(triggered_index, '')
             else:
                 raise PreventUpdate
 
