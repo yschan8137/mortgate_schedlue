@@ -8,7 +8,7 @@ import json
 # This is a custom component that allows you to add and delete items to a dictionary. The dictionary is stored in the memory of the browser. The dictionary is used to store the items that are added to the list of items. The list of items is a list of dbc.DropdownMenuItem components. The items in the list of items are selected by the user and are stored in the memory of the browser. The items in the memory are removed if the delete button is clicked, and the items in the memory are added to the list of items if the add button is clicked.
 
 
-class ids:
+class ids_addon:
     NEW_ITEMS = 'new-items'
     ADD = 'addon function'
     DELETE = 'delete function'
@@ -18,6 +18,9 @@ class ids:
 
     class DROPDOWN:
         MENU = 'dropdown-menu'
+        ITEMS = 'dropdown-items'
+
+# addon function to create a custom component.
 
 
 def addon(
@@ -28,31 +31,30 @@ def addon(
     dropdown_list = [str(element) for element in dropdown_list]
 
     def dropdown_key_format(n):
-        return f'{ids.DROPDOWN.MENU}_{n}'
-    dropdown_items = {dropdown_key_format(i + 1): item for i,
-                      item in enumerate([str(v) for v in dropdown_list])}
+        return f'{ids_addon.DROPDOWN.MENU}_{n}'
 
     layout = html.Div(
         [
-            dcc.Store(id=ids.MEMORY, data={}),
-            html.Div(id=ids.NEW_ITEMS),
+            dcc.Store(id=ids_addon.MEMORY, data={}),
+            dcc.Store(id=ids_addon.DROPDOWN.ITEMS),
+            html.Div(id=ids_addon.NEW_ITEMS),
             html.Div(
                 [
                     dbc.DropdownMenu(
                         [],
                         label=dropdown_label,
-                        id=ids.DROPDOWN.MENU,
+                        id=ids_addon.DROPDOWN.MENU,
                         style={'width': "100%"}
                     ),
-                    dcc.Input(id=ids.INPUT, type='number',
+                    dcc.Input(id=ids_addon.INPUT, type='number',
                               placeholder=placeholder),
                     dbc.Button(
-                        id=ids.ADD,
+                        id=ids_addon.ADD,
                         color="primary",
                         children="Add"
                     ),
                     dbc.Button(
-                        id=ids.DELETE,
+                        id=ids_addon.DELETE,
                         color="danger",
                         children="Delete"
                     )
@@ -64,38 +66,40 @@ def addon(
 
 # Insert the list of DropdownMenuItem components as a callback function to enable the pattern matching function of the callback to work properly.
     @callback(
-        Output(ids.DROPDOWN.MENU, 'children'),
-        Input(ids.DROPDOWN.MENU, 'children'),
-        Input(ids.MEMORY, 'data')
+        Output(ids_addon.DROPDOWN.MENU, 'children'),
+        Output(ids_addon.DROPDOWN.ITEMS, 'data'),
+        Input(ids_addon.DROPDOWN.MENU, 'children'),
+        Input(ids_addon.MEMORY, 'data')
     )
     def load_layout(
         dropdown_container,
         memory
     ):
-        global dropdown_items
-        dropdown_items = {f'{ids.DROPDOWN.MENU}_{i}': item for i, item in enumerate(
+        dropdown_items = {f'{ids_addon.DROPDOWN.MENU}_{i+1}': item for i, item in enumerate(
             [str(v) for v in dropdown_list]) if item not in memory}
         return [dbc.DropdownMenuItem(
             dropdown_value,
-            id={"index": dropdown_value, "type": ids.DROPDOWN.MENU},
+            id={"index": dropdown_value, "type": ids_addon.DROPDOWN.MENU},
             # id=dropdown_key,
             style={'width': '100%'},
             n_clicks=0,
         ) for (dropdown_key, dropdown_value) in dropdown_items.items()
-        ]
+        ], dropdown_items
 
 
 # update the label of the dbc.DropdownMenu to selected children in dbc.DropdownMenuItem.
 
+
     @callback(
-        Output(ids.DROPDOWN.MENU, 'label'),
-        Input({"index": ALL, "type": ids.DROPDOWN.MENU}, 'n_clicks'),
-        State(ids.MEMORY, 'data'),
+        Output(ids_addon.DROPDOWN.MENU, 'label'),
+        Input({"index": ALL, "type": ids_addon.DROPDOWN.MENU}, 'n_clicks'),
+        State(ids_addon.MEMORY, 'data'),
+        State(ids_addon.DROPDOWN.ITEMS, 'data'),
         # [Input(dropdown_key, 'n_clicks')
         #  for dropdown_key in dropdown_items.keys()],
         prevent_initial_call=True
     )
-    def update_dropdown_label(_, memory):
+    def update_dropdown_label(_, memory, dropdown_items):
         ctx = callback_context
         if not ctx.triggered or (len(ctx.triggered) > 1):
             raise PreventUpdate
@@ -104,7 +108,7 @@ def addon(
                 return [v for v in dropdown_list if v not in memory][0]
             else:
                 dropdown_item = ctx.triggered[0]['prop_id'].split('.')[0]
-                triggered_index = ids.DROPDOWN.MENU + \
+                triggered_index = ids_addon.DROPDOWN.MENU + \
                     '_' + json.loads(dropdown_item)['index']
                 if triggered_index in dropdown_items.keys():
                     return dropdown_items.get(triggered_index, '')
@@ -114,19 +118,19 @@ def addon(
 
 # callback for add button.
 
-
     @ callback(
         [
-            Output(ids.NEW_ITEMS, 'children', allow_duplicate=True),
-            Output(ids.INPUT, 'value'),
-            Output(ids.DROPDOWN.MENU, 'label', allow_duplicate=True),
-            Output(ids.MEMORY, 'data', allow_duplicate=True),
+            Output(ids_addon.NEW_ITEMS, 'children', allow_duplicate=True),
+            Output(ids_addon.INPUT, 'value'),
+            Output(ids_addon.DROPDOWN.MENU, 'label', allow_duplicate=True),
+            Output(ids_addon.MEMORY, 'data', allow_duplicate=True),
         ],
-        Input(ids.ADD, 'n_clicks'),
+        Input(ids_addon.ADD, 'n_clicks'),
         [
-            State(ids.DROPDOWN.MENU, 'label'),
-            State(ids.INPUT, 'value'),
-            State(ids.MEMORY, 'data'),
+            State(ids_addon.DROPDOWN.MENU, 'label'),
+            State(ids_addon.INPUT, 'value'),
+            State(ids_addon.MEMORY, 'data'),
+            State(ids_addon.DROPDOWN.ITEMS, 'data'),
         ],
         prevent_initial_call=True
     )
@@ -135,8 +139,8 @@ def addon(
         current_label,
         current_input,
         memory,
+        dropdown_items
     ):
-        global dropdown_items
         patched_item = Patch()
         if current_input and current_label:
             memory[current_label] = float(current_input)
@@ -164,7 +168,7 @@ def addon(
                         ],
                         id={
                             "index": _,
-                            "type": ids.OUTPUT
+                            "type": ids_addon.OUTPUT
                         },
                         style={"display": "inline", "margin": "10px"},
                     ),
@@ -175,7 +179,7 @@ def addon(
         return patched_item, "", dropdown_label, memory
 
     @ callback(
-        Output({"index": MATCH, "type": ids.OUTPUT}, "style"),
+        Output({"index": MATCH, "type": ids_addon.OUTPUT}, "style"),
         Input({"index": MATCH, "type": "done"}, "value"),
         prevent_initial_call=True
     )
@@ -193,11 +197,11 @@ def addon(
 
 # callback for delete button
     @callback(
-        Output(ids.NEW_ITEMS, 'children', allow_duplicate=True),
-        Output(ids.MEMORY, 'data', allow_duplicate=True),
-        Input(ids.DELETE, 'n_clicks'),
+        Output(ids_addon.NEW_ITEMS, 'children', allow_duplicate=True),
+        Output(ids_addon.MEMORY, 'data', allow_duplicate=True),
+        Input(ids_addon.DELETE, 'n_clicks'),
         State({'index': ALL, 'type': 'done'}, 'value'),
-        State(ids.MEMORY, 'data'),
+        State(ids_addon.MEMORY, 'data'),
         prevent_initial_call=True
     )
     def delete_items(_, state, memory):

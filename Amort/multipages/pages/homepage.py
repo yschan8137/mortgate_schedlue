@@ -7,7 +7,7 @@ import dash_mantine_components as dmc
 from Amort.multipages.pages.toolkit import to_dropdown_options, convert_df_to_dash
 from Amort.multipages.pages import ids, amortization_types
 from Amort.loan import calculator
-
+from Amort.multipages.pages.control import refreshable_dropdown
 # register_page(
 #     __name__,
 #     path= '/',
@@ -18,48 +18,6 @@ from Amort.loan import calculator
 
 class config:
     PAGE_SIZE = 50
-
-
-class className:
-    DROPDOWN_BUTTON = 'dropdown-button'
-
-
-def refreshable_dropdown(label, id, id_for_refreshment, disabled=False):
-    dropdown = dbc.Row(
-        [
-            dbc.Col([
-                dbc.Label(label),
-                dcc.Dropdown(
-                    id=id,
-                    options=to_dropdown_options([*amortization_types]),
-                    value=amortization_types,
-                    multi=True,
-                    searchable=True,
-                    placeholder='Choose methods of the payment',
-                    disabled=disabled
-                )
-            ]
-            ),
-            dbc.Col([html.Button(
-                'Refresh',
-                className=className.DROPDOWN_BUTTON,
-                id=id_for_refreshment,
-                n_clicks=0,
-            )
-            ]
-            ),
-        ],
-        className='mb-3'
-    )
-    # Refresh the Dropdown of the Payment options
-
-    @callback(
-        Output(id, 'value'),
-        Input(id_for_refreshment, 'n_clicks')
-    )
-    def refresh_options(_: int) -> list[str]:
-        return amortization_types
-    return dropdown
 
 
 controls = dbc.Card(
@@ -450,45 +408,43 @@ app.layout = dbc.Container(
 if __name__ == "__main__":
     app.run_server(debug=True)
 
+    # TODO:
+    # -[X] editable page_size
+    # -[X] 將row per page向右對齊
+    # -[X] 解決沒有Input造成錯誤的情況
+    # -[X] controls加入其他Arguments
+    # -[X] 嘗試將html.Div改成Boostrap.container
+    # -[X] 設定mortgage amount的Callback
 
-# TODO:
-# -[X] editable page_size
-# -[X] 將row per page向右對齊
-# -[X] 解決沒有Input造成錯誤的情況
-# -[X] controls加入其他Arguments
-# -[X] 嘗試將html.Div改成Boostrap.container
-# -[X] 設定mortgage amount的Callback
+    # 2023/2/2 [X] 檢查那些arguements需要list，特別是subsidy，並設定正確的預設值
+    # 2023/2/2 [X] 解決少一欄目就產生錯誤的情形 "C:\Users\jank9\env_1111001\Amort\multipages\pages\toolkit.py", line 15,
 
-# 2023/2/2 [X] 檢查那些arguements需要list，特別是subsidy，並設定正確的預設值
-# 2023/2/2 [X] 解決少一欄目就產生錯誤的情形 "C:\Users\jank9\env_1111001\Amort\multipages\pages\toolkit.py", line 15,
-
-# 2023/2/4
+    # 2023/2/4
     # 1[] 設定Subsidy Adjustable rate切換功能
     # 若為Adjustable rate模式，欄位包含期間(subsidy-multi-arr)、利率(subsidy-interest)及新增功能(add-subsidy-interest-to-the-arrangement)
     # 2[] 設定新增功能(add-subsidy-interest-to-the-arrangement)的callback
     # refer: https://dash.plotly.com/pattern-matching-callbacks
     # 3[] Advanced options用Accordion component切換為collapsible lists
 
+    # -[] 垂直排列rows_per_page及datatable
+    # refer: https://dash-bootstrap-components.opensource.faculty.ai/docs/components/layout/
 
-# -[] 垂直排列rows_per_page及datatable
-# refer: https://dash-bootstrap-components.opensource.faculty.ai/docs/components/layout/
+    # -[] Matching pattern
+    # refer: https://dash.plotly.com/pattern-matching-callbacks
 
-# -[] Matching pattern
-# refer: https://dash.plotly.com/pattern-matching-callbacks
+    # Reference:
+    # ClassName設定layout:
+    # https://dashcheatsheet.pythonanywhere.com/
+    #
+    # Data Table editable:
+    # https://dash.plotly.com/datatable/editable
+    #
+    # Bootstrap:
+    # https://www.youtube.com/watch?v=0mfIK8zxUds
+    # https://www.youtube.com/watch?v=VTO6Njy10dY
 
-# Reference:
-# ClassName設定layout:
-# https://dashcheatsheet.pythonanywhere.com/
-#
-# Data Table editable:
-# https://dash.plotly.com/datatable/editable
-#
-# Bootstrap:
-# https://www.youtube.com/watch?v=0mfIK8zxUds
-# https://www.youtube.com/watch?v=VTO6Njy10dY
+    # Example
+    # https://dash-bootstrap-components.opensource.faculty.ai/examples/
 
-# Example
-# https://dash-bootstrap-components.opensource.faculty.ai/examples/
-
-# Form
-# https://dash-bootstrap-components.opensource.faculty.ai/docs/components/form/
+    # Form
+    # https://dash-bootstrap-components.opensource.faculty.ai/docs/components/form/
