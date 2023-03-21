@@ -7,6 +7,9 @@ from Amort.multipages.pages import ids, amortization_types
 from Amort.multipages.pages.ids import LOAN, addon
 import json
 
+# 2023/03/21
+# Consider to separate each component into a separate file. This will make the code more readable and easier to maintain.
+
 
 class className:
     DROPDOWN_BUTTON = 'dropdown-button'
@@ -126,7 +129,6 @@ def addon(
 
 # update the label of the dbc.DropdownMenu to selected children in dbc.DropdownMenuItem.
 
-
     @callback(
         Output(addon.DROPDOWN.MENU, 'label'),
         Input({"index": ALL, "type": addon.DROPDOWN.MENU}, 'n_clicks'),
@@ -154,6 +156,7 @@ def addon(
 
 
 # callback for add button.
+
 
     @ callback(
         [
