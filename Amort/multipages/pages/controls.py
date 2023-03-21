@@ -9,6 +9,7 @@ import json
 
 # 2023/03/21
 # Consider to separate each component into a separate file. This will make the code more readable and easier to maintain.
+# build a file folder named 'controls' and put all related components into it.
 
 
 class className:
