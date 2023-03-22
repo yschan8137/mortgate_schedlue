@@ -5,11 +5,14 @@ PAGE_COUNT = 'page-count'
 
 class LOAN:
     PAYMENT_OPTIONS = 'payment-options'
-    REFRESH_ALL_OPTIONS = 'refresh-all-options'
     TOTAL_AMOUNT = 'total-amount'
     DOWN_PAYMENT_RATE = 'down-payment-rate'
     PERIOD = 'period'
     GRACE = 'grace-period'
+
+    class DROPDOWN:
+        REFRESHABLE = 'refreshable-dropdown'
+        BUTTON = 'refreshable-dropdown-button'
 
     class ARR:
         ADD = 'add-a-interest-or-payment-to-the-arrangement'
@@ -32,7 +35,7 @@ class LOAN:
         REFRESH_ALL_OPTIONS = 'refresh-all-options_subsidy'
 
 
-class addon:
+class ADDON:
     NEW_ITEMS = 'new-items'
     ADD = 'addon function'
     DELETE = 'delete function'

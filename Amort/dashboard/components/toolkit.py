@@ -1,4 +1,4 @@
-# Convert to form of the options in dcc.dropdown 
+# Convert to form of the options in dcc.dropdown
 def to_dropdown_options(values: list[str]) -> list[dict[str, str]]:
     return [{"label": value, "value": value} for value in values]
 
@@ -6,13 +6,16 @@ def to_dropdown_options(values: list[str]) -> list[dict[str, str]]:
     # return {keys[0]: {keys[1]: {keys[2]: df[keys].to_dict()}} for (keys) in [col for col in df.columns]}
 
 # Convert to form of the data in dash.DataTable
-def convert_df_to_dash(df) -> list[list, list[dict[str, str]]]:
+
+
+def convert_df_to_dash(df):
     """
     Converts a multicolumns pandas data frame to a format accepted by dash
     Returns columns and data in the format which dash requires
     """
 
-    cols = [{"name": [""]* (len(df.columns[0]) - 1) + ["Time"], "id": "Ccy Pair"}] + [{"name": [*col], "id": "_".join([*col])} for col in df.columns]
+    cols = [{"name": [""] * (len(df.columns[0]) - 1) + ["Time"], "id": "Ccy Pair"}] + [
+        {"name": [*col], "id": "_".join([*col])} for col in df.columns]
     # build data list from ids and rows of the dataframe
     data = [
         {
@@ -21,6 +24,6 @@ def convert_df_to_dash(df) -> list[list, list[dict[str, str]]]:
         }
         for (n, data) in [
             *enumerate([list(x.items()) for x in df.T.to_dict().values()])
-            ]
         ]
+    ]
     return cols, data

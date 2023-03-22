@@ -2,14 +2,14 @@ from Amort.loan import calculator
 
 from dash import Dash, dcc, html, page_registry, page_container
 import dash_bootstrap_components as dbc
-from Amort.multipages import amortization
+from Amort.dashboard import amortization
 
-app= Dash(
-    __name__, 
-    use_pages= True, 
-    external_stylesheets= [dbc.themes.SPACELAB])
+app = Dash(
+    __name__,
+    use_pages=True,
+    external_stylesheets=[dbc.themes.SPACELAB])
 
-server= app.server
+server = app.server
 
 # sidebar= dbc.Nav(
 #     [
@@ -56,4 +56,4 @@ server= app.server
 
 # py -m Amort.multipages.app
 if __name__ == '__main__':
-    app.run(debug= True)
+    app.run(debug=True)
