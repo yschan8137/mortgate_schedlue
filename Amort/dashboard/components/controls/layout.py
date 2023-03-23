@@ -1,5 +1,5 @@
 from distutils.log import debug
-from dash import dcc, html, Input, Output, State, callback, callback_context, MATCH, ALL, Patch
+from dash import dcc, html, Input, Output, State, callback, callback_context, MATCH, ALL, Patch  # type: ignore
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from traitlets import Bool
@@ -163,10 +163,12 @@ def addon(
 
     @ callback(
         [
-            Output(ADDON.NEW_ITEMS, 'children', allow_duplicate=True),
+            Output(ADDON.NEW_ITEMS, 'children',
+                   allow_duplicate=True),  # type: ignore
             Output(ADDON.INPUT, 'value'),
-            Output(ADDON.DROPDOWN.MENU, 'label', allow_duplicate=True),
-            Output(ADDON.MEMORY, 'data', allow_duplicate=True),
+            Output(ADDON.DROPDOWN.MENU, 'label',
+                   allow_duplicate=True),  # type: ignore
+            Output(ADDON.MEMORY, 'data', allow_duplicate=True),  # type: ignore
         ],
         Input(ADDON.ADD, 'n_clicks'),
         [
@@ -240,8 +242,9 @@ def addon(
 
 # callback for delete button
     @callback(
-        Output(ADDON.NEW_ITEMS, 'children', allow_duplicate=True),
-        Output(ADDON.MEMORY, 'data', allow_duplicate=True),
+        Output(ADDON.NEW_ITEMS, 'children',
+               allow_duplicate=True),  # type: ignore
+        Output(ADDON.MEMORY, 'data', allow_duplicate=True),  # type: ignore
         Input(ADDON.DELETE, 'n_clicks'),
         State({'index': ALL, 'type': 'done'}, 'value'),
         State(ADDON.MEMORY, 'data'),
