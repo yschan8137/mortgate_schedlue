@@ -5,101 +5,113 @@ from dash import Dash, html, dcc, Input, Output, State, callback
 import dash_bootstrap_components as dbc
 
 from .. import amortization_types
-from .widgets import refreshable_dropdown
+from .widgets import refreshable_dropdown, addon
 from ..ids import *
+from ..toolkit import suffix_for_type
 
 # Mortgage Amount
-amount = [
-    dbc.Label(
-        'Mortgage Amount',
-        size='md'
-    ),
-    dbc.Col(
-        dbc.Input(
-            type='number',
-            name='Mortgage Amount',
-            required=True,
-            id=LOAN.TOTAL_AMOUNT,
-            placeholder='Input the mortgage amount',
-            min=0,
-            step=1,
-            value=10_000_000,
-            style={
+
+
+@dataclass
+class MortgageOptions:
+    amount = html.Div(
+        [
+            dbc.Label(
+                'Mortgage Amount',
+                size='md'
+            ),
+            dbc.Col(
+                dbc.Input(
+                    type='number',
+                    name='Mortgage Amount',
+                    required=True,
+                    id=LOAN.TOTAL_AMOUNT,
+                    placeholder='Input the mortgage amount',
+                    min=0,
+                    step=1,
+                    value=10_000_000,
+                    style={
                         'width': "100%",
                         'textAlign': 'left'
-            },
-        ),
-        width=10
-    ),
-]
-
-# Down Payment Rate
-down_payment = [
-    dbc.Label('Down Payment Rate'),
-    dbc.Col(
-        dbc.InputGroup(
-            [dbc.Input(
-                type='number',
-                name='Down Payment Rate',
-                required=True,
-                id=LOAN.DOWN_PAYMENT_RATE,
-                min=0,
-                step=10,
-                value=20,
-                style={
-                    'textAlign': 'left'
-                }
-            ), dbc.InputGroupText('%')
-            ],
-            className="mb-3",
-        ),
+                    },
+                ),
+                width=10
+            ),
+        ]
     )
-]
 
-# Mortgage Period
-period = [
-    dbc.Label(
-        'Mortgate Term',
-        size='md'
-    ),
-    dbc.Col(
-        dbc.Input(
-            min=1,
-            max=40,
-            value=30,
-            step=1,
-            type='number',
-            id=LOAN.PERIOD,
-            style={
-                'textAlign': 'left'
-            }
-        )
+    # Down Payment Rate
+    down_payment = html.Div(
+        [
+            dbc.Label('Down Payment Rate'),
+            dbc.Col(
+                dbc.InputGroup(
+                    [dbc.Input(
+                        type='number',
+                        name='Down Payment Rate',
+                        required=True,
+                        id=LOAN.DOWN_PAYMENT_RATE,
+                        min=0,
+                        step=10,
+                        value=20,
+                        style={
+                            'textAlign': 'left'
+                        }
+                    ), dbc.InputGroupText('%')
+                    ],
+                    className="mb-3",
+                ),
+            )
+        ]
     )
-]
 
-# Grace Period
-grace = [
-    dbc.Label(
-        'Grace Period',
-        size='md'
-    ),
-    dbc.Col(
-        dbc.Input(
-            min=0,
-            max=5,
-            step=1,
-            value=0,
-            type='number',
-            id=LOAN.GRACE,
-            style={
-                'textAlign': 'left',
-            }
-        )
+    # Mortgage Period
+    period = html.Div(
+        [
+            dbc.Label(
+                'Mortgate Term',
+                size='md'
+            ),
+            dbc.Col(
+                dbc.Input(
+                    min=1,
+                    max=40,
+                    value=30,
+                    step=1,
+                    type='number',
+                    id=LOAN.PERIOD,
+                    style={
+                        'textAlign': 'left'
+                    }
+                )
+            )
+        ]
     )
-]
+    # Grace Period
+    grace = html.Div(
+        [
+            dbc.Label(
+                'Grace Period',
+                size='md'
+            ),
+            dbc.Col(
+                dbc.Input(
+                    min=0,
+                    max=5,
+                    step=1,
+                    value=0,
+                    type='number',
+                    id=LOAN.GRACE,
+                    style={
+                        'textAlign': 'left',
+                    }
+                )
+            )
+        ]
+    )
 
 
-@dataclass(frozen=True)
+@dataclass
 class AdvanceOptions:
     # collapser
     @classmethod
@@ -124,8 +136,8 @@ class AdvanceOptions:
 
         @callback(
             Output(f"collapse-{id}", "is_open"),
-            [Input(id, "n_clicks")],
-            [State(f"collapse-{id}", "is_open")],
+            Input(id, "n_clicks"),
+            State(f"collapse-{id}", "is_open"),
         )
         def toggle_collapse(n, is_open):
             if n:
@@ -136,61 +148,57 @@ class AdvanceOptions:
     # prepayment
 
     @classmethod
-    def prepayment(cls):
-        layout = html.Div(
+    def prepayment(cls, type='prepay'):
+        layout = dbc.Card(
             [
-                dbc.Button(
-                    "prepay",
-                    id="collapse-button-prepay",
-                    className="mb-3",
-                    color="primary",
-                ),
-                dbc.Col(
-                    dbc.Collapse(
-                        dbc.Card(
-                            [
-                                dbc.CardHeader(
-                                    dbc.Checklist(
-                                        options=[
-                                            {'label': 'Prepay Plan', 'value': 0},
-                                        ],
-                                        id=LOAN.PREPAY.OPTION,
-                                        switch=True,
-                                        inline=True,
-                                        value=[]
-                                    )
-                                ),
-                                dbc.CardBody(
-                                    [
-                                        html.Div([dbc.Label('Prepay Amount'),
-                                                  dbc.Input(
-                                            id=LOAN.PREPAY.AMOUNT,
-                                            type='number',
-                                            step=1,
-                                            value=[0],
-                                            # min= [0],
-                                            disabled=True,
-                                        )]),
-                                        html.Div([dbc.Label('Prepay Arrangement'),
-                                                  dbc.Input(
-                                            id=LOAN.PREPAY.ARR,
-                                            value=[0],
-                                            disabled=True,
-                                        )])
-                                    ]
-                                ),
-                            ],
-                            className="mb-3",
-                        ),
-                        id="collapse-prepay",
+                dbc.CardHeader(
+                    dbc.Checklist(
+                        options=[
+                            {'label': 'Prepay Plan', 'value': 0},
+                        ],
+                        id=LOAN.PREPAY.OPTION,
+                        switch=True,
+                        inline=True,
+                        value=[]
                     )
-                )
-            ]
+                ),
+                dbc.CardBody(
+                    [
+                        html.Div(
+                            [
+                                dbc.Label('Prepay Amount'),
+                                dbc.Input(
+                                    id=LOAN.PREPAY.AMOUNT,
+                                    type='number',
+                                    step=1,
+                                    value=[0],
+                                    # min= [0],
+                                    disabled=True,
+                                )
+                            ]
+                        ),
+                        html.Div(
+                            [
+                                dbc.Label('Prepay Arrangement'),
+                                addon(
+                                    type=type,
+                                    dropdown_list=[],
+                                    dropdown_label='Select Prepay Arrangement',
+                                    placeholder='Input Prepay Arrangement',
+                                )
+                            ],
+                            id=LOAN.PREPAY.ARR,
+                        )
+                    ]
+                ),
+            ],
+            className="mb-3",
         )
 
         @callback(
             Output(LOAN.PREPAY.AMOUNT, 'disabled'),
-            Output(LOAN.PREPAY.ARR, 'disabled'),
+            Output(suffix_for_type(ADDON.DISABLED),
+                   'data'),  # refer to widgets.py
             Input(LOAN.PREPAY.OPTION, 'value')
         )
         def prepay_option(value):
@@ -198,61 +206,53 @@ class AdvanceOptions:
                 return False, False
             else:
                 return True, True
+
+        @callback(
+            Output(suffix_for_type(ADDON.DROPDOWN.LIST), 'data'),
+            Input(LOAN.PERIOD, 'value')
+        )
+        def update_prepay_arrangement(period):
+            return [v for v in range(1, period + 1)]
         return layout
 
     # subsidy
 
     @classmethod
     def subsidy(cls):
-        layout = html.Div(
+        layout = dbc.Card(
             [
-                dbc.Button(
-                    "subsidy",
-                    id="collapse-button-subsidy",
-                    className="mb-3",
-                    color="primary",
-                ),
-                dbc.Col(
-                    dbc.Collapse(
-                        dbc.Card(
-                            [
-                                dbc.CardHeader(
-                                    dbc.Checklist(
-                                        options=[
-                                            {'label': 'Subsidy Plan', 'value': 0},
-                                        ],
-                                        id=LOAN.SUBSIDY.OPTION,
-                                        switch=True,
-                                        inline=True,
-                                        value=[]
-                                    )
-                                ),
-                                dbc.CardBody(
-                                    [
-                                        html.Div([dbc.Label('Subsidy Amount'),
-                                                  dbc.Input(
-                                            id=LOAN.SUBSIDY.AMOUNT,
-                                            type='number',
-                                            step=1,
-                                            value=[0],
-                                            # min= [0],
-                                            disabled=True,
-                                        )]),
-                                        html.Div([dbc.Label('Subsidy Arrangement'),
-                                                  dbc.Input(
-                                            id=LOAN.SUBSIDY.ARR,
-                                            value=[0],
-                                            disabled=True,
-                                        )])
-                                    ]
-                                ),
-                            ],
-                            className="mb-3",
-                        ),
-                        id="collapse-subsidy",
+                dbc.CardHeader(
+                    dbc.Checklist(
+                        options=[
+                            {'label': 'Subsidy Plan', 'value': 0},
+                        ],
+                        id=LOAN.SUBSIDY.OPTION,
+                        switch=True,
+                        inline=True,
+                        value=[]
                     )
-                )
-            ]
+                ),
+                dbc.CardBody(
+                    [
+                        html.Div([dbc.Label('Subsidy Amount'),
+                                  dbc.Input(
+                            id=LOAN.SUBSIDY.AMOUNT,
+                            type='number',
+                            step=1,
+                            value=[0],
+                            # min= [0],
+                            disabled=True,
+                        )]),
+                        html.Div([dbc.Label('Subsidy Arrangement'),
+                                  dbc.Input(
+                            id=LOAN.SUBSIDY.ARR,
+                            value=[0],
+                            disabled=True,
+                        )])
+                    ]
+                ),
+            ],
+            className="mb-3",
         )
 
         @callback(
@@ -265,6 +265,7 @@ class AdvanceOptions:
                 return False, False
             else:
                 return True, True
+
         return layout
 
 
@@ -280,10 +281,10 @@ if __name__ == "__main__":
                         [
                             html.Div(
                                 [
-                                    html.Div(amount),
-                                    html.Div(down_payment),
-                                    html.Div(period),
-                                    html.Div(grace),
+                                    MortgageOptions.amount,
+                                    MortgageOptions.down_payment,
+                                    MortgageOptions.grace,
+                                    MortgageOptions.period,
                                     # Payment Methods
                                     refreshable_dropdown(
                                         label='Payment methods',
@@ -292,7 +293,6 @@ if __name__ == "__main__":
                                 ]
                             ),
                             # 加入refreshabel_dropdown
-                            # 顯示Collapser內容
                             html.Div(
                                 [
                                     AdvanceOptions.collapser(

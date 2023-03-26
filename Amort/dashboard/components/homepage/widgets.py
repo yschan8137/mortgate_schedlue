@@ -5,7 +5,7 @@ from re import S
 from dash import dcc, html, Input, Output, State, callback, callback_context, MATCH, ALL, Patch  # type: ignore
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
-from ..toolkit import to_dropdown_options
+from ..toolkit import to_dropdown_options, suffix_for_type
 from ..ids import *
 from ..ids import LOAN, ADDON
 from .. import amortization_types
@@ -79,63 +79,90 @@ def refreshable_dropdown(
 
 
 def addon(
+        type: str,  # ['prepay', 'subsidy']
         dropdown_list: list,
         dropdown_label: str,
         placeholder: str,
+        disabled: bool = True,
+
 
 ):
-    dropdown_list = [str(element) for element in dropdown_list]
 
     def dropdown_key_format(n):
-        return f'{ADDON.DROPDOWN.MENU}_{n}'
+        return f'{suffix_for_type(ADDON.DROPDOWN.MENU) + "_" + type}_{n}'
 
     layout = html.Div(
         [
-            dcc.Store(id=ADDON.MEMORY, data={}),
-            dcc.Store(id=ADDON.DROPDOWN.ITEMS),
-            html.Div(id=ADDON.NEW_ITEMS),
+            dcc.Store(id=suffix_for_type(suffix_for_type(
+                ADDON.DROPDOWN.LIST)), data=dropdown_list),
+            dcc.Store(id=suffix_for_type(ADDON.DISABLED), data=disabled),
+            dcc.Store(id=suffix_for_type(ADDON.MEMORY), data={}),
+            dcc.Store(id=suffix_for_type(ADDON.DROPDOWN.ITEMS), data={}),
+            html.Div(id=suffix_for_type(ADDON.NEW_ITEMS)),
             html.Div(
                 [
                     dbc.DropdownMenu(
                         [],
                         label=dropdown_label,
-                        id=ADDON.DROPDOWN.MENU,
-                        style={'width': "100%"}
+                        id=suffix_for_type(ADDON.DROPDOWN.MENU),
+                        style={'width': "100%"},
+                        disabled=disabled,
                     ),
-                    dcc.Input(id=ADDON.INPUT, type='number',
-                              placeholder=placeholder),
+                    dcc.Input(id=suffix_for_type(ADDON.INPUT),
+                              type='number',
+                              placeholder=placeholder,
+                              disabled=disabled,
+                              ),
                     dbc.Button(
-                        id=ADDON.ADD,
+                        id=suffix_for_type(ADDON.ADD),
                         color="primary",
-                        children="Add"
+                        children="Add",
+                        disabled=disabled,
                     ),
                     dbc.Button(
-                        id=ADDON.DELETE,
+                        id=suffix_for_type(ADDON.DELETE),
                         color="danger",
-                        children="Delete"
+                        children="Delete",
+                        disabled=disabled,
                     )
                 ],
-                style={'display': 'inline-flex'}
+                style={'display': 'inline-flex'},
             ),
         ]
     )
 
-# Insert the list of DropdownMenuItem components as a callback function to enable the pattern matching function of the callback to work prope
+# Control the disabled status of the input and the add button.
     @callback(
-        Output(ADDON.DROPDOWN.MENU, 'children'),
-        Output(ADDON.DROPDOWN.ITEMS, 'data'),
-        Input(ADDON.DROPDOWN.MENU, 'children'),
-        Input(ADDON.MEMORY, 'data')
+        Output(suffix_for_type(ADDON.INPUT), 'disabled'),
+        Output(suffix_for_type(ADDON.DROPDOWN.MENU), 'disabled'),
+        Output(suffix_for_type(ADDON.ADD), 'disabled'),
+        Output(suffix_for_type(ADDON.DELETE), 'disabled'),
+        Input(suffix_for_type(ADDON.DISABLED), 'data'),
+        prevent_initial_call=True
+    )
+    def control_disabled(disabled):
+        return disabled, disabled, disabled, disabled
+# Insert the list of DropdownMenuItem components as a callback function to enable the pattern matching function of the callback to work prope
+
+    @callback(
+        Output(suffix_for_type(ADDON.DROPDOWN.MENU), 'children'),
+        Output(suffix_for_type(ADDON.DROPDOWN.ITEMS), 'data'),
+        Input(suffix_for_type(ADDON.DROPDOWN.MENU), 'children'),
+        Input(suffix_for_type(ADDON.MEMORY), 'data'),
+        State(suffix_for_type(ADDON.DROPDOWN.LIST), 'data'),
     )
     def load_layout(
         dropdown_container,
-        memory
+        memory,
+        lst,
     ):
-        dropdown_items = {f'{ADDON.DROPDOWN.MENU}_{i+1}': item for i, item in enumerate(
-            [str(v) for v in dropdown_list]) if item not in memory}
+        lst = [str(element) for element in lst]
+        dropdown_items = {f'{suffix_for_type(ADDON.DROPDOWN.MENU)}_{i+1}': item for i, item in enumerate(
+            [str(v) for v in lst]) if item not in memory}
         return [dbc.DropdownMenuItem(
             dropdown_value,
-            id={"index": dropdown_value, "type": ADDON.DROPDOWN.MENU},
+            id={"index": dropdown_value,
+                "type": suffix_for_type(ADDON.DROPDOWN.MENU)},
             # id=dropdown_key,
             style={'width': '100%'},
             n_clicks=0,
@@ -147,10 +174,11 @@ def addon(
 
 
     @callback(
-        Output(ADDON.DROPDOWN.MENU, 'label'),
-        Input({"index": ALL, "type": ADDON.DROPDOWN.MENU}, 'n_clicks'),
-        State(ADDON.MEMORY, 'data'),
-        State(ADDON.DROPDOWN.ITEMS, 'data'),
+        Output(suffix_for_type(ADDON.DROPDOWN.MENU), 'label'),
+        Input({"index": ALL, "type": suffix_for_type(
+            ADDON.DROPDOWN.MENU)}, 'n_clicks'),
+        State(suffix_for_type(ADDON.MEMORY), 'data'),
+        State(suffix_for_type(ADDON.DROPDOWN.ITEMS), 'data'),
         # [Input(dropdown_key, 'n_clicks')
         #  for dropdown_key in dropdown_items.keys()],
         prevent_initial_call=True
@@ -164,7 +192,7 @@ def addon(
                 return [v for v in dropdown_list if v not in memory][0]
             else:
                 dropdown_item = ctx.triggered[0]['prop_id'].split('.')[0]
-                triggered_index = ADDON.DROPDOWN.MENU + \
+                triggered_index = suffix_for_type(ADDON.DROPDOWN.MENU) + \
                     '_' + json.loads(dropdown_item)['index']
                 if triggered_index in dropdown_items.keys():
                     return dropdown_items.get(triggered_index, '')
@@ -176,19 +204,20 @@ def addon(
 
     @ callback(
         [
-            Output(ADDON.NEW_ITEMS, 'children',
+            Output(suffix_for_type(ADDON.NEW_ITEMS), 'children',
                    allow_duplicate=True),  # type: ignore
-            Output(ADDON.INPUT, 'value'),
-            Output(ADDON.DROPDOWN.MENU, 'label',
+            Output(suffix_for_type(ADDON.INPUT), 'value'),
+            Output(suffix_for_type(ADDON.DROPDOWN.MENU), 'label',
                    allow_duplicate=True),  # type: ignore
-            Output(ADDON.MEMORY, 'data', allow_duplicate=True),  # type: ignore
+            Output(suffix_for_type(ADDON.MEMORY), 'data',
+                   allow_duplicate=True),  # type: ignore
         ],
-        Input(ADDON.ADD, 'n_clicks'),
+        Input(suffix_for_type(ADDON.ADD), 'n_clicks'),
         [
-            State(ADDON.DROPDOWN.MENU, 'label'),
-            State(ADDON.INPUT, 'value'),
-            State(ADDON.MEMORY, 'data'),
-            State(ADDON.DROPDOWN.ITEMS, 'data'),
+            State(suffix_for_type(ADDON.DROPDOWN.MENU), 'label'),
+            State(suffix_for_type(ADDON.INPUT), 'value'),
+            State(suffix_for_type(ADDON.MEMORY), 'data'),
+            State(suffix_for_type(ADDON.DROPDOWN.ITEMS), 'data'),
         ],
         prevent_initial_call=True
     )
@@ -226,7 +255,7 @@ def addon(
                         ],
                         id={
                             "index": _,
-                            "type": ADDON.OUTPUT
+                            "type": suffix_for_type(ADDON.OUTPUT)
                         },
                         style={"display": "inline", "margin": "10px"},
                     ),
@@ -237,7 +266,7 @@ def addon(
         return patched_item, "", dropdown_label, memory
 
     @ callback(
-        Output({"index": MATCH, "type": ADDON.OUTPUT}, "style"),
+        Output({"index": MATCH, "type": suffix_for_type(ADDON.OUTPUT)}, "style"),
         Input({"index": MATCH, "type": "done"}, "value"),
         prevent_initial_call=True
     )
@@ -255,12 +284,13 @@ def addon(
 
 # callback for delete button
     @callback(
-        Output(ADDON.NEW_ITEMS, 'children',
+        Output(suffix_for_type(ADDON.NEW_ITEMS), 'children',
                allow_duplicate=True),  # type: ignore
-        Output(ADDON.MEMORY, 'data', allow_duplicate=True),  # type: ignore
-        Input(ADDON.DELETE, 'n_clicks'),
+        Output(suffix_for_type(ADDON.MEMORY), 'data',
+               allow_duplicate=True),  # type: ignore
+        Input(suffix_for_type(ADDON.DELETE), 'n_clicks'),
         State({'index': ALL, 'type': 'done'}, 'value'),
-        State(ADDON.MEMORY, 'data'),
+        State(suffix_for_type(ADDON.MEMORY), 'data'),
         prevent_initial_call=True
     )
     def delete_items(_, state, memory):
@@ -278,147 +308,13 @@ def addon(
     return layout
 
 
-class advanced_items:
-    @classmethod
-    def prepay_plan(cls):
-        layout = [
-            dbc.Col(
-                [
-                    dbc.Label('Advanced Options', size='md'),
-                    dbc.Col(
-                        dbc.Card(
-                            [
-                                dbc.CardHeader(
-                                    dbc.Checklist(
-                                        options=[
-                                            {'label': 'Prepay Plan', 'value': 0},
-                                        ],
-                                        id=LOAN.PREPAY.OPTION,
-                                        switch=True,
-                                        inline=True,
-                                        value=[]
-                                    )
-                                ),
-                                dbc.CardBody(
-                                    [
-                                        dbc.Label('Prepay Amount'),
-                                        dbc.Input(
-                                            id=LOAN.PREPAY.AMOUNT,
-                                            type='number',
-                                            step=1,
-                                            value=[0],
-                                            min=[0],
-                                            disabled=True,
-                                        ),
-                                        dbc.Label('Prepay Arrangement'),
-                                        dbc.Input(
-                                            id=LOAN.PREPAY.ARR,
-                                            value=[0],
-                                            disabled=True,
-                                        )
-                                    ]
-                                ),
-                            ],
-                            class_name="mb-3",
-                        )
-                    )
-                ]
-            )
-        ]
-        # Activate the prepay options
-
-        @callback(
-            [
-                Output(LOAN.PREPAY.ARR, 'disabled'),
-                Output(LOAN.PREPAY.AMOUNT, 'disabled')
-            ],
-            Input(LOAN.PREPAY.OPTION, 'value')
-        )
-        def enable_prepay_options(option):
-            if option == [0]:
-                return [False] * 2
-            else:
-                return [True] * 2
-
-    @classmethod
-    def subsidy_plan(cls):
-        layout = [
-            dbc.Col(
-                dbc.Card(
-                    [
-                        dbc.CardHeader(
-                            dbc.Checklist(
-                                options=[
-                                    {'label': 'Subsidy loan', 'value': 0}
-                                ],
-                                id=LOAN.SUBSIDY.OPTION,
-                                switch=True,
-                                inline=True,
-                                value=[]
-                            ),
-                        ),
-                        dbc.CardBody(
-                            [
-                                dbc.Label('Timepoint of Application'),
-                                dbc.Input(
-                                    id=LOAN.SUBSIDY.TIME,
-                                    value=0,
-                                    step=1,
-                                    disabled=True,
-                                ),
-                                dbc.Label('Amount'),
-                                dbc.Input(
-                                    id=LOAN.SUBSIDY.AMOUNT,
-                                    value=0,
-                                    step=1,
-                                    disabled=True,
-                                ),
-                                dbc.Label('Term'),
-                                dbc.Input(
-                                    id=LOAN.SUBSIDY.TERM,
-                                    value=20,
-                                    step=1,
-                                    disabled=True,
-                                ),
-                                refreshable_dropdown(
-                                    label='Payment method',
-                                    options=amortization_types,
-                                    disabled=False
-                                )
-                            ]
-                        ),
-                    ],
-                    class_name="mb-3",
-                    outline=True,
-                )
-            )
-        ]
-        # Activate the subsidy options
-
-        @callback(
-            [
-                Output(LOAN.SUBSIDY.INTEREST, 'disabled'),
-                Output(LOAN.SUBSIDY.AMOUNT, 'disabled'),
-                Output(LOAN.SUBSIDY.METHOD, 'disabled'),
-                Output(LOAN.SUBSIDY.TERM, 'disabled'),
-                Output(LOAN.SUBSIDY.TIME, 'disabled'),
-            ],
-            Input(LOAN.SUBSIDY.OPTION, 'value')
-        )
-        def enable_subsidy_options(option):
-            if option == [0]:
-                return [False] * 5
-            else:
-                return [True] * 5
-        return layout
-
-
 # py -m Amort.dashboard.components.homepage.widgets
 if __name__ == "__main__":
     from dash import Dash
     app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
     app.layout = html.Div(
         addon(
+            type='prepay',
             dropdown_list=[1, 2, 3],
             dropdown_label="TimePoint",
             placeholder="Input the timepoint",

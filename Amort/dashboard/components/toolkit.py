@@ -24,3 +24,8 @@ def convert_df_to_dash(df):
         ]
     ]
     return cols, data
+
+# suffix format for prepayment and subsidy to avoid id conflict.
+
+
+def suffix_for_type(x): return x + "_" + type

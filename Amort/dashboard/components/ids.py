@@ -20,8 +20,8 @@ class LOAN:
 
     class PREPAY:
         OPTION = 'prepay-plan'  # 選擇提前付款
-        ARR = 'prepay-multi-arr'
         AMOUNT = 'prepay-amount'
+        ARR = 'prepay-multi-arr'
 
     class SUBSIDY:
         OPTION = 'subsidy-plan'  # 選擇申請補貼貸款
@@ -42,7 +42,9 @@ class ADDON:
     MEMORY = 'memory'
     INPUT = 'input'
     OUTPUT = 'output'
+    DISABLED = 'disabled'
 
     class DROPDOWN:
         MENU = 'dropdown-menu'
         ITEMS = 'dropdown-items'
+        LIST = 'dropdown-list'
