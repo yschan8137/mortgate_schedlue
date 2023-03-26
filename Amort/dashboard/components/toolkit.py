@@ -2,9 +2,6 @@
 def to_dropdown_options(values: list[str]) -> list[dict[str, str]]:
     return [{"label": value, "value": value} for value in values]
 
-# def to_nested_dict(df) -> dict:
-    # return {keys[0]: {keys[1]: {keys[2]: df[keys].to_dict()}} for (keys) in [col for col in df.columns]}
-
 # Convert to form of the data in dash.DataTable
 
 

@@ -8,7 +8,7 @@
 		"liveServer.settings.multiRootWorkspaceName": "env_1111001",
 		"terminal.integrated.automationProfile.linux": {},
 		"terminal.integrated.confirmOnExit": "never",
-		"terminal.integrated.defaultLocation": "editor",
+		"terminal.integrated.defaultLocation": "view",
 		"terminal.integrated.enableBell": true,
 		"terminal.integrated.smoothScrolling": true,
 		"editor.wordWrap": "bounded",
@@ -38,5 +38,14 @@
 		"editor.wrappingIndent": "same",
 		"workbench.panel.opensMaximized": "never",
 		"workbench.panel.defaultLocation": "bottom",
+		"workbench.startupEditor": "newUntitledFile",
+		"terminal.integrated.defaultProfile.windows": "PowerShell",
+		"window.restoreWindows": "all",
+		"files.hotExit": "onExit",
+		"json.schemas": [],
+		"launch": {
+			"configurations": [],
+			"compounds": []
+		},
 	}
 }

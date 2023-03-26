@@ -1,17 +1,15 @@
+# This file is for the tailor-made widgets for controls including refreshable dropdown, addon function for generating a dict for the combined input of payment arrangement.
+
 from distutils.log import debug
+from re import S
 from dash import dcc, html, Input, Output, State, callback, callback_context, MATCH, ALL, Patch  # type: ignore
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
-from traitlets import Bool
-from Amort.dashboard.components.toolkit import to_dropdown_options
-from Amort.dashboard.components import ids
-from Amort.dashboard.components.ids import LOAN, ADDON
-from Amort.loan.computation.categoties import amortization as amortization_types
+from ..toolkit import to_dropdown_options
+from ..ids import *
+from ..ids import LOAN, ADDON
+from .. import amortization_types
 import json
-
-# 2023/03/21
-# Consider to separate each component into a separate file. This will make the code more readable and easier to maintain.
-# build a file folder named 'controls' and put all related components into it.
 
 
 class className:
@@ -21,32 +19,46 @@ class className:
 
 
 def refreshable_dropdown(
-        label=None,
+        label: str,
+        # ['prepay', 'subsidy'] Consider the case of duplicate ids.
+        type: str = 'prepay',
         placeholder: str = 'Choose methods of the payment',
         options: dict = amortization_types,
         disabled: bool = False,
 ):
-    dropdown = dbc.Row(
+    dropdown = html.Div(
         [
-            dbc.Col([
-                dbc.Label(label),
-                dcc.Dropdown(
-                    id=LOAN.DROPDOWN.REFRESHABLE,
-                    options=to_dropdown_options([*options]),
-                    value=options,
-                    multi=True,
-                    searchable=True,
-                    placeholder=placeholder,
-                    disabled=disabled
+            dbc.Label(label),
+            html.Div([
+                html.Div(
+                    [
+                        dcc.Dropdown(
+                            id=LOAN.DROPDOWN.REFRESHABLE + "_" + type,
+                            options=[*options],
+                            # options=to_dropdown_options([*options]),
+                            value=[*options],
+                            multi=True,
+                            # searchable=True,
+                            placeholder=placeholder,
+                            disabled=disabled,
+                            # style={
+                            # "display": "table-cell",
+                            # "width": "310px",
+                            # }
+                        )
+                    ],
+                ),
+                dbc.Col(
+                    [
+                        html.Button(
+                            'Refresh',
+                            className=className.DROPDOWN_BUTTON,
+                            id=LOAN.DROPDOWN.BUTTON + "_" + type,
+                            n_clicks=0
+                        )
+                    ]
                 )
-            ]
-            ),
-            dbc.Col([html.Button(
-                'Refresh',
-                className=className.DROPDOWN_BUTTON,
-                id=LOAN.DROPDOWN.BUTTON,
-                n_clicks=0)
-            ]
+            ],
             ),
         ],
         className='mb-3'
@@ -54,11 +66,12 @@ def refreshable_dropdown(
 
     # Refresh the Dropdown of the Payment options
     @callback(
-        Output(LOAN.DROPDOWN.REFRESHABLE, 'value'),
-        Input(LOAN.DROPDOWN.BUTTON, 'n_clicks')
+        Output(LOAN.DROPDOWN.REFRESHABLE + "_" + type, 'value'),
+        Input(LOAN.DROPDOWN.BUTTON + "_" + type, 'n_clicks'),
+        prevent_initial_call=True
     )
     def refresh_options(_: int):
-        return options
+        return [*options]
     return dropdown
 
 # Addons function for the payment arrangement.
@@ -265,114 +278,6 @@ def addon(
     return layout
 
 
-def main_items():
-    layout = [
-        # Mortgage Amount
-        dbc.Row(
-            [
-                dbc.Label(
-                    'Mortgage Amount',
-                    size='md'
-                ),
-                dbc.Col(
-                    dbc.Input(
-                        type='number',
-                        name='Mortgage Amount',
-                        required=True,
-                        id=LOAN.TOTAL_AMOUNT,
-                        placeholder='Input the mortgage amount',
-                        min=0,
-                        step=1,
-                        value=10_000_000,
-                        style={
-                            'width': "100%",
-                            'textAlign': 'left'
-                        },
-                    ),
-                    width=10
-                ),
-            ]
-        ),
-
-        # Down Payment Rate
-        dbc.Row(
-            [
-                dbc.Label('Down Payment Rate'),
-                dbc.Col(
-                    dbc.InputGroup(
-                        [dbc.Input(
-                            type='number',
-                            name='Down Payment Rate',
-                            required=True,
-                            id=LOAN.DOWN_PAYMENT_RATE,
-                            min=0,
-                            step=10,
-                            value=20,
-                            style={
-                                'textAlign': 'left'
-                            }
-                        ), dbc.InputGroupText('%')
-                        ],
-                        class_name="mb-3",
-                    ),
-                )
-            ]
-        ),
-
-        # Payment Methods
-        refreshable_dropdown(
-            label='Payment methods',
-            options=amortization_types,
-        ),
-
-        # Mortgage Period
-        dbc.Row(
-            [
-                dbc.Label(
-                    'Mortgate Term',
-                    size='md'
-                ),
-                dbc.Col(
-                    dbc.Input(
-                        min=1,
-                        max=40,
-                        value=30,
-                        step=1,
-                        type='number',
-                        id=LOAN.PERIOD,
-                        style={
-                            'textAlign': 'left'
-                        })
-                )
-            ]),
-        # Grace Period
-        dbc.Row(
-            [
-                dbc.Label(
-                    'Grace Period',
-                    size='md'
-                ),
-                dbc.Col(
-                    dbc.Input(
-                        min=0,
-                        max=5,
-                        step=1,
-                        value=0,
-                        type='number',
-                        id=LOAN.GRACE,
-                        style={
-                            'textAlign': 'left',
-                        }
-                    )
-                )
-            ]
-        )
-    ]
-    return layout
-
-# Advanced Options
-
-
 class advanced_items:
     @classmethod
     def prepay_plan(cls):
@@ -508,13 +413,11 @@ class advanced_items:
         return layout
 
 
-# py -m Amort.dashboard.component.controls.controls
+# py -m Amort.dashboard.components.homepage.widgets
 if __name__ == "__main__":
     from dash import Dash
     app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
     app.layout = html.Div(
-        # main_items(),
-        # advanced_items.subsidy_plan(),
         addon(
             dropdown_list=[1, 2, 3],
             dropdown_label="TimePoint",
