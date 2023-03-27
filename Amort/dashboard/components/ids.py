@@ -29,7 +29,7 @@ class LOAN:
         ARR = 'subsidy-multi-arr'
         AMOUNT = 'subsidy-amount'
         INTEREST = 'subsidy-interest'
-        TIME = 'subsidy_time'
+        START = 'subsidy_START_time'
         TERM = 'subsidy-term'
         GRACE = 'subsidy-grace-period'
         METHOD = 'subsidy-pay-method'

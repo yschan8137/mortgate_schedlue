@@ -280,13 +280,26 @@ class AdvanceOptions:
                         ),
                         html.Div(
                             [
+                                dbc.Label('Subsidy Start timepoint'),
+                                dbc.Input(
+                                    id=LOAN.SUBSIDY.START,
+                                    type='number',
+                                    step=1,
+                                    value=[1],
+                                    min=[1],
+                                    max=24,
+                                )
+                            ]
+                        ),
+                        html.Div(
+                            [
                                 dbc.Label('Subsidy Period'),
                                 dbc.Input(
                                     id=LOAN.SUBSIDY.TERM,
                                     type='number',
                                     step=1,
-                                    value=[0],
-                                    min=[0],
+                                    value=[1],
+                                    min=[1],
                                 )
                             ]
                         ),
@@ -312,13 +325,17 @@ class AdvanceOptions:
             className="mb-3",
         )
 
-        @callback(
+        @ callback(
             Output(suffix_for_type(ADDON.DROPDOWN.LIST, type), 'data'),
             Input(LOAN.PERIOD, 'value'),
+            Input(LOAN.SUBSIDY.START, 'value'),
         )
-        def update_subsidy_arrangement(period):
-            return [v for v in range(1, period + 1)]
+        def update_subsidy_arrangement(period, start):
+            return [v for v in range(start, period + 1)]
 
+        @callback(
+            Output(LOAN.SUBSIDY.START, 'max'),
+        )
         # @callback(
         # Output(LOAN.SUBSIDY.AMOUNT, 'disabled'),
         # Output(LOAN.SUBSIDY.ARR, 'disabled'),
@@ -329,7 +346,6 @@ class AdvanceOptions:
         # return False, False
         # else:
         # return True, True
-
         return layout
 
 
