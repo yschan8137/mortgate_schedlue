@@ -1,6 +1,7 @@
 # This file is the collection of controls for the homepage.
 
 from dataclasses import dataclass
+from this import d
 from dash import Dash, html, dcc, Input, Output, State, callback
 import dash_bootstrap_components as dbc
 
@@ -110,11 +111,22 @@ class MortgageOptions:
         ]
     )
 
+    # Payment Methods
+    dropdown_refresh = html.Div(
+        [
+            refreshable_dropdown(
+                label='Payment methods',
+                type='loan',
+                options=amortization_types
+            )
+        ]
+    )
 
-@dataclass
+
+@ dataclass
 class AdvanceOptions:
     # collapser
-    @classmethod
+    @ classmethod
     def collapser(cls, id, label, children):
         layout = html.Div(
             [
@@ -151,35 +163,34 @@ class AdvanceOptions:
     def prepayment(cls, type='prepay'):
         layout = dbc.Card(
             [
-                dbc.CardHeader(
-                    dbc.Checklist(
-                        options=[
-                            {'label': 'Prepay Plan', 'value': 0},
-                        ],
-                        id=LOAN.PREPAY.OPTION,
-                        switch=True,
-                        inline=True,
-                        value=[]
-                    )
-                ),
+                # dbc.CardHeader(
+                # dbc.Checklist(
+                # options=[
+                # {'label': 'Prepay Plan', 'value': 0},
+                # ],
+                # id=LOAN.PREPAY.OPTION,
+                # switch=True,
+                # inline=True,
+                # value=[]
+                # )
+                # ),
                 dbc.CardBody(
                     [
                         html.Div(
                             [
-                                dbc.Label('Prepay Amount'),
-                                dbc.Input(
-                                    id=LOAN.PREPAY.AMOUNT,
-                                    type='number',
-                                    step=1,
-                                    value=[0],
-                                    # min= [0],
-                                    disabled=True,
-                                )
+                                dbc.Label('Prepay Arrangement'),
+                                # dbc.Input(
+                                # id=LOAN.PREPAY.AMOUNT,
+                                # type='number',
+                                # step=1,
+                                # value=[0],
+                                # min=[0],
+                                # disabled=True,
+                                # )
                             ]
                         ),
                         html.Div(
                             [
-                                dbc.Label('Prepay Arrangement'),
                                 addon(
                                     type=type,
                                     dropdown_list=[],
@@ -195,21 +206,21 @@ class AdvanceOptions:
             className="mb-3",
         )
 
-        @callback(
-            Output(LOAN.PREPAY.AMOUNT, 'disabled'),
-            Output(suffix_for_type(ADDON.DISABLED),
-                   'data'),  # refer to widgets.py
-            Input(LOAN.PREPAY.OPTION, 'value')
-        )
-        def prepay_option(value):
-            if value:
-                return False, False
-            else:
-                return True, True
+        # @callback(
+        # Output(LOAN.PREPAY.AMOUNT, 'disabled'),
+        # Output(suffix_for_type(ADDON.DISABLED, type),
+        #    'data'),  # refer to widgets.py
+        # Input(LOAN.PREPAY.OPTION, 'value')
+        # )
+        # def prepay_option(value):
+        # if value:
+        # return False  # , False
+        # else:
+        # return True  # , True
 
         @callback(
-            Output(suffix_for_type(ADDON.DROPDOWN.LIST), 'data'),
-            Input(LOAN.PERIOD, 'value')
+            Output(suffix_for_type(ADDON.DROPDOWN.LIST, type), 'data'),
+            Input(LOAN.PERIOD, 'value'),
         )
         def update_prepay_arrangement(period):
             return [v for v in range(1, period + 1)]
@@ -218,20 +229,20 @@ class AdvanceOptions:
     # subsidy
 
     @classmethod
-    def subsidy(cls):
+    def subsidy(cls, type='subsidy'):
         layout = dbc.Card(
             [
-                dbc.CardHeader(
-                    dbc.Checklist(
-                        options=[
-                            {'label': 'Subsidy Plan', 'value': 0},
-                        ],
-                        id=LOAN.SUBSIDY.OPTION,
-                        switch=True,
-                        inline=True,
-                        value=[]
-                    )
-                ),
+                # dbc.CardHeader(
+                # dbc.Checklist(
+                # options=[
+                # {'label': 'Subsidy Plan', 'value': 0},
+                # ],
+                # id=LOAN.SUBSIDY.OPTION,
+                # switch=True,
+                # inline=True,
+                # value=[]
+                # )
+                # ),
                 dbc.CardBody(
                     [
                         html.Div([dbc.Label('Subsidy Amount'),
@@ -241,14 +252,60 @@ class AdvanceOptions:
                             step=1,
                             value=[0],
                             # min= [0],
-                            disabled=True,
                         )]),
-                        html.Div([dbc.Label('Subsidy Arrangement'),
-                                  dbc.Input(
-                            id=LOAN.SUBSIDY.ARR,
-                            value=[0],
-                            disabled=True,
-                        )])
+                        html.Div(
+                            [
+                                dbc.Label('Subsidy Arrangement'),
+                                html.Div([
+                                    addon(
+                                        type=type,
+                                        dropdown_list=[],
+                                        dropdown_label='Select Subsidy Arrangement',
+                                        placeholder='Input Subsidy Arrangement',
+                                    )
+                                ],
+                                    id=LOAN.SUBSIDY.ARR,
+                                )]),
+                        html.Div(
+                            [
+                                dbc.Label('Subsidy Interest Rate'),
+                                dbc.Input(
+                                    id=LOAN.SUBSIDY.INTEREST,
+                                    type='number',
+                                    step=0.01,
+                                    value=[0],
+                                    min=[0],
+                                )
+                            ]
+                        ),
+                        html.Div(
+                            [
+                                dbc.Label('Subsidy Period'),
+                                dbc.Input(
+                                    id=LOAN.SUBSIDY.TERM,
+                                    type='number',
+                                    step=1,
+                                    value=[0],
+                                    min=[0],
+                                )
+                            ]
+                        ),
+                        html.Div(
+                            [
+                                dbc.Label('Subsidy Grace Period'),
+                                dbc.Input(
+                                    id=LOAN.SUBSIDY.GRACE,
+                                    type='number',
+                                    step=1,
+                                    value=[0],
+                                    min=[0],
+                                )
+                            ]
+                        ),
+                        refreshable_dropdown(
+                            label='Subsidy Payment methods',
+                            type='subsidt',
+                            options=amortization_types)
                     ]
                 ),
             ],
@@ -256,15 +313,22 @@ class AdvanceOptions:
         )
 
         @callback(
-            Output(LOAN.SUBSIDY.AMOUNT, 'disabled'),
-            Output(LOAN.SUBSIDY.ARR, 'disabled'),
-            Input(LOAN.SUBSIDY.OPTION, 'value')
+            Output(suffix_for_type(ADDON.DROPDOWN.LIST, type), 'data'),
+            Input(LOAN.PERIOD, 'value'),
         )
-        def subsidy_option(value):
-            if value:
-                return False, False
-            else:
-                return True, True
+        def update_subsidy_arrangement(period):
+            return [v for v in range(1, period + 1)]
+
+        # @callback(
+        # Output(LOAN.SUBSIDY.AMOUNT, 'disabled'),
+        # Output(LOAN.SUBSIDY.ARR, 'disabled'),
+        # Input(LOAN.SUBSIDY.OPTION, 'value')
+        # )
+        # # def subsidy_option(value):
+        # if value:
+        # return False, False
+        # else:
+        # return True, True
 
         return layout
 
@@ -285,11 +349,7 @@ if __name__ == "__main__":
                                     MortgageOptions.down_payment,
                                     MortgageOptions.grace,
                                     MortgageOptions.period,
-                                    # Payment Methods
-                                    refreshable_dropdown(
-                                        label='Payment methods',
-                                        type='prepay',
-                                        options=amortization_types)
+                                    MortgageOptions.dropdown_refresh,
                                 ]
                             ),
                             # 加入refreshabel_dropdown

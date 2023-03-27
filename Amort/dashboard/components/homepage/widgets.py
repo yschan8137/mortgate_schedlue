@@ -79,48 +79,46 @@ def refreshable_dropdown(
 
 
 def addon(
-        type: str,  # ['prepay', 'subsidy']
+        # Type need to be indicated within ['prepay', 'subsidy'] to distinguish the different dropdowns.
+        type: str,
         dropdown_list: list,
         dropdown_label: str,
         placeholder: str,
-        disabled: bool = True,
+        disabled: bool = False,
 
 
 ):
 
-    def dropdown_key_format(n):
-        return f'{suffix_for_type(ADDON.DROPDOWN.MENU) + "_" + type}_{n}'
-
     layout = html.Div(
         [
-            dcc.Store(id=suffix_for_type(suffix_for_type(
-                ADDON.DROPDOWN.LIST)), data=dropdown_list),
-            dcc.Store(id=suffix_for_type(ADDON.DISABLED), data=disabled),
-            dcc.Store(id=suffix_for_type(ADDON.MEMORY), data={}),
-            dcc.Store(id=suffix_for_type(ADDON.DROPDOWN.ITEMS), data={}),
-            html.Div(id=suffix_for_type(ADDON.NEW_ITEMS)),
+            dcc.Store(id=suffix_for_type(ADDON.DROPDOWN.LIST, type),
+                      data=[1] if dropdown_list is None else dropdown_list),
+            dcc.Store(id=suffix_for_type(ADDON.DISABLED, type), data=disabled),
+            dcc.Store(id=suffix_for_type(ADDON.MEMORY, type), data={}),
+            dcc.Store(id=suffix_for_type(ADDON.DROPDOWN.ITEMS, type), data={}),
+            html.Div(id=suffix_for_type(ADDON.NEW_ITEMS, type)),
             html.Div(
                 [
                     dbc.DropdownMenu(
                         [],
                         label=dropdown_label,
-                        id=suffix_for_type(ADDON.DROPDOWN.MENU),
+                        id=suffix_for_type(ADDON.DROPDOWN.MENU, type),
                         style={'width': "100%"},
                         disabled=disabled,
                     ),
-                    dcc.Input(id=suffix_for_type(ADDON.INPUT),
+                    dcc.Input(id=suffix_for_type(ADDON.INPUT, type),
                               type='number',
                               placeholder=placeholder,
                               disabled=disabled,
                               ),
                     dbc.Button(
-                        id=suffix_for_type(ADDON.ADD),
+                        id=suffix_for_type(ADDON.ADD, type),
                         color="primary",
                         children="Add",
                         disabled=disabled,
                     ),
                     dbc.Button(
-                        id=suffix_for_type(ADDON.DELETE),
+                        id=suffix_for_type(ADDON.DELETE, type),
                         color="danger",
                         children="Delete",
                         disabled=disabled,
@@ -131,13 +129,15 @@ def addon(
         ]
     )
 
+
 # Control the disabled status of the input and the add button.
+
     @callback(
-        Output(suffix_for_type(ADDON.INPUT), 'disabled'),
-        Output(suffix_for_type(ADDON.DROPDOWN.MENU), 'disabled'),
-        Output(suffix_for_type(ADDON.ADD), 'disabled'),
-        Output(suffix_for_type(ADDON.DELETE), 'disabled'),
-        Input(suffix_for_type(ADDON.DISABLED), 'data'),
+        Output(suffix_for_type(ADDON.INPUT, type), 'disabled'),
+        Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'disabled'),
+        Output(suffix_for_type(ADDON.ADD, type), 'disabled'),
+        Output(suffix_for_type(ADDON.DELETE, type), 'disabled'),
+        Input(suffix_for_type(ADDON.DISABLED, type), 'data'),
         prevent_initial_call=True
     )
     def control_disabled(disabled):
@@ -145,45 +145,43 @@ def addon(
 # Insert the list of DropdownMenuItem components as a callback function to enable the pattern matching function of the callback to work prope
 
     @callback(
-        Output(suffix_for_type(ADDON.DROPDOWN.MENU), 'children'),
-        Output(suffix_for_type(ADDON.DROPDOWN.ITEMS), 'data'),
-        Input(suffix_for_type(ADDON.DROPDOWN.MENU), 'children'),
-        Input(suffix_for_type(ADDON.MEMORY), 'data'),
-        State(suffix_for_type(ADDON.DROPDOWN.LIST), 'data'),
+        Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'children'),
+        Output(suffix_for_type(ADDON.DROPDOWN.ITEMS, type), 'data'),
+        Input(suffix_for_type(ADDON.MEMORY, type), 'data'),
+        Input(suffix_for_type(ADDON.DROPDOWN.LIST, type), 'data'),
     )
     def load_layout(
-        dropdown_container,
         memory,
         lst,
     ):
         lst = [str(element) for element in lst]
-        dropdown_items = {f'{suffix_for_type(ADDON.DROPDOWN.MENU)}_{i+1}': item for i, item in enumerate(
+        dropdown_items = {f'{suffix_for_type(ADDON.DROPDOWN.MENU, type)}_{i+1}': item for i, item in enumerate(
             [str(v) for v in lst]) if item not in memory}
         return [dbc.DropdownMenuItem(
             dropdown_value,
             id={"index": dropdown_value,
-                "type": suffix_for_type(ADDON.DROPDOWN.MENU)},
+                "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)},
             # id=dropdown_key,
             style={'width': '100%'},
             n_clicks=0,
-        ) for (dropdown_key, dropdown_value) in dropdown_items.items()
+        ) for dropdown_value in dropdown_items.values()
         ], dropdown_items
 
 
 # update the label of the dbc.DropdownMenu to selected children in dbc.DropdownMenuItem.
 
-
     @callback(
-        Output(suffix_for_type(ADDON.DROPDOWN.MENU), 'label'),
+        Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label'),
         Input({"index": ALL, "type": suffix_for_type(
-            ADDON.DROPDOWN.MENU)}, 'n_clicks'),
-        State(suffix_for_type(ADDON.MEMORY), 'data'),
-        State(suffix_for_type(ADDON.DROPDOWN.ITEMS), 'data'),
+            ADDON.DROPDOWN.MENU, type)}, 'n_clicks'),
+        State(suffix_for_type(ADDON.MEMORY, type), 'data'),
+        State(suffix_for_type(ADDON.DROPDOWN.ITEMS, type), 'data'),
+        State(suffix_for_type(ADDON.DROPDOWN.LIST, type), 'data'),
         # [Input(dropdown_key, 'n_clicks')
         #  for dropdown_key in dropdown_items.keys()],
         prevent_initial_call=True
     )
-    def update_dropdown_label(_, memory, dropdown_items):
+    def update_dropdown_label(_, memory, dropdown_items, dropdown_list):
         ctx = callback_context
         if not ctx.triggered or (len(ctx.triggered) > 1):
             raise PreventUpdate
@@ -192,7 +190,7 @@ def addon(
                 return [v for v in dropdown_list if v not in memory][0]
             else:
                 dropdown_item = ctx.triggered[0]['prop_id'].split('.')[0]
-                triggered_index = suffix_for_type(ADDON.DROPDOWN.MENU) + \
+                triggered_index = suffix_for_type(ADDON.DROPDOWN.MENU, type) + \
                     '_' + json.loads(dropdown_item)['index']
                 if triggered_index in dropdown_items.keys():
                     return dropdown_items.get(triggered_index, '')
@@ -202,22 +200,23 @@ def addon(
 
 # callback for add button.
 
+
     @ callback(
         [
-            Output(suffix_for_type(ADDON.NEW_ITEMS), 'children',
+            Output(suffix_for_type(ADDON.NEW_ITEMS, type), 'children',
                    allow_duplicate=True),  # type: ignore
-            Output(suffix_for_type(ADDON.INPUT), 'value'),
-            Output(suffix_for_type(ADDON.DROPDOWN.MENU), 'label',
+            Output(suffix_for_type(ADDON.INPUT, type), 'value'),
+            Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label',
                    allow_duplicate=True),  # type: ignore
-            Output(suffix_for_type(ADDON.MEMORY), 'data',
+            Output(suffix_for_type(ADDON.MEMORY, type), 'data',
                    allow_duplicate=True),  # type: ignore
         ],
-        Input(suffix_for_type(ADDON.ADD), 'n_clicks'),
+        Input(suffix_for_type(ADDON.ADD, type), 'n_clicks'),
         [
-            State(suffix_for_type(ADDON.DROPDOWN.MENU), 'label'),
-            State(suffix_for_type(ADDON.INPUT), 'value'),
-            State(suffix_for_type(ADDON.MEMORY), 'data'),
-            State(suffix_for_type(ADDON.DROPDOWN.ITEMS), 'data'),
+            State(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label'),
+            State(suffix_for_type(ADDON.INPUT, type), 'value'),
+            State(suffix_for_type(ADDON.MEMORY, type), 'data'),
+            State(suffix_for_type(ADDON.DROPDOWN.ITEMS, type), 'data'),
         ],
         prevent_initial_call=True
     )
@@ -255,7 +254,7 @@ def addon(
                         ],
                         id={
                             "index": _,
-                            "type": suffix_for_type(ADDON.OUTPUT)
+                            "type": suffix_for_type(ADDON.OUTPUT, type)
                         },
                         style={"display": "inline", "margin": "10px"},
                     ),
@@ -266,7 +265,8 @@ def addon(
         return patched_item, "", dropdown_label, memory
 
     @ callback(
-        Output({"index": MATCH, "type": suffix_for_type(ADDON.OUTPUT)}, "style"),
+        Output({"index": MATCH, "type": suffix_for_type(
+            ADDON.OUTPUT, type)}, "style"),
         Input({"index": MATCH, "type": "done"}, "value"),
         prevent_initial_call=True
     )
@@ -284,13 +284,13 @@ def addon(
 
 # callback for delete button
     @callback(
-        Output(suffix_for_type(ADDON.NEW_ITEMS), 'children',
+        Output(suffix_for_type(ADDON.NEW_ITEMS, type), 'children',
                allow_duplicate=True),  # type: ignore
-        Output(suffix_for_type(ADDON.MEMORY), 'data',
+        Output(suffix_for_type(ADDON.MEMORY, type), 'data',
                allow_duplicate=True),  # type: ignore
-        Input(suffix_for_type(ADDON.DELETE), 'n_clicks'),
+        Input(suffix_for_type(ADDON.DELETE, type), 'n_clicks'),
         State({'index': ALL, 'type': 'done'}, 'value'),
-        State(suffix_for_type(ADDON.MEMORY), 'data'),
+        State(suffix_for_type(ADDON.MEMORY, type), 'data'),
         prevent_initial_call=True
     )
     def delete_items(_, state, memory):

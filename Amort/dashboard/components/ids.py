@@ -19,20 +19,20 @@ class LOAN:
         DROPDOWN = 'dropdown-for-arrange-options'
 
     class PREPAY:
-        OPTION = 'prepay-plan'  # 選擇提前付款
+        # OPTION = 'prepay-plan'  # 選擇提前付款
         AMOUNT = 'prepay-amount'
         ARR = 'prepay-multi-arr'
 
     class SUBSIDY:
-        OPTION = 'subsidy-plan'  # 選擇申請補貼貸款
+        # OPTION = 'subsidy-plan'  # 選擇申請補貼貸款
         INTEREST_OPTION = 'determine whether the subsidy interest is adjustable rate'
-        INTEREST = 'subsidy-interest'
         ARR = 'subsidy-multi-arr'
-        TIME = 'subsidy_time'
         AMOUNT = 'subsidy-amount'
+        INTEREST = 'subsidy-interest'
+        TIME = 'subsidy_time'
         TERM = 'subsidy-term'
+        GRACE = 'subsidy-grace-period'
         METHOD = 'subsidy-pay-method'
-        REFRESH_ALL_OPTIONS = 'refresh-all-options_subsidy'
 
 
 class ADDON:
