@@ -30,34 +30,47 @@ def calculator(
     loan_period: int,
     down_payment_rate: float = 0.2,
     grace_period: int = 0,
+    # ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
     method: list[str] = [*amortization_methods.keys()],
     **kwargs: dict
 ) -> pd.DataFrame:
     """
     Arguments:
-    1. interest_arr:
-      The arrangement of the amortization_methods interest.  
-      (1) interest(List):
+    1. interest_arr(dict): The arrangement of the amortization_methods interest which includes:  
+      (1) interest(List): the interest rate(s) applied to specific period(s) of the loan.
 
-      (2) multi_arr(List)(Optional):
+      (2) multi_arr(List)(Optional): the according periods of the interest rates applied to the loan.
 
-    2. total_amount: int, 
-    3. loan_period: int, 
-    4. down_payment_rate,
-    5. grace_period,
-    6. method (The payment method applied to the installment):
-       The default options include [Eqaul Total Payment] and [Equal Principal Payment].
-    7. subsidy_arr:
-      (1) interest 
-      (2) time
-      (3) grace_time
-      (4) amount 
-      (5) term
-      (6) method': The payment method applied to the subsidy loan installment. 
-                   The default options are ['equal_total_payment', 'equal_pricipal_payment'].
+    2. total_amount(int): The total amount of the loan.
+
+    3. loan_period(int): The loan period of the loan. 
+
+    4. down_payment_rate(float): The down payment rate of the loan. The default value is 0.2.
+
+    5. grace_period(int): The grace period of the loan. The default value is 0.
+
+    6. method(list): The payment method applied to the ordinary loan installment. The default options include [Eqaul Total] and [Equal Principal] which stand for eqaul total payment and equal principal payment respectively.
+
+    7. subsidy_arr(dict): The arrangement of the subsidy loan which includes:
+
+        (1) interest(List): the interest rate(s) applied to specific period(s) of the loan.
+
+        (2) multi_arr(List)(Optional): the according period(s) of the interest rates applied to the loan.
+
+        (3) time(int): the timepoint whem the subsidy loan is applied.
+
+        (4) grace_time(int): the grace period of the subsidy loan.
+
+        (5) amount(int): the amount of the subsidy loan.
+
+        (6) term(int): the term of the subsidy loan.
+
+        (7) method(dict): The payment method applied to the subsidy loan installment. The default options include [Eqaul Total] and [Equal Principal] which stand for eqaul total payment and equal principal payment respectively.
     8. prepay_arr:
-      (1) multi_arr
-      (2) amount
+
+      (1) amount(List): prepaid amount(s) applied to specific period(s) of the loan. 
+
+      (2) multi_arr(List)(Optional): the according period(s) of the prepayment.
     """
 
     if grace_period > 5:
@@ -132,7 +145,7 @@ def calculator(
     # Collection of the dataframes of applied amortization_methods method.
     dfs_ordinry = {}
 
-    if 'equal_total_payment' in method_applied:
+    if 'EQUAL_TOTAL' in method_applied:
         res_etp = _ETP_arr_(
             loan_period=loan_period,
             loan_amount=loan_amount,
@@ -142,8 +155,8 @@ def calculator(
             grace_period=grace_period,
         )
         df_etp = _df_(res_etp)
-        dfs_ordinry[amortization_methods['equal_total_payment']] = df_etp
-    if 'equal_principal_payment' in method_applied:
+        dfs_ordinry[amortization_methods['EQUAL_TOTAL']] = df_etp
+    if 'EQUAL_PRINCIPAL' in method_applied:
         res_epp = _EPP_arr_(
             loan_period=loan_period,
             loan_amount=loan_amount,
@@ -153,7 +166,7 @@ def calculator(
             prepay_amount=prepay_amount,
         )
         df_epp = _df_(res_epp)
-        dfs_ordinry[amortization_methods['equal_principal_payment']] = df_epp
+        dfs_ordinry[amortization_methods['EQUAL_PRINCIPAL']] = df_epp
 
     df = pd.concat(
         objs=[*dfs_ordinry.values()],
@@ -202,17 +215,17 @@ def calculator(
             "grace_period": subsidy_grace_period,
         }
         dfs_subsidy = {}
-        if 'equal_total_payment' in method_applied_to_subsidy:
+        if 'EQUAL_TOTAL' in method_applied_to_subsidy:
             res_ETP_subsidy = _ETP_arr_(**kwargs_subsidy)
             df_etp_subsidy = _df_(res_ETP_subsidy, index_range=[
                                   subsidy_time, subsidy_time + subsidy_term * 12 + 1])
-            dfs_subsidy[amortization_methods['equal_total_payment']
+            dfs_subsidy[amortization_methods['EQUAL_TOTAL']
                         ] = df_etp_subsidy
-        if 'equal_principal_payment' in method_applied_to_subsidy:
+        if 'EQUAL_PRINCIPAL' in method_applied_to_subsidy:
             res_EPP_subsidy = _EPP_arr_(**kwargs_subsidy)
             df_epp_subsidy = _df_(res_EPP_subsidy, index_range=[
                                   subsidy_time, subsidy_time + subsidy_term * 12 + 1])
-            dfs_subsidy[amortization_methods['equal_principal_payment']
+            dfs_subsidy[amortization_methods['EQUAL_PRINCIPAL']
                         ] = df_epp_subsidy
 
         multi_index_subsidy = pd.MultiIndex.from_product(
@@ -261,40 +274,27 @@ def calculator(
     df = df.applymap(lambda x: f"{round(x):,}")
     return df
 
-# ------test------
-
-
-def test_df() -> pd.DataFrame:
-    return calculator(
-        interest_arr={'interest': [1.38]},
-        total_amount=10_000_000,
-        down_payment_rate=0.2,
-        loan_period=40,
-        grace_period=0,
-        prepay_arr={
-            'multi_arr': [120, 160],
-            'amount': [2_000_000, 200_0000]},
-        subsidy_arr={
-            'interest': [1.01],
-            'multi_arr': [],
-            'time': 24,
-            'amount': 2_300_000,
-            'term': 20,
-            'method': [
-                'equal_total_payment',
-                'equal_principal_payment'
-            ]
-        },
-        method=[
-            'equal_total_payment',
-            'equal_principal_payment',
-        ]
-    )
-
 
 # py -m Amort.loan.main
 if __name__ == "__main__":
     print(
-        # test_df()
-        amortization_methods
+        calculator(
+            interest_arr={'interest': [1.38]},
+            total_amount=10_000_000,
+            down_payment_rate=0.2,
+            loan_period=40,
+            grace_period=0,
+            prepay_arr={
+                'multi_arr': [120, 160],
+                'amount': [2_000_000, 200_0000]},
+            subsidy_arr={
+                'interest': [1.01],
+                'multi_arr': [],
+                'time': 24,
+                'amount': 2_300_000,
+                'term': 20,
+                'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
+            },
+            method=['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
+        )
     )
