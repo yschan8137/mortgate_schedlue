@@ -30,7 +30,6 @@ def calculator(
     loan_period: int,
     down_payment_rate: float = 0.2,
     grace_period: int = 0,
-    # ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL'],
     method: list[str] = [*amortization_methods.keys()],
     **kwargs: dict
 ) -> pd.DataFrame:
