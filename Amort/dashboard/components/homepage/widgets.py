@@ -41,10 +41,9 @@ def refreshable_dropdown(
                             # searchable=True,
                             placeholder=placeholder,
                             disabled=disabled,
-                            # style={
-                            # "display": "table-cell",
-                            # "width": "310px",
-                            # }
+                            style={
+                                "width": "67%",
+                            }
                         )
                     ],
                 ),
@@ -132,6 +131,7 @@ def addon(
 
 # Control the disabled status of the input and the add button.
 
+
     @callback(
         Output(suffix_for_type(ADDON.INPUT, type), 'disabled'),
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'disabled'),
@@ -170,6 +170,7 @@ def addon(
 
 # update the label of the dbc.DropdownMenu to selected children in dbc.DropdownMenuItem.
 
+
     @callback(
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label'),
         Input({"index": ALL, "type": suffix_for_type(
@@ -199,7 +200,6 @@ def addon(
 
 
 # callback for add button.
-
 
     @ callback(
         [

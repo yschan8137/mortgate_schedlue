@@ -20,7 +20,7 @@ class LOAN:
 
     class PREPAY:
         # OPTION = 'prepay-plan'  # 選擇提前付款
-        AMOUNT = 'prepay-amount'
+        # AMOUNT = 'prepay-amount'
         ARR = 'prepay-multi-arr'
 
     class SUBSIDY:

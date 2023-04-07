@@ -1,7 +1,6 @@
-# This file is the collection of controls for the homepage.
+# This file is the collection of control components for the homepage.
 
 from dataclasses import dataclass
-from this import d
 from dash import Dash, html, dcc, Input, Output, State, callback
 import dash_bootstrap_components as dbc
 
@@ -32,7 +31,7 @@ class MortgageOptions:
                     step=1,
                     value=10_000_000,
                     style={
-                        'width': "100%",
+                        'width': "20%",
                         'textAlign': 'left'
                     },
                 ),
@@ -53,6 +52,7 @@ class MortgageOptions:
                         required=True,
                         id=LOAN.DOWN_PAYMENT_RATE,
                         min=0,
+                        max=100,
                         step=10,
                         value=20,
                         style={
@@ -60,7 +60,9 @@ class MortgageOptions:
                         }
                     ), dbc.InputGroupText('%')
                     ],
-                    className="mb-3",
+                    style={
+                        'width': "15%",
+                    }
                 ),
             )
         ]
@@ -82,6 +84,7 @@ class MortgageOptions:
                     type='number',
                     id=LOAN.PERIOD,
                     style={
+                        'width': "10%",
                         'textAlign': 'left'
                     }
                 )
@@ -104,6 +107,7 @@ class MortgageOptions:
                     type='number',
                     id=LOAN.GRACE,
                     style={
+                        'width': "10%",
                         'textAlign': 'left',
                     }
                 )
@@ -130,31 +134,42 @@ class AdvanceOptions:
     def collapser(cls, id, label, children):
         layout = html.Div(
             [
-                dbc.Button(
-                    label,
-                    id=id,
-                    className="mb-3",
-                    color="primary",
-                    n_clicks=0,
+                html.Div(
+                    [
+                        dbc.Button(
+                            label,
+                            id=f"bottun-{id}",
+                            className="mb-3",
+                            color="primary",
+                            n_clicks=0,
+                        )
+                    ],
+                    id=f"trigger-{id}"
                 ),
-                dbc.Collapse(
-                    children,
-                    className="mb-3",
-                    id=f"collapse-{id}",
-                    is_open=False,
-                )
-            ]
+                html.Div(
+                    [
+                        dbc.Collapse(
+                            children,
+                            className="mb-3",
+                            id=f"collapse-{id}",
+                            is_open=False,
+                        )
+                    ],
+                    id=f'toggle-to-show-{id}'
+                ),
+            ],
         )
 
         @callback(
             Output(f"collapse-{id}", "is_open"),
-            Input(id, "n_clicks"),
+            Input(f"trigger-{id}", "n_clicks"),
             State(f"collapse-{id}", "is_open"),
         )
         def toggle_collapse(n, is_open):
             if n:
                 return not is_open
             return is_open
+
         return layout
 
     # prepayment
@@ -178,7 +193,10 @@ class AdvanceOptions:
                     [
                         html.Div(
                             [
-                                dbc.Label('Prepay Arrangement'),
+                                dbc.Label(
+                                    'Prepay Arrangement',
+                                    size='md',
+                                ),
                                 # dbc.Input(
                                 # id=LOAN.PREPAY.AMOUNT,
                                 # type='number',
@@ -203,7 +221,7 @@ class AdvanceOptions:
                     ]
                 ),
             ],
-            className="mb-3",
+            className="mb-3 w-100",
         )
 
         # @callback(
@@ -232,30 +250,35 @@ class AdvanceOptions:
     def subsidy(cls, type='subsidy'):
         layout = dbc.Card(
             [
-                # dbc.CardHeader(
-                # dbc.Checklist(
-                # options=[
-                # {'label': 'Subsidy Plan', 'value': 0},
-                # ],
-                # id=LOAN.SUBSIDY.OPTION,
-                # switch=True,
-                # inline=True,
-                # value=[]
-                # )
-                # ),
                 dbc.CardBody(
                     [
-                        html.Div([dbc.Label('Subsidy Amount'),
-                                  dbc.Input(
-                            id=LOAN.SUBSIDY.AMOUNT,
-                            type='number',
-                            step=1,
-                            value=[0],
-                            # min= [0],
-                        )]),
                         html.Div(
                             [
-                                dbc.Label('Subsidy Arrangement'),
+                                dbc.Label('Subsidy Amount'),  # 優惠貸款金額
+                                dbc.Input(
+                                    id=LOAN.SUBSIDY.AMOUNT,
+                                    type='number',
+                                    step=1,
+                                    value=0,
+                                    min=0,
+                                ),
+                            ]
+                        ),
+                        html.Div(
+                            [
+                                dbc.Label('Applied Interest'),
+                                dbc.Input(
+                                    id=LOAN.SUBSIDY.INTEREST,
+                                    type='number',
+                                    step=1,
+                                    value=0,
+                                    min=0,
+                                ),
+                            ]
+                        ),
+                        html.Div(
+                            [
+                                dbc.Label('Subsidy Prepay Arrangement'),
                                 html.Div([
                                     addon(
                                         type=type,
@@ -268,25 +291,13 @@ class AdvanceOptions:
                                 )]),
                         html.Div(
                             [
-                                dbc.Label('Subsidy Interest Rate'),
-                                dbc.Input(
-                                    id=LOAN.SUBSIDY.INTEREST,
-                                    type='number',
-                                    step=0.01,
-                                    value=[0],
-                                    min=[0],
-                                )
-                            ]
-                        ),
-                        html.Div(
-                            [
                                 dbc.Label('Subsidy Start timepoint'),
                                 dbc.Input(
                                     id=LOAN.SUBSIDY.START,
                                     type='number',
                                     step=1,
-                                    value=[1],
-                                    min=[1],
+                                    value=1,
+                                    min=1,
                                     max=24,
                                 )
                             ]
@@ -298,8 +309,8 @@ class AdvanceOptions:
                                     id=LOAN.SUBSIDY.TERM,
                                     type='number',
                                     step=1,
-                                    value=[1],
-                                    min=[1],
+                                    value=1,
+                                    min=1,
                                 )
                             ]
                         ),
@@ -310,8 +321,8 @@ class AdvanceOptions:
                                     id=LOAN.SUBSIDY.GRACE,
                                     type='number',
                                     step=1,
-                                    value=[0],
-                                    min=[0],
+                                    value=0,
+                                    min=0,
                                 )
                             ]
                         ),
@@ -322,20 +333,19 @@ class AdvanceOptions:
                     ]
                 ),
             ],
-            className="mb-3",
+            className="mb-3 w-auto",
         )
 
         @ callback(
             Output(suffix_for_type(ADDON.DROPDOWN.LIST, type), 'data'),
-            Input(LOAN.PERIOD, 'value'),
+            Input(LOAN.SUBSIDY.TERM, 'value'),
             Input(LOAN.SUBSIDY.START, 'value'),
         )
         def update_subsidy_arrangement(period, start):
-            return [v for v in range(start, period + 1)]
+            return [v for v in range(start, period + start + 1)]
+        # NOTE: 目前顯示標準為整個借貸週期，須評估實際計算是否須另外減start
 
-        @callback(
-            Output(LOAN.SUBSIDY.START, 'max'),
-        )
+        # )
         # @callback(
         # Output(LOAN.SUBSIDY.AMOUNT, 'disabled'),
         # Output(LOAN.SUBSIDY.ARR, 'disabled'),
@@ -376,9 +386,10 @@ if __name__ == "__main__":
                                     AdvanceOptions.collapser(
                                         id='subsidy', label='Subsidy', children=AdvanceOptions.subsidy()),
                                 ],
-                                style={'display': 'inline-flex',
-                                       'flex-direction': 'row',
-                                       }
+                                style={
+                                    'display': 'inline-flex',
+                                    'flex-direction': 'column',
+                                },
                             ),
                         ],
                     )
@@ -387,6 +398,7 @@ if __name__ == "__main__":
             )
         ]
     )
+
     app.run_server(debug=True)
 
     # TODO:
@@ -404,13 +416,16 @@ if __name__ == "__main__":
     # 1[] 設定Subsidy Adjustable rate切換功能
     # 若為Adjustable rate模式，欄位包含期間(subsidy-multi-arr)、利率(subsidy-interest)及新增功能(add-subsidy-interest-to-the-arrangement)
     # 2[] 設定新增功能(add-subsidy-interest-to-the-arrangement)的callback
-    # refer: https://dash.plotly.com/pattern-matching-callbacks
+    # refer to: https://dash.plotly.com/pattern-matching-callbacks
     # 3[] Advanced options用Accordion component切換為collapsible lists
 
-    # -[] 垂直排列rows_per_page及datatable
+    # 2023/3/29
+    # [] buttongroup搭配
+
+    # [X 垂直排列rows_per_page及datatable
     # refer: https://dash-bootstrap-components.opensource.faculty.ai/docs/components/layout/
 
-    # -[] Matching pattern
+    # [X] Matching pattern
     # refer: https://dash.plotly.com/pattern-matching-callbacks
 
     # Reference:
