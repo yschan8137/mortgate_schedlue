@@ -39,7 +39,7 @@ def calculator(
     1. interest_arr(dict): The arrangement of the amortization_methods interest which includes:  
       (1) interest(List): the interest rate(s) applied to specific period(s) of the loan.
 
-      (2) multi_arr(List)(Optional): the according periods of the interest rates applied to the loan.
+      (2) multi_arr(List)(Optional): The timepoints at which the loan interest rates change.
 
     2. total_amount(int): The total amount of the loan.
 
@@ -53,24 +53,26 @@ def calculator(
 
     7. subsidy_arr(dict): The arrangement of the subsidy loan which includes:
 
-        (1) interest(List): the interest rate(s) applied to specific period(s) of the loan.
+        (1) interest(List): The interest rate(s) applied to specific period(s) of the loan.
 
-        (2) multi_arr(List)(Optional): the according period(s) of the interest rates applied to the loan.
+        (2) multi_arr(List)(Optional): The timepoints at which the subsidy loan interest rates change. 
 
-        (3) time(int): the timepoint whem the subsidy loan is applied.
+        (3) time(int): The timepoint at which the subsidy loan is applied.
 
-        (4) grace_time(int): the grace period of the subsidy loan.
+        (4) grace_time(int): The grace period of the subsidy loan.
 
-        (5) amount(int): the amount of the subsidy loan.
+        (5) amount(int): The amount of the subsidy loan.
 
-        (6) term(int): the term of the subsidy loan.
+        (6) term(int): The term of the subsidy loan.
 
         (7) method(dict): The payment method applied to the subsidy loan installment. The default options include [Eqaul Total] and [Equal Principal] which stand for eqaul total payment and equal principal payment respectively.
     8. prepay_arr:
 
-      (1) amount(List): prepaid amount(s) applied to specific period(s) of the loan. 
+        (1) amount(List): Prepaid amount(s) applied to specific period(s) of the loan. 
 
-      (2) multi_arr(List)(Optional): the according period(s) of the prepayment.
+        (2) multi_arr(List)(Optional): The according period(s) of the prepayment. 
+            (Note that there is a slight difference in the multi_arr specification between prepayment and loan/subsidy loan. 
+            The multi_arr for prepayment represents the collection of timepoints for the amounts being prepaid, while the multi_arr for loan/subsidy loan refers to the collection of timepoints at which the interest rates change.)
     """
 
     if grace_period > 5:

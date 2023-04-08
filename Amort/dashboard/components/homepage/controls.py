@@ -131,7 +131,7 @@ class MortgageOptions:
 class AdvanceOptions:
     # collapser
     @ classmethod
-    def collapser(cls, id, label, children):
+    def collapser(cls, id, label, children, **style):
         layout = html.Div(
             [
                 html.Div(
@@ -144,7 +144,7 @@ class AdvanceOptions:
                             n_clicks=0,
                         )
                     ],
-                    id=f"trigger-{id}"
+                    id=f"trigger-{id}",
                 ),
                 html.Div(
                     [
@@ -158,6 +158,7 @@ class AdvanceOptions:
                     id=f'toggle-to-show-{id}'
                 ),
             ],
+            style=style
         )
 
         @callback(
@@ -382,14 +383,14 @@ if __name__ == "__main__":
                             html.Div(
                                 [
                                     AdvanceOptions.collapser(
-                                        id='prepayment', label='Prepayment', children=AdvanceOptions.prepayment()),
+                                        id='prepayment', label='Prepayment', children=AdvanceOptions.prepayment(), style={'display': 'inline'}),
                                     AdvanceOptions.collapser(
-                                        id='subsidy', label='Subsidy', children=AdvanceOptions.subsidy()),
+                                        id='subsidy', label='Subsidy', children=AdvanceOptions.subsidy(), style={'display': 'inline'}),
                                 ],
-                                style={
-                                    'display': 'inline-flex',
-                                    'flex-direction': 'column',
-                                },
+                                # style={
+                                # 'display': 'inline-flex',
+                                # 'flex-direction': 'column',
+                                # },
                             ),
                         ],
                     )
