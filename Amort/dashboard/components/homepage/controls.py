@@ -155,7 +155,7 @@ class AdvanceOptions:
                             is_open=False,
                         )
                     ],
-                    id=f'toggle-to-show-{id}'
+                    id=f'toggle-for-{id}'
                 ),
             ],
             style=style
@@ -174,28 +174,42 @@ class AdvanceOptions:
         return layout
 
     @classmethod
-    def accordion(cls, title: str, children: list, **style):
+    def accordion(cls, **kwargs):
+        """
+        Arguments:
+            - content(list): a list of dictionaries for the specification of title and children of the accordion as follows:
+                [
+                    {
+                        'title': the title of the accordion,
+                        'children': the content children in the accordion
+                    },
+                ...
+                ]
+            - style(dict): the style of the accordion
+            - away_open(bool): whether the accordion is always open
+        """
+        titles = [c.get('title', None) for c in kwargs.get('content', [])]
+        childrens = [c.get('children', None)
+                     for c in kwargs.get('content', [])]
+        style = kwargs.get('style', None)
+        away_open = kwargs.get('away_open', False)
+
         layout = html.Div(
             [
                 dbc.Accordion(
-                    dbc.AccordionItem(
-                        children=children,
-                        title=title
-                    ),
-                    id="accordion-always-open",
-                    always_open=True
+                    [
+                        dbc.AccordionItem(
+                            children=children,
+                            title=title
+                        ) for title, children in zip(titles, childrens)
+                    ],
+                    id="accordion",
+                    always_open=away_open,
+                    start_collapsed=True,
                 ),
-                # html.Div(id="accordion-contents-open-ids", className="mt-3"),
             ],
             style=style,
         )
-
-        # @app.callback(
-        # Output("accordion-contents-open-ids", "children"),
-        # [Input("accordion-always-open", "active_item")],
-        # )
-        # def change_item(item):
-        # return f"Item(s) selected: {item}"
 
         return layout
 
@@ -408,10 +422,20 @@ if __name__ == "__main__":
                             # 加入refreshabel_dropdown
                             html.Div(
                                 [
-                                    AdvanceOptions.collapser(
-                                        id='prepayment', label='Prepayment', children=AdvanceOptions.prepayment(), style={'display': 'inline'}),
-                                    AdvanceOptions.collapser(
-                                        id='subsidy', label='Subsidy', children=AdvanceOptions.subsidy(), style={'display': 'inline'}),
+                                    AdvanceOptions.accordion(
+                                        content=[
+                                            {
+                                                'title': title,
+                                                'children': children
+                                            } for title, children in zip(['Prepayment', 'Subsidy'], [AdvanceOptions.prepayment(), AdvanceOptions.subsidy()])
+                                        ]
+                                    )
+
+
+                                    # AdvanceOptions.collapser(
+                                    # id='prepayment', label='Prepayment', children=AdvanceOptions.prepayment(), style={'display': 'inline'}),
+                                    # AdvanceOptions.collapser(
+                                    # id='subsidy', label='Subsidy', children=AdvanceOptions.subsidy(), style={'display': 'inline'}),
                                 ],
                                 # style={
                                 # 'display': 'inline-flex',
