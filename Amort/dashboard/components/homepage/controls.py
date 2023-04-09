@@ -173,6 +173,7 @@ class AdvanceOptions:
 
         return layout
 
+    #  accordion
     @classmethod
     def accordion(cls, **kwargs):
         """
@@ -206,6 +207,7 @@ class AdvanceOptions:
                     id="accordion",
                     always_open=away_open,
                     start_collapsed=True,
+                    flush=True,
                 ),
             ],
             style=style,

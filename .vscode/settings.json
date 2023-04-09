@@ -13,5 +13,7 @@
     "editor.scrollBeyondLastLine": false,
     "editor.cursorStyle": "line",
     "jupyter.interactiveWindow.textEditor.executeSelection": true,
-    "python.analysis.typeCheckingMode": "basic"
+    "python.analysis.typeCheckingMode": "basic",
+    "editor.autoIndent": "full",
+    "editor.wrappingIndent": "same"
 }

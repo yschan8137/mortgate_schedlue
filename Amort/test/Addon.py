@@ -5,7 +5,11 @@ from dash.exceptions import PreventUpdate
 import json
 
 # 2023/03/13-2023/03/20
-# This is a custom component that allows you to add and delete items to a dictionary. The dictionary is stored in the memory of the browser. The dictionary is used to store the items that are added to the list of items. The list of items is a list of dbc.DropdownMenuItem components. The items in the list of items are selected by the user and are stored in the memory of the browser. The items in the memory are removed if the delete button is clicked, and the items in the memory are added to the list of items if the add button is clicked.
+"""
+    This is a custom component that allows you to add and delete items to a dictionary.
+    The dictionary is stored in the Memory whose id is 'ids_addon.MEMORY' and is used to store the items that are added to the list of items.
+    The list of items is a list of dbc.DropdownMenuItem components. The items in the list of items are selected by the user and are stored in the memory of the browser. The items in the memory are removed if the delete button is clicked, and the items in the memory are added to the list of items if the add button is clicked.
+"""
 
 
 class ids_addon:
@@ -89,7 +93,6 @@ def addon(
 
 # update the label of the dbc.DropdownMenu to selected children in dbc.DropdownMenuItem.
 
-
     @callback(
         Output(ids_addon.DROPDOWN.MENU, 'label'),
         Input({"index": ALL, "type": ids_addon.DROPDOWN.MENU}, 'n_clicks'),
@@ -117,6 +120,7 @@ def addon(
 
 
 # callback for add button.
+
 
     @ callback(
         [

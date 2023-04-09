@@ -5,7 +5,7 @@ import dash_bootstrap_components as dbc
 from ..ids import *
 from Amort.loan import calculator
 from ..toolkit import convert_df_to_dash
-from .controls import panel
+from .controls import MortgageOptions, AdvanceOptions
 
 
 class config:
@@ -72,13 +72,13 @@ datatable = dash_table.DataTable(
         Input(LOAN.DOWN_PAYMENT_RATE, 'value'),
         Input(LOAN.PERIOD, 'value'),
         Input(LOAN.GRACE, 'value'),
-        Input(LOAN.PREPAY.AMOUNT, 'value'),
+        # Input(LOAN.PREPAY.AMOUNT, 'value'),
         Input(LOAN.PREPAY.ARR, 'value'),
         Input(LOAN.SUBSIDY.AMOUNT, 'value'),
         Input(LOAN.SUBSIDY.INTEREST, 'value'),
         # Input(LOAN.SUBSIDY.METHOD, 'value'),
         Input(LOAN.SUBSIDY.TERM, 'value'),
-        Input(LOAN.SUBSIDY.TIME, 'value'),
+        Input(LOAN.SUBSIDY.START, 'value'),
         Input(DATA_TABLE, 'page_current'),
         Input(PAGE_SIZE, 'value')  # 調整列數
     ]
@@ -140,7 +140,7 @@ if __name__ == "__main__":
         dbc.Row(
             [
                 dbc.Col(
-                    panel
+                    # 待輸入controls的物件
                 ),
                 dbc.Col(
                     [
