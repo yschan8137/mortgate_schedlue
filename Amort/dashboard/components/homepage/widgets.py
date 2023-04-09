@@ -93,6 +93,7 @@ def addon(
             dcc.Store(id=suffix_for_type(ADDON.DROPDOWN.LIST, type),
                       data=[1] if dropdown_list is None else dropdown_list),
             dcc.Store(id=suffix_for_type(ADDON.DISABLED, type), data=disabled),
+            # That's the outcome what we want.
             dcc.Store(id=suffix_for_type(ADDON.MEMORY, type), data={}),
             dcc.Store(id=suffix_for_type(ADDON.DROPDOWN.ITEMS, type), data={}),
             html.Div(id=suffix_for_type(ADDON.NEW_ITEMS, type)),
@@ -130,7 +131,6 @@ def addon(
 
 
 # Control the disabled status of the input and the add button.
-
 
     @callback(
         Output(suffix_for_type(ADDON.INPUT, type), 'disabled'),
@@ -170,7 +170,6 @@ def addon(
 
 # update the label of the dbc.DropdownMenu to selected children in dbc.DropdownMenuItem.
 
-
     @callback(
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label'),
         Input({"index": ALL, "type": suffix_for_type(
@@ -200,6 +199,7 @@ def addon(
 
 
 # callback for add button.
+
 
     @ callback(
         [

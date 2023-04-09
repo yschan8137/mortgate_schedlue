@@ -72,7 +72,7 @@ datatable = dash_table.DataTable(
         Input(LOAN.DOWN_PAYMENT_RATE, 'value'),
         Input(LOAN.PERIOD, 'value'),
         Input(LOAN.GRACE, 'value'),
-        # Input(LOAN.PREPAY.AMOUNT, 'value'),
+        # 改成suffix_for_type(ADDON.MEMORY, type)
         Input(LOAN.PREPAY.ARR, 'value'),
         Input(LOAN.SUBSIDY.AMOUNT, 'value'),
         Input(LOAN.SUBSIDY.INTEREST, 'value'),
