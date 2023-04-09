@@ -1,7 +1,7 @@
-import sys
 import numpy as np
-
 from itertools import accumulate
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
 def merge_sublist(x) -> list:
@@ -185,19 +185,19 @@ def scheduler(
 
 
 # py -m Amort.loan.computation.helpers.scheduler
+payment = scheduler(
+    loan_period=10,
+    interest_arr={
+        'interest': [1.38, 1.01],
+        'multi_arr': [12]
+    },
+    loan=500_000,
+    prepay_arr={
+        'amount': [200_000, 400_000],
+        'multi_arr': [5, 60]
+    }
+)
 if __name__ == "__main__":
-    payment = scheduler(
-        loan_period=10,
-        interest_arr={
-            'interest': [1.38, 1.01],
-            'multi_arr': [12]
-        },
-        loan=500_000,
-        prepay_arr={
-            'amount': [200_000, 400_000],
-            'multi_arr': [5, 60]
-        }
-    )
     print(
-        len(payment)
+        [*enumerate(payment)]
     )

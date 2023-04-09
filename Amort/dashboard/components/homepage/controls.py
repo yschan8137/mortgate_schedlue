@@ -149,7 +149,7 @@ class AdvanceOptions:
                 html.Div(
                     [
                         dbc.Collapse(
-                            children,
+                            childrn=[c for c in [children]],
                             className="mb-3",
                             id=f"collapse-{id}",
                             is_open=False,
@@ -170,6 +170,32 @@ class AdvanceOptions:
             if n:
                 return not is_open
             return is_open
+
+        return layout
+
+    @classmethod
+    def accordion(cls, title: str, children: list, **style):
+        layout = html.Div(
+            [
+                dbc.Accordion(
+                    dbc.AccordionItem(
+                        children=children,
+                        title=title
+                    ),
+                    id="accordion-always-open",
+                    always_open=True
+                ),
+                # html.Div(id="accordion-contents-open-ids", className="mt-3"),
+            ],
+            style=style,
+        )
+
+        # @app.callback(
+        # Output("accordion-contents-open-ids", "children"),
+        # [Input("accordion-always-open", "active_item")],
+        # )
+        # def change_item(item):
+        # return f"Item(s) selected: {item}"
 
         return layout
 
