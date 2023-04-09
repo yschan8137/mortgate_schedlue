@@ -1,8 +1,3 @@
-DATA_TABLE = 'data-table'
-PAGE_SIZE = 'page-size'
-PAGE_COUNT = 'page-count'
-
-
 class LOAN:
     PAYMENT_OPTIONS = 'payment-options'
     TOTAL_AMOUNT = 'total-amount'
@@ -48,3 +43,10 @@ class ADDON:
         MENU = 'dropdown-menu'
         ITEMS = 'dropdown-items'
         LIST = 'dropdown-list'
+
+
+class DATATABLE:
+    TABLE = 'data-table'
+    DATA_TABLE = 'data-table'
+    PAGE_SIZE = 'page-size'
+    PAGE_COUNT = 'page-count'

@@ -406,51 +406,46 @@ class AdvanceOptions:
 if __name__ == "__main__":
     app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-    app.layout = html.Div(
-        [
-            dbc.Card(
-                [
-                    dbc.CardBody(
-                        [
-                            html.Div(
-                                [
-                                    MortgageOptions.amount,
-                                    MortgageOptions.down_payment,
-                                    MortgageOptions.grace,
-                                    MortgageOptions.period,
-                                    MortgageOptions.dropdown_refresh,
-                                ]
-                            ),
-                            # 加入refreshabel_dropdown
-                            html.Div(
-                                [
-                                    AdvanceOptions.accordion(
-                                        content=[
-                                            {
-                                                'title': title,
-                                                'children': children
-                                            } for title, children in zip(['Prepayment', 'Subsidy'], [AdvanceOptions.prepayment(), AdvanceOptions.subsidy()])
-                                        ]
-                                    )
-
-
-                                    # AdvanceOptions.collapser(
-                                    # id='prepayment', label='Prepayment', children=AdvanceOptions.prepayment(), style={'display': 'inline'}),
-                                    # AdvanceOptions.collapser(
-                                    # id='subsidy', label='Subsidy', children=AdvanceOptions.subsidy(), style={'display': 'inline'}),
-                                ],
-                                # style={
-                                # 'display': 'inline-flex',
-                                # 'flex-direction': 'column',
-                                # },
-                            ),
-                        ],
-                    )
-                ],
-                body=True,
-            )
-        ]
-    )
+    app.layout = \
+        html.Div(
+            [
+                dbc.Card(
+                    [
+                        dbc.CardBody(
+                            [
+                                html.Div(
+                                    [
+                                        MortgageOptions.amount,
+                                        MortgageOptions.down_payment,
+                                        MortgageOptions.grace,
+                                        MortgageOptions.period,
+                                        MortgageOptions.dropdown_refresh,
+                                    ]
+                                ),
+                                # 加入refreshabel_dropdown
+                                html.Div(
+                                    [
+                                        AdvanceOptions.accordion(
+                                            content=[
+                                                {
+                                                    'title': title,
+                                                    'children': children
+                                                } for title, children in zip(['Prepayment',     'Subsidy'], [AdvanceOptions.prepayment(),   AdvanceOptions.subsidy()])
+                                            ]
+                                        )
+                                        # AdvanceOptions.collapser(
+                                        # id='prepayment', label='Prepayment',  children=AdvanceOptions.prepayment(), style= {'display': 'inline'}),
+                                        # AdvanceOptions.collapser(
+                                        # id='subsidy', label='Subsidy',    children=AdvanceOptions.subsidy(), style=  {'display': 'inline'}),
+                                    ],
+                                ),
+                            ],
+                        )
+                    ],
+                    body=True,
+                )
+            ]
+        )
 
     app.run_server(debug=True)
 

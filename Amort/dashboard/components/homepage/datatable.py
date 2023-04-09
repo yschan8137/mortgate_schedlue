@@ -2,7 +2,7 @@
 from dash import Dash, dcc, html, Input, Output, State, callback, register_page, page_registry, dash_table
 import dash_bootstrap_components as dbc
 
-from ..ids import *
+from ..ids import LOAN, DATATABLE
 from Amort.loan import calculator
 from ..toolkit import convert_df_to_dash
 from .controls import MortgageOptions, AdvanceOptions
@@ -18,7 +18,7 @@ rows_per_page = dbc.Row(
         dbc.Label('Rows per pages'),
         dbc.Input(
             type='number',
-            id=PAGE_SIZE,
+            id=DATATABLE.PAGE_SIZE,
             value=12,
             min=1,
             max=481,
@@ -38,7 +38,7 @@ rows_per_page = dbc.Row(
 
 # data table
 datatable = dash_table.DataTable(
-    id=DATA_TABLE,
+    id=DATATABLE.TABLE,
     columns=[],
     data=[],
     merge_duplicate_headers=True,
@@ -62,9 +62,9 @@ datatable = dash_table.DataTable(
 # data table
 @callback(
     [
-        Output(DATA_TABLE, 'data'),
-        Output(DATA_TABLE, 'columns'),
-        Output(DATA_TABLE, 'page_count'),
+        Output(DATATABLE.TABLE, 'data'),
+        Output(DATATABLE.TABLE, 'columns'),
+        Output(DATATABLE.TABLE, 'page_count'),
     ],
     [
         # Input(LOAN.PAYMENT_OPTIONS, 'value'),
@@ -79,11 +79,11 @@ datatable = dash_table.DataTable(
         # Input(LOAN.SUBSIDY.METHOD, 'value'),
         Input(LOAN.SUBSIDY.TERM, 'value'),
         Input(LOAN.SUBSIDY.START, 'value'),
-        Input(DATA_TABLE, 'page_current'),
-        Input(PAGE_SIZE, 'value')  # 調整列數
+        Input(DATATABLE.TABLE, 'page_current'),
+        Input(DATATABLE.PAGE_SIZE, 'value')  # 調整列數
     ]
 )
-def update_data_table(
+def update_datatable(
     payment_options,
     loan_amount,
     down_rate,
@@ -140,7 +140,40 @@ if __name__ == "__main__":
         dbc.Row(
             [
                 dbc.Col(
-                    # 待輸入controls的物件
+                    html.Div(
+                        [
+                            dbc.Card(
+                                [
+                                    dbc.CardBody(
+                                        [
+                                            html.Div(
+                                                [
+                                                    MortgageOptions.amount,
+                                                    MortgageOptions.down_payment,
+                                                    MortgageOptions.grace,
+                                                    MortgageOptions.period,
+                                                    MortgageOptions.dropdown_refresh,
+                                                ]
+                                            ),
+                                            # 加入refreshabel_dropdown
+                                            html.Div(
+                                                [
+                                                    AdvanceOptions.accordion(
+                                                        content=[
+                                                            {
+                                                                'title': title,
+                                                                'children': children
+                                                            } for title, children in zip(['Prepayment',  'Subsidy'], [AdvanceOptions.prepayment(), AdvanceOptions.subsidy()])]
+                                                    )
+                                                ],
+                                            ),
+                                        ],
+                                    )
+                                ],
+                                body=True,
+                            )
+                        ]
+                    )
                 ),
                 dbc.Col(
                     [
