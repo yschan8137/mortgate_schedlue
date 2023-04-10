@@ -1,4 +1,4 @@
-# This file is for the tailor-made widgets for controls including refreshable dropdown, addon function for generating a dict for the combined input of payment arrangement.
+# This file is for the tailor-made widgets for controls including OPTIONS dropdown, addon function for generating a dict for the combined input of payment arrangement.
 
 from distutils.log import debug
 from re import S
@@ -26,6 +26,10 @@ def refreshable_dropdown(
         options: dict = amortization_types,
         disabled: bool = False,
 ):
+    """
+    There are two dropdown components in the layout: one for the payment options and the other for refreshing the options accordingly. 
+    Note that since there are two kinds of types, 'prepay' and 'subsidy', the IDs of the components are formatted as {'index': type, 'type': original ID of the component} in order to separate the types within the layout.
+    """
     dropdown = html.Div(
         [
             dbc.Label(label),
@@ -33,9 +37,8 @@ def refreshable_dropdown(
                 html.Div(
                     [
                         dcc.Dropdown(
-                            id=LOAN.DROPDOWN.REFRESHABLE + "_" + type,
+                            id={'index': type, 'type': LOAN.DROPDOWN.OPTIONS},
                             options=[*options],
-                            # options=to_dropdown_options([*options]),
                             value=[*options],
                             multi=True,
                             # searchable=True,
@@ -51,8 +54,7 @@ def refreshable_dropdown(
                     [
                         html.Button(
                             'Refresh',
-                            className=className.DROPDOWN_BUTTON,
-                            id=LOAN.DROPDOWN.BUTTON + "_" + type,
+                            id={'index': type, 'type': LOAN.DROPDOWN.BUTTON},
                             n_clicks=0
                         )
                     ]
@@ -65,8 +67,8 @@ def refreshable_dropdown(
 
     # Refresh the Dropdown of the Payment options
     @callback(
-        Output(LOAN.DROPDOWN.REFRESHABLE + "_" + type, 'value'),
-        Input(LOAN.DROPDOWN.BUTTON + "_" + type, 'n_clicks'),
+        Output({'index': MATCH, 'type': LOAN.DROPDOWN.OPTIONS}, 'value'),
+        Input({'index': MATCH, 'type': LOAN.DROPDOWN.BUTTON}, 'n_clicks'),
         prevent_initial_call=True
     )
     def refresh_options(_: int):
@@ -132,6 +134,7 @@ def addon(
 
 # Control the disabled status of the input and the add button.
 
+
     @callback(
         Output(suffix_for_type(ADDON.INPUT, type), 'disabled'),
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'disabled'),
@@ -161,7 +164,6 @@ def addon(
             dropdown_value,
             id={"index": dropdown_value,
                 "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)},
-            # id=dropdown_key,
             style={'width': '100%'},
             n_clicks=0,
         ) for dropdown_value in dropdown_items.values()
@@ -169,6 +171,7 @@ def addon(
 
 
 # update the label of the dbc.DropdownMenu to selected children in dbc.DropdownMenuItem.
+
 
     @callback(
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label'),
@@ -199,7 +202,6 @@ def addon(
 
 
 # callback for add button.
-
 
     @ callback(
         [
@@ -313,11 +315,14 @@ if __name__ == "__main__":
     from dash import Dash
     app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
     app.layout = html.Div(
-        addon(
-            type='prepay',
-            dropdown_list=[1, 2, 3],
-            dropdown_label="TimePoint",
-            placeholder="Input the timepoint",
-        )
+        [
+            refreshable_dropdown(label='Test'),
+            addon(
+                type='prepay',
+                dropdown_list=[1, 2, 3],
+                dropdown_label="TimePoint",
+                placeholder="Input the timepoint",
+            )
+        ]
     )
     app.run_server(debug=True)

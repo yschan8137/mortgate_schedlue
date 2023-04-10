@@ -1,6 +1,6 @@
 {
     "terminal.integrated.tabs.defaultColor": "terminal.ansiBlack",
-    "editor.wordWrap": "on",
+    "editor.wordWrap": "off",
     "editor.bracketPairColorization.enabled": false,
     "editor.folding": false,
     "editor.glyphMargin": false,
@@ -15,5 +15,7 @@
     "jupyter.interactiveWindow.textEditor.executeSelection": true,
     "python.analysis.typeCheckingMode": "basic",
     "editor.autoIndent": "full",
-    "editor.wrappingIndent": "same"
+    "editor.wrappingIndent": "same",
+    "diffEditor.wordWrap": "inherit",
+    "editor.wordWrapColumn": 150
 }

@@ -69,7 +69,7 @@ datatable = dash_table.DataTable(
     [
         # Input(LOAN.PAYMENT_OPTIONS, 'value'),
         Input(LOAN.AMOUNT, 'value'),
-        Input(LOAN.DOWN_PAYMENT_RATE, 'value'),
+        Input(LOAN.DOWNPAYMENT, 'value'),
         Input(LOAN.PERIOD, 'value'),
         Input(LOAN.GRACE, 'value'),
         # 改成suffix_for_type(ADDON.MEMORY, type)
@@ -105,7 +105,7 @@ def update_datatable(
         df = calculator(
             interest_arr={'interest': [1.38]},
             total_amount=loan_amount,
-            down_payment_rate=down_rate / 100,
+            downpayment=down_rate / 100,
             loan_period=loan_period,
             grace_period=grace_period,
             prepay_arr={

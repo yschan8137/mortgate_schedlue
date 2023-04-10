@@ -50,7 +50,7 @@ class MortgageOptions:
                         type='number',
                         name='Down Payment Rate',
                         required=True,
-                        id=LOAN.DOWN_PAYMENT_RATE,
+                        id=LOAN.DOWNPAYMENT,
                         min=0,
                         max=100,
                         step=10,

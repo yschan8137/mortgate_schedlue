@@ -110,7 +110,7 @@ def ARR_addons(
         out = []
         for res in result:
             for re in res:
-                if [] not in re:
+                if [] not in re:  # type: ignore
                     for r in re:
                         if r:
                             if isinstance(r, list):
@@ -277,6 +277,7 @@ def ARR_addons(
 
 # 3 Update the label of the dropdown menu.
 
+
     @callback(
         Output(ids.DROPDOWN.MENU, 'label'),
         Input(ids.CACHE, 'data'),
@@ -299,6 +300,7 @@ def ARR_addons(
 
 
 # 4 Update the timepoint list.
+
 
     @callback(
         Output(ids.MEMORY, 'data'),

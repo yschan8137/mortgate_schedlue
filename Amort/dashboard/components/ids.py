@@ -1,17 +1,16 @@
 class LOAN:
     # PAYMENT_OPTIONS = 'payment-options'
     AMOUNT = 'total-amount'
-    DOWN_PAYMENT_RATE = 'down-payment-rate'
+    DOWNPAYMENT = 'down-payment-rate'
     PERIOD = 'period'
     GRACE = 'grace-period'
 
     class DROPDOWN:
-        REFRESHABLE = 'refreshable-dropdown'
+        OPTIONS = 'payment options for loan in dropdown'
         BUTTON = 'refreshable-dropdown-button'
 
     class ARR:
         ADD = 'add-a-interest-or-payment-to-the-arrangement'
-        DROPDOWN = 'dropdown-for-arrange-options'
 
     class PREPAY:
         ARR = 'prepay-multi-arr'
