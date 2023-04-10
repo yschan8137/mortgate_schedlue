@@ -96,7 +96,7 @@ def addon(
             # That's the outcome what we want.
             dcc.Store(id=suffix_for_type(ADDON.MEMORY, type), data={}),
             dcc.Store(id=suffix_for_type(ADDON.DROPDOWN.ITEMS, type), data={}),
-            html.Div(id=suffix_for_type(ADDON.NEW_ITEMS, type)),
+            html.Div(id=suffix_for_type(ADDON.NEW, type)),
             html.Div(
                 [
                     dbc.DropdownMenu(
@@ -203,7 +203,7 @@ def addon(
 
     @ callback(
         [
-            Output(suffix_for_type(ADDON.NEW_ITEMS, type), 'children',
+            Output(suffix_for_type(ADDON.NEW, type), 'children',
                    allow_duplicate=True),  # type: ignore
             Output(suffix_for_type(ADDON.INPUT, type), 'value'),
             Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label',
@@ -284,7 +284,7 @@ def addon(
 
 # callback for delete button
     @callback(
-        Output(suffix_for_type(ADDON.NEW_ITEMS, type), 'children',
+        Output(suffix_for_type(ADDON.NEW, type), 'children',
                allow_duplicate=True),  # type: ignore
         Output(suffix_for_type(ADDON.MEMORY, type), 'data',
                allow_duplicate=True),  # type: ignore

@@ -25,7 +25,7 @@ class MortgageOptions:
                     type='number',
                     name='Mortgage Amount',
                     required=True,
-                    id=LOAN.TOTAL_AMOUNT,
+                    id=LOAN.AMOUNT,
                     placeholder='Input the mortgage amount',
                     min=0,
                     step=1,

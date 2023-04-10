@@ -18,7 +18,7 @@ rows_per_page = dbc.Row(
         dbc.Label('Rows per pages'),
         dbc.Input(
             type='number',
-            id=DATATABLE.PAGE_SIZE,
+            id=DATATABLE.PAGE.SIZE,
             value=12,
             min=1,
             max=481,
@@ -68,7 +68,7 @@ datatable = dash_table.DataTable(
     ],
     [
         # Input(LOAN.PAYMENT_OPTIONS, 'value'),
-        Input(LOAN.TOTAL_AMOUNT, 'value'),
+        Input(LOAN.AMOUNT, 'value'),
         Input(LOAN.DOWN_PAYMENT_RATE, 'value'),
         Input(LOAN.PERIOD, 'value'),
         Input(LOAN.GRACE, 'value'),
@@ -80,7 +80,7 @@ datatable = dash_table.DataTable(
         Input(LOAN.SUBSIDY.TERM, 'value'),
         Input(LOAN.SUBSIDY.START, 'value'),
         Input(DATATABLE.TABLE, 'page_current'),
-        Input(DATATABLE.PAGE_SIZE, 'value')  # 調整列數
+        Input(DATATABLE.PAGE.SIZE, 'value')  # 調整列數
     ]
 )
 def update_datatable(
