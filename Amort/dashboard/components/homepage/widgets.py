@@ -37,7 +37,7 @@ def refreshable_dropdown(
                 html.Div(
                     [
                         dcc.Dropdown(
-                            id={'index': type, 'type': LOAN.DROPDOWN.OPTIONS},
+                            id=suffix_for_type(LOAN.DROPDOWN.OPTIONS, type),
                             options=[*options],
                             value=[*options],
                             multi=True,
@@ -54,7 +54,7 @@ def refreshable_dropdown(
                     [
                         html.Button(
                             'Refresh',
-                            id={'index': type, 'type': LOAN.DROPDOWN.BUTTON},
+                            id=suffix_for_type(LOAN.DROPDOWN.BUTTON, type),
                             n_clicks=0
                         )
                     ]
@@ -67,8 +67,8 @@ def refreshable_dropdown(
 
     # Refresh the Dropdown of the Payment options
     @callback(
-        Output({'index': MATCH, 'type': LOAN.DROPDOWN.OPTIONS}, 'value'),
-        Input({'index': MATCH, 'type': LOAN.DROPDOWN.BUTTON}, 'n_clicks'),
+        Output(suffix_for_type(LOAN.DROPDOWN.OPTIONS, type), 'value'),
+        Input(suffix_for_type(LOAN.DROPDOWN.BUTTON, type), 'n_clicks'),
         prevent_initial_call=True
     )
     def refresh_options(_: int):
@@ -163,7 +163,7 @@ def addon(
         return [dbc.DropdownMenuItem(
             dropdown_value,
             id={"index": dropdown_value,
-                "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)},
+                "type": suffix_for_type(ADDON.DROPDOWN.MENUITEMS, type)},
             style={'width': '100%'},
             n_clicks=0,
         ) for dropdown_value in dropdown_items.values()
@@ -176,7 +176,7 @@ def addon(
     @callback(
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label'),
         Input({"index": ALL, "type": suffix_for_type(
-            ADDON.DROPDOWN.MENU, type)}, 'n_clicks'),
+            ADDON.DROPDOWN.MENUITEMS, type)}, 'n_clicks'),
         State(suffix_for_type(ADDON.MEMORY, type), 'data'),
         State(suffix_for_type(ADDON.DROPDOWN.ITEMS, type), 'data'),
         State(suffix_for_type(ADDON.DROPDOWN.LIST, type), 'data'),
@@ -319,7 +319,7 @@ if __name__ == "__main__":
             refreshable_dropdown(label='Test'),
             addon(
                 type='prepay',
-                dropdown_list=[1, 2, 3],
+                dropdown_list=[1, 2, 3, 4, 5],
                 dropdown_label="TimePoint",
                 placeholder="Input the timepoint",
             )

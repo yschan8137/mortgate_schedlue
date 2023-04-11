@@ -417,8 +417,8 @@ if __name__ == "__main__":
                                     [
                                         MortgageOptions.amount,
                                         MortgageOptions.down_payment,
-                                        MortgageOptions.grace,
                                         MortgageOptions.period,
+                                        MortgageOptions.grace,
                                         MortgageOptions.dropdown_refresh,
                                     ]
                                 ),

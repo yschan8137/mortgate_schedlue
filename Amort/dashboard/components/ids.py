@@ -37,6 +37,7 @@ class ADDON:
 
     class DROPDOWN:
         MENU = 'dropdown-menu'
+        MENUITEMS = 'items in  the dropdown menu'
         ITEMS = 'dropdown-items'
         LIST = 'dropdown-list'
 

@@ -2,10 +2,11 @@
 from dash import Dash, dcc, html, Input, Output, State, callback, register_page, page_registry, dash_table
 import dash_bootstrap_components as dbc
 
-from ..ids import LOAN, DATATABLE
+from ..ids import LOAN, DATATABLE, ADDON
 from Amort.loan import calculator
 from ..toolkit import convert_df_to_dash
 from .controls import MortgageOptions, AdvanceOptions
+from ..toolkit import suffix_for_type
 
 
 class config:
@@ -67,60 +68,66 @@ datatable = dash_table.DataTable(
         Output(DATATABLE.TABLE, 'page_count'),
     ],
     [
-        # Input(LOAN.PAYMENT_OPTIONS, 'value'),
         Input(LOAN.AMOUNT, 'value'),
+        # input for multistages interest.
+        Input(suffix_for_type(ADDON.MEMORY, 'loan'), 'value'),
         Input(LOAN.DOWNPAYMENT, 'value'),
         Input(LOAN.PERIOD, 'value'),
         Input(LOAN.GRACE, 'value'),
-        # 改成suffix_for_type(ADDON.MEMORY, type)
-        Input(LOAN.PREPAY.ARR, 'value'),
+        Input(suffix_for_type(LOAN.DROPDOWN.OPTIONS, 'loan'), 'value'),
+        # input for prepayment arrangement.
+        Input(suffix_for_type(ADDON.MEMORY, 'prepay'), 'value'),
         Input(LOAN.SUBSIDY.AMOUNT, 'value'),
-        Input(LOAN.SUBSIDY.INTEREST, 'value'),
-        # Input(LOAN.SUBSIDY.METHOD, 'value'),
-        Input(LOAN.SUBSIDY.TERM, 'value'),
+        # Input(LOAN.SUBSIDY.INTEREST, 'value'),
+        # input for interest arrangement of subsidy.
+        Input(suffix_for_type(ADDON.MEMORY, 'subsidy'), 'value'),
         Input(LOAN.SUBSIDY.START, 'value'),
+        Input(LOAN.SUBSIDY.TERM, 'value'),
+        Input(LOAN.SUBSIDY.GRACE, 'value'),
+        Input(suffix_for_type(LOAN.DROPDOWN.OPTIONS, 'subsidy'), 'value'),
         Input(DATATABLE.TABLE, 'page_current'),
         Input(DATATABLE.PAGE.SIZE, 'value')  # 調整列數
     ]
 )
 def update_datatable(
-    payment_options,
     loan_amount,
-    down_rate,
+    loan_interest_arr,
+    loan_down_rate,
     loan_period,
-    grace_period,
-    prepay_amount,
-    prepay_arr,  # []
-    subsidy_amount,  # []
-    subsidy_interest,  # []
-    subsidy_methods,  # []
+    loan_grace_period,
+    loan_payment_options,
+    prepay_arr,  # {'amonut': [], 'multi_arr': []}
+    subsidy_amount,
+    subsidy_interest_arr,  # {'interest': [], 'multi_arr': []} #思考切換單一及多段利率的方法
+    subsidy_start_time,
     subsidy_term,
-    subsidy_time,
+    subsidy_grace_period,
+    subsidy_payment_options,
     page_current,
     page_size_editable,
 ):
-    if payment_options == []:
+    if loan_payment_options == []:
         return None, None, None
     else:
         df = calculator(
             interest_arr={'interest': [1.38]},
             total_amount=loan_amount,
-            downpayment=down_rate / 100,
+            downpayment=loan_down_rate / 100,
             loan_period=loan_period,
-            grace_period=grace_period,
+            grace_period=loan_grace_period,
             prepay_arr={
-                'multi_arr': prepay_arr,
-                'amount': [prepay_amount],  # [2_000_000, 200_0000]
+                'multi_arr': prepay_arr['multi_arr'],
+                'amount': prepay_arr['amount'],  # [2_000_000, 200_0000]
             },
             subsidy_arr={
-                'interest': [subsidy_interest],  # [1.01],
+                'interest': subsidy_interest_arr['interest'],  # [1.01],
                 'multi_arr': [],
-                'time': subsidy_time,  # 24,
+                'time': subsidy_start_time,  # 24,
                 'amount': subsidy_amount,  # 2_300_000,
                 'term': subsidy_term,  # 20,
-                'method': subsidy_methods,
+                'method': subsidy_payment_options,
             },
-            method=payment_options
+            method=loan_payment_options
         )
         page_size_editable = (
             page_size_editable if page_size_editable > 0 else 1)
