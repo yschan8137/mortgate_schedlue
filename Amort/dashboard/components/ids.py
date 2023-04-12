@@ -5,13 +5,6 @@ class LOAN:
     PERIOD = 'period'
     GRACE = 'grace-period'
 
-    class DROPDOWN:
-        OPTIONS = 'payment options for loan in dropdown'
-        BUTTON = 'refreshable-dropdown-button'
-
-    class ARR:
-        ADD = 'add-a-interest-or-payment-to-the-arrangement'
-
     class PREPAY:
         ARR = 'prepay-multi-arr'
 
@@ -23,7 +16,16 @@ class LOAN:
         START = 'subsidy-applying-time'
         TERM = 'subsidy-term'
         GRACE = 'subsidy-grace-period'
-        METHOD = 'subsidy-pay-method'
+
+
+class ADVANCED:
+    class TOGGLE:
+        BUTTON = 'toggle button for multistages interest rate option'
+        ITEMS = 'items being toggled'
+
+    class DROPDOWN:
+        OPTIONS = 'payment options for loan in dropdown'
+        BUTTON = 'refreshable-dropdown-button'
 
 
 class ADDON:

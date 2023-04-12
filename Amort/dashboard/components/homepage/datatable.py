@@ -2,10 +2,10 @@
 from dash import Dash, dcc, html, Input, Output, State, callback, register_page, page_registry, dash_table
 import dash_bootstrap_components as dbc
 
-from ..ids import LOAN, DATATABLE, ADDON
+from ..ids import LOAN, DATATABLE, ADDON, ADVANCED
 from Amort.loan import calculator
 from ..toolkit import convert_df_to_dash
-from .controls import MortgageOptions, AdvanceOptions
+from .controls import MortgageOptions, AdvancedOptions
 from ..toolkit import suffix_for_type
 
 
@@ -74,7 +74,7 @@ datatable = dash_table.DataTable(
         Input(LOAN.DOWNPAYMENT, 'value'),
         Input(LOAN.PERIOD, 'value'),
         Input(LOAN.GRACE, 'value'),
-        Input(suffix_for_type(LOAN.DROPDOWN.OPTIONS, 'loan'), 'value'),
+        Input(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, 'loan'), 'value'),
         # input for prepayment arrangement.
         Input(suffix_for_type(ADDON.MEMORY, 'prepay'), 'value'),
         Input(LOAN.SUBSIDY.AMOUNT, 'value'),
@@ -84,7 +84,7 @@ datatable = dash_table.DataTable(
         Input(LOAN.SUBSIDY.START, 'value'),
         Input(LOAN.SUBSIDY.TERM, 'value'),
         Input(LOAN.SUBSIDY.GRACE, 'value'),
-        Input(suffix_for_type(LOAN.DROPDOWN.OPTIONS, 'subsidy'), 'value'),
+        Input(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, 'subsidy'), 'value'),
         Input(DATATABLE.TABLE, 'page_current'),
         Input(DATATABLE.PAGE.SIZE, 'value')  # 調整列數
     ]
@@ -165,12 +165,12 @@ if __name__ == "__main__":
                                             # 加入refreshabel_dropdown
                                             html.Div(
                                                 [
-                                                    AdvanceOptions.accordion(
+                                                    AdvancedOptions.accordion(
                                                         content=[
                                                             {
                                                                 'title': title,
                                                                 'children': children
-                                                            } for title, children in zip(['Prepayment',  'Subsidy'], [AdvanceOptions.prepayment(), AdvanceOptions.subsidy()])]
+                                                            } for title, children in zip(['Prepayment',  'Subsidy'], [AdvancedOptions.prepayment(), AdvancedOptions.subsidy()])]
                                                     )
                                                 ],
                                             ),

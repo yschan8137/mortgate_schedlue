@@ -37,7 +37,8 @@ def refreshable_dropdown(
                 html.Div(
                     [
                         dcc.Dropdown(
-                            id=suffix_for_type(LOAN.DROPDOWN.OPTIONS, type),
+                            id=suffix_for_type(
+                                ADVANCED.DROPDOWN.OPTIONS, type),
                             options=[*options],
                             value=[*options],
                             multi=True,
@@ -54,7 +55,7 @@ def refreshable_dropdown(
                     [
                         html.Button(
                             'Refresh',
-                            id=suffix_for_type(LOAN.DROPDOWN.BUTTON, type),
+                            id=suffix_for_type(ADVANCED.DROPDOWN.BUTTON, type),
                             n_clicks=0
                         )
                     ]
@@ -67,8 +68,8 @@ def refreshable_dropdown(
 
     # Refresh the Dropdown of the Payment options
     @callback(
-        Output(suffix_for_type(LOAN.DROPDOWN.OPTIONS, type), 'value'),
-        Input(suffix_for_type(LOAN.DROPDOWN.BUTTON, type), 'n_clicks'),
+        Output(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type), 'value'),
+        Input(suffix_for_type(ADVANCED.DROPDOWN.BUTTON, type), 'n_clicks'),
         prevent_initial_call=True
     )
     def refresh_options(_: int):
@@ -134,7 +135,6 @@ def addon(
 
 # Control the disabled status of the input and the add button.
 
-
     @callback(
         Output(suffix_for_type(ADDON.INPUT, type), 'disabled'),
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'disabled'),
@@ -172,7 +172,6 @@ def addon(
 
 # update the label of the dbc.DropdownMenu to selected children in dbc.DropdownMenuItem.
 
-
     @callback(
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label'),
         Input({"index": ALL, "type": suffix_for_type(
@@ -202,6 +201,7 @@ def addon(
 
 
 # callback for add button.
+
 
     @ callback(
         [

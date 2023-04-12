@@ -128,7 +128,7 @@ class MortgageOptions:
 
 
 @ dataclass
-class AdvanceOptions:
+class AdvancedOptions:
     # collapser
     @ classmethod
     def collapser(cls, id, label, children, **style):
@@ -215,7 +215,35 @@ class AdvanceOptions:
 
         return layout
 
-    # prepayment
+    @classmethod
+    def toggler(cls, original_item, toggled_item, options_items=['Multistages Interest Rate']):
+        layout = html.Div(
+            [
+                dbc.Checklist(
+                    options=[
+                        {'label': option, 'value': i} for (i, option) in enumerate(options_items, 0)
+                    ],
+                    value=[],
+                    id=ADVANCED.TOGGLE.BUTTON,
+                    inline=True,
+                    switch=True,
+                ),
+                html.Div(
+                    [original_item],
+                    id=ADVANCED.TOGGLE.ITEMS,
+                )
+            ]
+        )
+
+        @callback(
+            Output(ADVANCED.TOGGLE.ITEMS, 'children'),
+            Input(ADVANCED.TOGGLE.BUTTON, 'value')
+        )
+        def updtae_toggle_items(value):
+            if value:
+                return toggled_item
+        return layout
+        # prepayment
 
     @classmethod
     def prepayment(cls, type='prepay'):
@@ -425,12 +453,12 @@ if __name__ == "__main__":
                                 # 加入refreshabel_dropdown
                                 html.Div(
                                     [
-                                        AdvanceOptions.accordion(
+                                        AdvancedOptions.accordion(
                                             content=[
                                                 {
                                                     'title': title,
                                                     'children': children
-                                                } for title, children in zip(['Prepayment',     'Subsidy'], [AdvanceOptions.prepayment(),   AdvanceOptions.subsidy()])
+                                                } for title, children in zip(['Prepayment',     'Subsidy'], [AdvancedOptions.prepayment(),   AdvancedOptions.subsidy()])
                                             ]
                                         )
                                         # AdvanceOptions.collapser(
