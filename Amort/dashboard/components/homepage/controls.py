@@ -1,6 +1,7 @@
 # This file is the collection of control components for the homepage.
 
 from dataclasses import dataclass
+from gc import disable
 from dash import Dash, html, dcc, Input, Output, State, callback
 import dash_bootstrap_components as dbc
 from numpy import place
@@ -161,7 +162,7 @@ class MortgageOptions:
             if not period:
                 raise ValueError('''
                     Errors caused by absence the id of the term of the ordinary or subsidy loan.
-                    Please check the functions of 'MortgageOptions.term' and/or 'AdvancedOptions.subsidy()' are in the contorol options.  
+                    Please check the functions of 'MortgageOptions.term' and/or 'AdvancedOptions.subsidy()' are in the contorol options.
                 '''
                                  )
             if value[-1] == 1:
@@ -342,19 +343,6 @@ class AdvancedOptions:
                         ),
                         html.Div(
                             [
-                                dbc.Label('Subsidy Prepay Arrangement'),
-                                html.Div([
-                                    addon(
-                                        type=type,
-                                        dropdown_list=[],
-                                        dropdown_label='Select Subsidy Arrangement',
-                                        placeholder='Input Subsidy Arrangement',
-                                    )
-                                ],
-                                    id=LOAN.SUBSIDY.ARR,
-                                )]),
-                        html.Div(
-                            [
                                 dbc.Label('Subsidy Start timepoint'),
                                 dbc.Input(
                                     id=LOAN.SUBSIDY.START,
@@ -393,7 +381,29 @@ class AdvancedOptions:
                         refreshable_dropdown(
                             label='Subsidy Payment methods',
                             type='subsidt',
-                            options=amortization_types)
+                            options=amortization_types),
+                        html.Div(
+                            [
+                                dbc.Checklist(
+                                    options=[
+                                        {'label': 'Prepayment', 'value': 1},
+                                    ],
+                                    value=[0],
+                                    id=LOAN.SUBSIDY.PREPAY.OPTION,
+                                    inline=True,
+                                ),
+                                html.Div(
+                                    children=addon(
+                                        type=type,
+                                        dropdown_list=[],  # type: ignore
+                                        dropdown_label='Select Prepay Arrangement',
+                                        placeholder='Input Prepay Arrangement',
+                                        disabled=True,
+                                    ),
+                                    id=LOAN.SUBSIDY.PREPAY.ARR
+                                ),
+                            ]
+                        ),
                     ]
                 ),
             ],
@@ -409,17 +419,23 @@ class AdvancedOptions:
             return [v for v in range(start, period + start + 1)]
         # NOTE: 目前顯示標準為整個借貸週期，須評估實際計算是否須另外減start
 
-        # )
-        # @callback(
-        # Output(LOAN.SUBSIDY.AMOUNT, 'disabled'),
-        # Output(LOAN.SUBSIDY.ARR, 'disabled'),
-        # Input(LOAN.SUBSIDY.OPTION, 'value')
-        # )
-        # # def subsidy_option(value):
-        # if value:
-        # return False, False
-        # else:
-        # return True, True
+        @callback(
+            Output(suffix_for_type(ADDON.INPUT, type),
+                   'disabled', allow_duplicate=True),  # type: ignore
+            Output(suffix_for_type(ADDON.DROPDOWN.MENU, type),
+                   'disabled', allow_duplicate=True),  # type: ignore
+            Output(suffix_for_type(ADDON.ADD, type), 'disabled',
+                   allow_duplicate=True),  # type: ignore
+            Output(suffix_for_type(ADDON.DELETE, type), 'disabled',
+                   allow_duplicate=True),  # type: ignore
+            Input(LOAN.SUBSIDY.PREPAY.OPTION, 'value'),
+            prevent_initial_call=True
+        )
+        def control_disabled(value):
+            if value[-1] == 1:
+                return [False] * 4
+            else:
+                return [True] * 4
         return layout
 
 

@@ -9,13 +9,16 @@ class LOAN:
         ARR = 'multi arrangement of the prepayment'
 
     class SUBSIDY:
-        ARR = 'multi arrangement of the subsidy interest'
         # tricks: addition 'of the subsidy' to enable interoperability between loan and subsidy
         AMOUNT = 'the amount of the loan of the subsidy'
         INTEREST = 'the interest rate of the loan of the subsidy'
         START = 'subsidy-applying-time'
         TERM = 'the term of the loan of the subsidy'
         GRACE = 'the grace period of the loan of the subsidy'
+
+        class PREPAY:
+            OPTION = 'whether to set a prepaymet of the subsidy'
+            ARR = 'multi arrangement of the prepayment of the subsidy'
 
 
 class ADVANCED:
@@ -39,10 +42,10 @@ class ADDON:
     DISABLED = 'disabled'
 
     class DROPDOWN:
-        MENU = 'dropdown-menu'
-        MENUITEMS = 'items in  the dropdown menu'
-        ITEMS = 'dropdown-items'
-        LIST = 'dropdown-list'
+        MENU = 'dropdown menu'
+        MENUITEMS = 'items in the dropdown menu'
+        ITEMS = 'dropdown items'
+        LIST = 'dropdown list'
 
 
 class DATATABLE:
