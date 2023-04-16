@@ -1,27 +1,28 @@
 class LOAN:
-    # PAYMENT_OPTIONS = 'payment-options'
-    AMOUNT = 'total-amount'
-    DOWNPAYMENT = 'down-payment-rate'
-    PERIOD = 'period'
-    GRACE = 'grace-period'
+    AMOUNT = 'the amount of the loan'
+    DOWNPAYMENT = 'downpayment rate of the loan'
+    TERM = 'the term of the loan'
+    GRACE = 'the grace period of the loan'
+    INTEREST = 'the interest rate of the loan'
 
     class PREPAY:
-        ARR = 'prepay-multi-arr'
+        ARR = 'multi arrangement of the prepayment'
 
     class SUBSIDY:
-        ADJUSTABLE = 'determine whether the subsidy interest is adjustable rate'
-        ARR = 'subsidy-multi-arr'
-        AMOUNT = 'subsidy-amount'
-        INTEREST = 'subsidy-interest'
+        ARR = 'multi arrangement of the subsidy interest'
+        # tricks: addition 'of the subsidy' to enable interoperability between loan and subsidy
+        AMOUNT = 'the amount of the loan of the subsidy'
+        INTEREST = 'the interest rate of the loan of the subsidy'
         START = 'subsidy-applying-time'
-        TERM = 'subsidy-term'
-        GRACE = 'subsidy-grace-period'
+        TERM = 'the term of the loan of the subsidy'
+        GRACE = 'the grace period of the loan of the subsidy'
 
 
 class ADVANCED:
     class TOGGLE:
         BUTTON = 'toggle button for multistages interest rate option'
         ITEMS = 'items being toggled'
+        MEMORY = 'record regarding whether the toggle is on or off'
 
     class DROPDOWN:
         OPTIONS = 'payment options for loan in dropdown'

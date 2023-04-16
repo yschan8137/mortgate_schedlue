@@ -170,7 +170,8 @@ if __name__ == "__main__":
                                                             {
                                                                 'title': title,
                                                                 'children': children
-                                                            } for title, children in zip(['Prepayment',  'Subsidy'], [AdvancedOptions.prepayment(), AdvancedOptions.subsidy()])]
+                                                            } for title, children in zip(['Prepayment',     'Subsidy'], [AdvancedOptions.prepayment(),   AdvancedOptions.subsidy()])
+                                                        ]
                                                     )
                                                 ],
                                             ),

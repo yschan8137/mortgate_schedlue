@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from dash import Dash, html, dcc, Input, Output, State, callback
 import dash_bootstrap_components as dbc
+from numpy import place
 
 from .. import amortization_types
 from .widgets import refreshable_dropdown, addon
@@ -69,7 +70,7 @@ class MortgageOptions:
     )
 
     # Mortgage Period
-    period = html.Div(
+    term = html.Div(
         [
             dbc.Label(
                 'Mortgate Term',
@@ -82,7 +83,7 @@ class MortgageOptions:
                     value=30,
                     step=1,
                     type='number',
-                    id=LOAN.PERIOD,
+                    id=LOAN.TERM,
                     style={
                         'width': "10%",
                         'textAlign': 'left'
@@ -126,6 +127,66 @@ class MortgageOptions:
         ]
     )
 
+    @classmethod
+    def interest_rate(
+        cls,
+        type: str = None,  # type: ignore
+        label: str = 'Multistage Interest Rate',
+    ):
+        layout = html.Div(
+            [
+                dbc.Checklist(
+                    options=[
+                        {'label': label, 'value': 1}
+                    ],
+                    value=[0],
+                    id=suffix_for_type(ADVANCED.TOGGLE.BUTTON, type),
+                    inline=True,
+                    switch=True,
+                ),
+                html.Div(
+                    [],
+                    id=suffix_for_type(ADVANCED.TOGGLE.ITEMS, type),
+                )
+            ],
+            className='mb-3'
+        )
+
+        @callback(
+            Output(suffix_for_type(ADVANCED.TOGGLE.ITEMS, type), 'children'),
+            Input(suffix_for_type(ADVANCED.TOGGLE.BUTTON, type), 'value'),
+            State((LOAN.SUBSIDY.TERM if type == 'subsidy' else LOAN.TERM), 'value'),
+        )
+        def update_multistage_interest(value, period):
+            if not period:
+                raise ValueError('''
+                    Errors caused by absence the id of the term of the ordinary or subsidy loan.
+                    Please check the functions of 'MortgageOptions.term' and/or 'AdvancedOptions.subsidy()' are in the contorol options.  
+                '''
+                                 )
+            if value[-1] == 1:
+                return addon(
+                    type=type,  # type: ignore
+                    dropdown_list=[c for c in range(1, period)],
+                    dropdown_label='Multistage Interest Rate',
+                    placeholder='Input the interest rate',
+                )
+            else:
+                return html.Div(
+                    [
+                        dbc.Label('Applied Interest'),
+                        dbc.Input(
+                            id=suffix_for_type(LOAN.INTEREST, type),
+                            type='number',
+                            step=1,
+                            value=0,
+                            min=0,
+                        ),
+                    ]
+                )
+
+        return layout
+
 
 @ dataclass
 class AdvancedOptions:
@@ -161,7 +222,7 @@ class AdvancedOptions:
             style=style
         )
 
-        @callback(
+        @ callback(
             Output(f"collapse-{id}", "is_open"),
             Input(f"trigger-{id}", "n_clicks"),
             State(f"collapse-{id}", "is_open"),
@@ -174,11 +235,11 @@ class AdvancedOptions:
         return layout
 
     #  accordion
-    @classmethod
+    @ classmethod
     def accordion(cls, **kwargs):
         """
         Arguments:
-            - content(list): a list of dictionaries for the specification of title and children of the accordion as follows:
+            - content(list): a list of items for the specification of title and children of the accordion as follows:
                 [
                     {
                         'title': the title of the accordion,
@@ -215,51 +276,12 @@ class AdvancedOptions:
 
         return layout
 
-    @classmethod
-    def toggler(cls, original_item, toggled_item, options_items=['Multistages Interest Rate']):
-        layout = html.Div(
-            [
-                dbc.Checklist(
-                    options=[
-                        {'label': option, 'value': i} for (i, option) in enumerate(options_items, 0)
-                    ],
-                    value=[],
-                    id=ADVANCED.TOGGLE.BUTTON,
-                    inline=True,
-                    switch=True,
-                ),
-                html.Div(
-                    [original_item],
-                    id=ADVANCED.TOGGLE.ITEMS,
-                )
-            ]
-        )
+    # prepayment
 
-        @callback(
-            Output(ADVANCED.TOGGLE.ITEMS, 'children'),
-            Input(ADVANCED.TOGGLE.BUTTON, 'value')
-        )
-        def updtae_toggle_items(value):
-            if value:
-                return toggled_item
-        return layout
-        # prepayment
-
-    @classmethod
+    @ classmethod
     def prepayment(cls, type='prepay'):
         layout = dbc.Card(
             [
-                # dbc.CardHeader(
-                # dbc.Checklist(
-                # options=[
-                # {'label': 'Prepay Plan', 'value': 0},
-                # ],
-                # id=LOAN.PREPAY.OPTION,
-                # switch=True,
-                # inline=True,
-                # value=[]
-                # )
-                # ),
                 dbc.CardBody(
                     [
                         html.Div(
@@ -268,14 +290,6 @@ class AdvancedOptions:
                                     'Prepay Arrangement',
                                     size='md',
                                 ),
-                                # dbc.Input(
-                                # id=LOAN.PREPAY.AMOUNT,
-                                # type='number',
-                                # step=1,
-                                # value=[0],
-                                # min=[0],
-                                # disabled=True,
-                                # )
                             ]
                         ),
                         html.Div(
@@ -295,21 +309,9 @@ class AdvancedOptions:
             className="mb-3 w-100",
         )
 
-        # @callback(
-        # Output(LOAN.PREPAY.AMOUNT, 'disabled'),
-        # Output(suffix_for_type(ADDON.DISABLED, type),
-        #    'data'),  # refer to widgets.py
-        # Input(LOAN.PREPAY.OPTION, 'value')
-        # )
-        # def prepay_option(value):
-        # if value:
-        # return False  # , False
-        # else:
-        # return True  # , True
-
-        @callback(
+        @ callback(
             Output(suffix_for_type(ADDON.DROPDOWN.LIST, type), 'data'),
-            Input(LOAN.PERIOD, 'value'),
+            Input(LOAN.TERM, 'value'),
         )
         def update_prepay_arrangement(period):
             return [v for v in range(1, period + 1)]
@@ -317,7 +319,7 @@ class AdvancedOptions:
 
     # subsidy
 
-    @classmethod
+    @ classmethod
     def subsidy(cls, type='subsidy'):
         layout = dbc.Card(
             [
@@ -335,17 +337,8 @@ class AdvancedOptions:
                                 ),
                             ]
                         ),
-                        html.Div(
-                            [
-                                dbc.Label('Applied Interest'),
-                                dbc.Input(
-                                    id=LOAN.SUBSIDY.INTEREST,
-                                    type='number',
-                                    step=1,
-                                    value=0,
-                                    min=0,
-                                ),
-                            ]
+                        MortgageOptions.interest_rate(
+                            type=type,
                         ),
                         html.Div(
                             [
@@ -375,7 +368,7 @@ class AdvancedOptions:
                         ),
                         html.Div(
                             [
-                                dbc.Label('Subsidy Period'),
+                                dbc.Label('Subsidy Term'),
                                 dbc.Input(
                                     id=LOAN.SUBSIDY.TERM,
                                     type='number',
@@ -434,46 +427,46 @@ class AdvancedOptions:
 if __name__ == "__main__":
     app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-    app.layout = \
-        html.Div(
-            [
-                dbc.Card(
-                    [
-                        dbc.CardBody(
-                            [
-                                html.Div(
-                                    [
-                                        MortgageOptions.amount,
-                                        MortgageOptions.down_payment,
-                                        MortgageOptions.period,
-                                        MortgageOptions.grace,
-                                        MortgageOptions.dropdown_refresh,
-                                    ]
-                                ),
-                                # 加入refreshabel_dropdown
-                                html.Div(
-                                    [
-                                        AdvancedOptions.accordion(
-                                            content=[
-                                                {
-                                                    'title': title,
-                                                    'children': children
-                                                } for title, children in zip(['Prepayment',     'Subsidy'], [AdvancedOptions.prepayment(),   AdvancedOptions.subsidy()])
-                                            ]
-                                        )
-                                        # AdvanceOptions.collapser(
-                                        # id='prepayment', label='Prepayment',  children=AdvanceOptions.prepayment(), style= {'display': 'inline'}),
-                                        # AdvanceOptions.collapser(
-                                        # id='subsidy', label='Subsidy',    children=AdvanceOptions.subsidy(), style=  {'display': 'inline'}),
-                                    ],
-                                ),
-                            ],
-                        )
-                    ],
-                    body=True,
-                )
-            ]
-        )
+    app.layout = html.Div(
+        [
+            dbc.Card(
+                [
+                    dbc.CardBody(
+                        [
+                            html.Div(
+                                [
+                                    MortgageOptions.amount,
+                                    MortgageOptions.interest_rate(),
+                                    MortgageOptions.down_payment,
+                                    MortgageOptions.term,
+                                    MortgageOptions.grace,
+                                    MortgageOptions.dropdown_refresh,
+                                ]
+                            ),
+                            # 加入refreshabel_dropdown
+                            html.Div(
+                                [
+                                    AdvancedOptions.accordion(
+                                        content=[
+                                            {
+                                                'title': title,
+                                                'children': children
+                                            } for title, children in zip(['Prepayment',     'Subsidy'], [AdvancedOptions.prepayment(),   AdvancedOptions.subsidy()])
+                                        ]
+                                    )
+                                    # AdvanceOptions.collapser(
+                                    # id='prepayment', label='Prepayment',  children=AdvanceOptions.prepayment(), style= {'display': 'inline'}),
+                                    # AdvanceOptions.collapser(
+                                    # id='subsidy', label='Subsidy',    children=AdvanceOptions.subsidy(), style=  {'display': 'inline'}),
+                                ],
+                            ),
+                        ],
+                    )
+                ],
+                body=True,
+            )
+        ]
+    )
 
     app.run_server(debug=True)
 
