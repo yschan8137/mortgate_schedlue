@@ -122,7 +122,7 @@ class MortgageOptions:
         [
             refreshable_dropdown(
                 label='Payment methods',
-                type='loan',
+                type= LOAN.TYPE,
                 options=amortization_types
             )
         ]
@@ -156,7 +156,7 @@ class MortgageOptions:
         @callback(
             Output(suffix_for_type(ADVANCED.TOGGLE.ITEMS, type), 'children'),
             Input(suffix_for_type(ADVANCED.TOGGLE.BUTTON, type), 'value'),
-            State((LOAN.SUBSIDY.TERM if type == 'subsidy' else LOAN.TERM), 'value'),
+            State((LOAN.SUBSIDY.TERM if type == LOAN.SUBSIDY.TYPE else LOAN.TERM), 'value'),
         )
         def update_multistage_interest(value, period):
             if not period:
@@ -249,13 +249,12 @@ class AdvancedOptions:
                 ...
                 ]
             - style(dict): the style of the accordion
-            - away_open(bool): whether the accordion is always open
         """
         titles = [c.get('title', None) for c in kwargs.get('content', [])]
         childrens = [c.get('children', None)
                      for c in kwargs.get('content', [])]
         style = kwargs.get('style', None)
-        away_open = kwargs.get('away_open', False)
+        away_open = kwargs.get('away_open', True)
 
         layout = html.Div(
             [
@@ -263,16 +262,18 @@ class AdvancedOptions:
                     [
                         dbc.AccordionItem(
                             children=children,
-                            title=title
+                            title=title,
                         ) for title, children in zip(titles, childrens)
                     ],
                     id="accordion",
                     always_open=away_open,
                     start_collapsed=True,
                     flush=True,
+                    style=style,
+
                 ),
             ],
-            style=style,
+
         )
 
         return layout
@@ -280,34 +281,20 @@ class AdvancedOptions:
     # prepayment
 
     @ classmethod
-    def prepayment(cls, type='prepay'):
-        layout = dbc.Card(
+    def prepayment(cls, type=LOAN.PREPAY.TYPE):
+        layout = html.Div(
             [
-                dbc.CardBody(
-                    [
-                        html.Div(
-                            [
-                                dbc.Label(
-                                    'Prepay Arrangement',
-                                    size='md',
-                                ),
-                            ]
-                        ),
-                        html.Div(
-                            [
-                                addon(
-                                    type=type,
-                                    dropdown_list=[],
-                                    dropdown_label='Select Prepay Arrangement',
-                                    placeholder='Input Prepay Arrangement',
-                                )
-                            ],
-                            id=LOAN.PREPAY.ARR,
-                        )
-                    ]
+                dbc.Label(
+                    'Prepay Arrangement',
+                    size='md',
                 ),
-            ],
-            className="mb-3 w-100",
+                addon(
+                    type=type,
+                    dropdown_list=[],
+                    dropdown_label='Select Prepay Arrangement',
+                    placeholder='Input Prepay Arrangement',
+                )
+            ]
         )
 
         @ callback(
@@ -321,7 +308,7 @@ class AdvancedOptions:
     # subsidy
 
     @ classmethod
-    def subsidy(cls, type='subsidy'):
+    def subsidy(cls, type=LOAN.SUBSIDY.TYPE):
         layout = dbc.Card(
             [
                 dbc.CardBody(
@@ -380,7 +367,7 @@ class AdvancedOptions:
                         ),
                         refreshable_dropdown(
                             label='Subsidy Payment methods',
-                            type='subsidt',
+                            type=LOAN.SUBSIDY.TYPE,
                             options=amortization_types),
                         html.Div(
                             [
@@ -394,7 +381,8 @@ class AdvancedOptions:
                                 ),
                                 html.Div(
                                     children=addon(
-                                        type=type,
+                                        # addition of extra string to avoid conflict with other addons
+                                        type= LOAN.SUBSIDY.PREPAY.TYPE,
                                         dropdown_list=[],  # type: ignore
                                         dropdown_label='Select Prepay Arrangement',
                                         placeholder='Input Prepay Arrangement',
@@ -411,22 +399,23 @@ class AdvancedOptions:
         )
 
         @ callback(
-            Output(suffix_for_type(ADDON.DROPDOWN.LIST, type), 'data'),
+            Output(suffix_for_type(ADDON.DROPDOWN.LIST,
+                   LOAN.SUBSIDY.PREPAY.TYPE), 'data'),
             Input(LOAN.SUBSIDY.TERM, 'value'),
             Input(LOAN.SUBSIDY.START, 'value'),
         )
         def update_subsidy_arrangement(period, start):
-            return [v for v in range(start, period + start + 1)]
+            return [v for v in range(start, period + start)]
         # NOTE: 目前顯示標準為整個借貸週期，須評估實際計算是否須另外減start
 
         @callback(
-            Output(suffix_for_type(ADDON.INPUT, type),
+            Output(suffix_for_type(ADDON.INPUT, LOAN.SUBSIDY.PREPAY.TYPE),
                    'disabled', allow_duplicate=True),  # type: ignore
-            Output(suffix_for_type(ADDON.DROPDOWN.MENU, type),
+            Output(suffix_for_type(ADDON.DROPDOWN.MENU, LOAN.SUBSIDY.PREPAY.TYPE),
                    'disabled', allow_duplicate=True),  # type: ignore
-            Output(suffix_for_type(ADDON.ADD, type), 'disabled',
+            Output(suffix_for_type(ADDON.ADD, LOAN.SUBSIDY.PREPAY.TYPE), 'disabled',
                    allow_duplicate=True),  # type: ignore
-            Output(suffix_for_type(ADDON.DELETE, type), 'disabled',
+            Output(suffix_for_type(ADDON.DELETE, LOAN.SUBSIDY.PREPAY.TYPE), 'disabled',
                    allow_duplicate=True),  # type: ignore
             Input(LOAN.SUBSIDY.PREPAY.OPTION, 'value'),
             prevent_initial_call=True
@@ -463,6 +452,11 @@ if __name__ == "__main__":
                             html.Div(
                                 [
                                     AdvancedOptions.accordion(
+                                        style={
+                                            'display': 'inline',
+                                            'active-bg': 'red',
+
+                                        },
                                         content=[
                                             {
                                                 'title': title,

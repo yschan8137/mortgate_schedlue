@@ -17,5 +17,9 @@
     "editor.autoIndent": "full",
     "editor.wrappingIndent": "same",
     "diffEditor.wordWrap": "inherit",
-    "editor.wordWrapColumn": 150
+    "editor.wordWrapColumn": 150,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.autopep8"
+    },
+    "python.formatting.provider": "none"
 }

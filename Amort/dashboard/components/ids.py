@@ -4,9 +4,11 @@ class LOAN:
     TERM = 'the term of the loan'
     GRACE = 'the grace period of the loan'
     INTEREST = 'the interest rate of the loan'
+    TYPE = 'loan'
 
     class PREPAY:
         ARR = 'multi arrangement of the prepayment'
+        TYPE = 'prepayment'
 
     class SUBSIDY:
         # tricks: addition 'of the subsidy' to enable interoperability between loan and subsidy
@@ -15,10 +17,12 @@ class LOAN:
         START = 'subsidy-applying-time'
         TERM = 'the term of the loan of the subsidy'
         GRACE = 'the grace period of the loan of the subsidy'
+        TYPE = 'subsidy'
 
         class PREPAY:
             OPTION = 'whether to set a prepaymet of the subsidy'
             ARR = 'multi arrangement of the prepayment of the subsidy'
+            TYPE = 'prepayment of the subsidy'
 
 
 class ADVANCED:
