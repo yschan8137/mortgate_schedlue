@@ -2,23 +2,24 @@ class LOAN:
     AMOUNT = 'the amount of the loan'
     DOWNPAYMENT = 'downpayment rate of the loan'
     GRACE = 'the grace period of the loan'
-    INTEREST = 'the interest rate of the loan'
-    TYPE = 'loan'
-    OPTIONS = 'the repayment options of the loan'
     TERM = 'the term of the loan'
+    INTEREST = 'single interest rate applied tp total term of the loan'
+    OPTIONS = 'the repayment options of the loan'
+    TYPE = 'loan'
+    RESULT = 'the input result of the loan'
 
     class PREPAY:
-        ARR = 'multi arrangement of the prepayment'
+        # ARR = 'multi arrangement of the prepayment'
         TYPE = 'prepayment'
 
     class SUBSIDY:
         # tricks: addition 'of the subsidy' to enable interoperability between loan and subsidy
-        AMOUNT = 'the amount of the loan of the subsidy'
-        INTEREST = 'the interest rate of the loan of the subsidy'
-        START = 'subsidy-applying-time'
+        # AMOUNT = 'the amount of the loan of the subsidy'
+        # INTEREST = 'the interest rate of the loan of the subsidy'
         # TERM = 'the term of the loan of the subsidy' # avoid the duplication against the loan.
         # GRACE = 'the grace period of the loan of the subsidy'
-        OPTIONS = 'the repayment options of the loan of the subsidy'
+        # OPTIONS = 'the repayment options of the loan of the subsidy'
+        START = 'subsidy-applying-time'
         TYPE = 'subsidy'
 
         class PREPAY:

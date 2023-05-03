@@ -14,8 +14,8 @@ from ..ids import *
 from ..toolkit import suffix_for_type
 
 # TODO:
-# 1. resolve the issues of the missing id while accordion hasn't been toggled. 
-
+# [X] 1. resolve the issues of the missing id while accordion hasn't been toggled. 
+# [X] 2. collect the all result from all inputs.
 @dataclass
 class MortgageOptions:
     # Mortgage Amount
@@ -79,8 +79,6 @@ class MortgageOptions:
         return html.Div(
             [
                 dcc.Store(suffix_for_type('momory for the term', type), data= []),
-                # dcc.Store({'index': LOAN.TYPE, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.TYPE)}), # preloaded components
-                # dcc.Store({'index': LOAN.SUBSIDY.TYPE, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.TYPE)}), # preloaded components
                 dbc.Label(
                     'Mortgate Term',
                     size='md'
@@ -92,7 +90,7 @@ class MortgageOptions:
                         value=30,
                         step=1,
                         type='number',
-                        id={'index': LOAN.TYPE, 'type': suffix_for_type(LOAN.TERM, type)},
+                        id=suffix_for_type(LOAN.TERM, type),#{'index': LOAN.TYPE, 'type': suffix_for_type(LOAN.TERM, type)},
                         style={
                             'width': "10%",
                             'textAlign': 'left'
@@ -135,9 +133,7 @@ class MortgageOptions:
             )
         ]
     )
-    #之前用dbc.Checklist好像無法再更新callback
-    # 嘗試改成Input再加一個html.Div，記得刪掉value
-    # 或dbc.Collapes
+
     @classmethod
     def interest_rate(
         cls,
@@ -183,7 +179,6 @@ class MortgageOptions:
                          id= suffix_for_type('toggle to hide the options', type)
                      )
                      ],
-                    # id=suffix_for_type(ADVANCED.TOGGLE.ITEMS, type),
                 )
             ],
             className='mb-3'
@@ -193,38 +188,30 @@ class MortgageOptions:
             Output(suffix_for_type('toggle to hide the options', type), 'style'),
             Output(suffix_for_type('momory for the term', LOAN.TYPE), 'data', allow_duplicate=True), # type: ignore
             Input(suffix_for_type(ADVANCED.TOGGLE.BUTTON, type), 'value'),
-            State({'index': ALL, 'type': suffix_for_type(LOAN.TERM, LOAN.TYPE)}, 'value'),
+            State(suffix_for_type(LOAN.TERM, LOAN.TYPE), 'value'),
             State(suffix_for_type('momory for the term', LOAN.TYPE), 'data'),
             prevent_initial_call=True,
         )
         def toggle_options(
             value,
             term,
-            memory):
+            memory
+            ):
             if value[-1] == 1:
-                memory.append(term[0])
+                memory.append(term)
                 return {'display': 'block'}, {'display': 'none'}, memory
             else:
                 return {'display': 'none'}, {'display': 'block'}, memory
-        # @callback(
-            # Output(suffix_for_type(ADVANCED.TOGGLE.ITEMS, type), 'children'),
-            # Output(suffix_for_type('momory for the term', LOAN.TYPE), 'data', allow_duplicate=True), # type: ignore
-            # Input(suffix_for_type(ADVANCED.TOGGLE.BUTTON, type), 'value'),
-            # State({'index': ALL, 'type': suffix_for_type(LOAN.TERM, LOAN.TYPE)}, 'value'),
-            # State(suffix_for_type('momory for the term', LOAN.TYPE), 'data'),
-            # prevent_initial_call=True,
-        # )
-        # def update_multistage_interest(
-            # value, 
-            # term,
-            # memory
-            # ):
-            # if value[-1] == 1:
-                # memory.append(term[0])
-                # return 
-            # else:
-                # return 
-                       
+        
+        @callback(
+            Output(suffix_for_type('momory for the term', LOAN.TYPE), 'data', allow_duplicate=True), # type: ignore
+            Input(suffix_for_type(LOAN.TERM, LOAN.TYPE), 'value'),
+            State(suffix_for_type('momory for the term', LOAN.TYPE), 'data'),
+            prevent_initial_call=True,
+        )
+        def update_momery_of_term(term, memory):
+            memory.append(term)
+            return memory
 
         return layout
 
@@ -339,10 +326,11 @@ class AdvancedOptions:
 
         @ callback(
             Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, type)}, 'data'),
-            Input({'index': ALL, 'type': suffix_for_type(LOAN.TERM, LOAN.TYPE)}, 'value'),
+            Input(suffix_for_type(LOAN.TERM, type), 'value')
+            # Input({'index': ALL, 'type': suffix_for_type(LOAN.TERM, LOAN.TYPE)}, 'value'),
         )
-        def update_prepay_arrangement(period):
-            return [period[-1] + 1]
+        def update_prepay_arrangement(term):
+            return [term + 1]
         return layout
 
     # subsidy
@@ -357,7 +345,7 @@ class AdvancedOptions:
                             [
                                 dbc.Label('Subsidy Amount'),  # 優惠貸款金額
                                 dbc.Input(
-                                    id=LOAN.SUBSIDY.AMOUNT,
+                                    id=suffix_for_type(LOAN.AMOUNT, type),
                                     type='number',
                                     step=1,
                                     value=0,
@@ -443,17 +431,23 @@ class AdvancedOptions:
             prevent_initial_call=True,
         )
         def update_arrangement(memory):
-            # print('memory on controls line 416: ', memory)
-            return [memory[-1] + 1]                                          
+            if len(memory) == 0:
+                return PreventUpdate()
+            else:
+                return [memory[-1]]                                          
 
         @callback(
             Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.TYPE)}, 'data'),
             Input(suffix_for_type('momory for the term', LOAN.TYPE), 'data'),
             prevent_initial_call=True,
         )
-        def update_subsidy_arrangement(memory):
-            # print('memory on controls line 425: ', memory)
-            return [memory[-1] + 1]                                  
+        def update_subsidy_arrangement(
+            memory
+            ):
+            if len(memory) == 0:
+                return PreventUpdate()
+            else:
+                return [memory[-1]]                                  
 
         @callback(
             Output(suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.PREPAY.TYPE), 'data'), # type: ignore
