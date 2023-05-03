@@ -1,10 +1,11 @@
 class LOAN:
     AMOUNT = 'the amount of the loan'
     DOWNPAYMENT = 'downpayment rate of the loan'
-    TERM = 'the term of the loan'
     GRACE = 'the grace period of the loan'
     INTEREST = 'the interest rate of the loan'
     TYPE = 'loan'
+    OPTIONS = 'the repayment options of the loan'
+    TERM = 'the term of the loan'
 
     class PREPAY:
         ARR = 'multi arrangement of the prepayment'
@@ -15,8 +16,9 @@ class LOAN:
         AMOUNT = 'the amount of the loan of the subsidy'
         INTEREST = 'the interest rate of the loan of the subsidy'
         START = 'subsidy-applying-time'
-        TERM = 'the term of the loan of the subsidy'
-        GRACE = 'the grace period of the loan of the subsidy'
+        # TERM = 'the term of the loan of the subsidy' # avoid the duplication against the loan.
+        # GRACE = 'the grace period of the loan of the subsidy'
+        OPTIONS = 'the repayment options of the loan of the subsidy'
         TYPE = 'subsidy'
 
         class PREPAY:
@@ -50,6 +52,7 @@ class ADDON:
         MENUITEMS = 'items in the dropdown menu'
         ITEMS = 'dropdown items'
         LIST = 'dropdown list'
+        TRANSITION = 'transition'
 
 
 class DATATABLE:

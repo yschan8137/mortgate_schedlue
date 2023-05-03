@@ -1,8 +1,10 @@
-# This file is the collection of control components for the homepage.
+# This file is the collection of control components for the homepage.suffix_for_type(LOAN.TERM, type)
 
 from dataclasses import dataclass
 from gc import disable
-from dash import Dash, html, dcc, Input, Output, State, callback
+from sre_constants import IN
+from dash import Dash, html, dcc, Input, Output, State, callback, MATCH, ALL, ALLSMALLER
+from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from numpy import place
 
@@ -11,11 +13,12 @@ from .widgets import refreshable_dropdown, addon
 from ..ids import *
 from ..toolkit import suffix_for_type
 
-# Mortgage Amount
-
+# TODO:
+# 1. resolve the issues of the missing id while accordion hasn't been toggled. 
 
 @dataclass
 class MortgageOptions:
+    # Mortgage Amount
     amount = html.Div(
         [
             dbc.Label(
@@ -71,28 +74,33 @@ class MortgageOptions:
     )
 
     # Mortgage Period
-    term = html.Div(
-        [
-            dbc.Label(
-                'Mortgate Term',
-                size='md'
-            ),
-            dbc.Col(
-                dbc.Input(
-                    min=1,
-                    max=40,
-                    value=30,
-                    step=1,
-                    type='number',
-                    id=LOAN.TERM,
-                    style={
-                        'width': "10%",
-                        'textAlign': 'left'
-                    }
+    @classmethod
+    def term(cls, type): 
+        return html.Div(
+            [
+                dcc.Store(suffix_for_type('momory for the term', type), data= []),
+                # dcc.Store({'index': LOAN.TYPE, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.TYPE)}), # preloaded components
+                # dcc.Store({'index': LOAN.SUBSIDY.TYPE, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.TYPE)}), # preloaded components
+                dbc.Label(
+                    'Mortgate Term',
+                    size='md'
+                ),
+                dbc.Col(
+                    dbc.Input(
+                        min=1,
+                        max=40,
+                        value=30,
+                        step=1,
+                        type='number',
+                        id={'index': LOAN.TYPE, 'type': suffix_for_type(LOAN.TERM, type)},
+                        style={
+                            'width': "10%",
+                            'textAlign': 'left'
+                        }
+                    )
                 )
-            )
-        ]
-    )
+            ]
+        )
     # Grace Period
     grace = html.Div(
         [
@@ -122,17 +130,20 @@ class MortgageOptions:
         [
             refreshable_dropdown(
                 label='Payment methods',
-                type= LOAN.TYPE,
+                type= LOAN.OPTIONS,
                 options=amortization_types
             )
         ]
     )
-
+    #之前用dbc.Checklist好像無法再更新callback
+    # 嘗試改成Input再加一個html.Div，記得刪掉value
+    # 或dbc.Collapes
     @classmethod
     def interest_rate(
         cls,
         type: str = None,  # type: ignore
         label: str = 'Multistage Interest Rate',
+        placeholder='Input the interest rate',
     ):
         layout = html.Div(
             [
@@ -146,45 +157,74 @@ class MortgageOptions:
                     switch=True,
                 ),
                 html.Div(
-                    [],
-                    id=suffix_for_type(ADVANCED.TOGGLE.ITEMS, type),
+                    [html.Div(
+                        [
+                            addon(
+                                    type= type,  # type: ignore
+                                    dropdown_label= label,
+                                    pattern_matching= True, # avoid the errors regarding the nonexistent objects.
+                                    placeholder= placeholder,
+                            )
+                        ],
+                        style= {'display': 'none'},
+                        id= suffix_for_type('toggle to show the options', type)
+                    ),
+                     html.Div(
+                         [
+                             dbc.Label('Applied Interest'),
+                             dbc.Input(
+                                 id=suffix_for_type(LOAN.INTEREST, type),
+                                 type='number',
+                                 step=1,
+                                 value=0,
+                                 min=0,
+                             ),
+                         ],
+                         id= suffix_for_type('toggle to hide the options', type)
+                     )
+                     ],
+                    # id=suffix_for_type(ADVANCED.TOGGLE.ITEMS, type),
                 )
             ],
             className='mb-3'
         )
-
         @callback(
-            Output(suffix_for_type(ADVANCED.TOGGLE.ITEMS, type), 'children'),
+            Output(suffix_for_type('toggle to show the options', type), 'style'),
+            Output(suffix_for_type('toggle to hide the options', type), 'style'),
+            Output(suffix_for_type('momory for the term', LOAN.TYPE), 'data', allow_duplicate=True), # type: ignore
             Input(suffix_for_type(ADVANCED.TOGGLE.BUTTON, type), 'value'),
-            State((LOAN.SUBSIDY.TERM if type == LOAN.SUBSIDY.TYPE else LOAN.TERM), 'value'),
+            State({'index': ALL, 'type': suffix_for_type(LOAN.TERM, LOAN.TYPE)}, 'value'),
+            State(suffix_for_type('momory for the term', LOAN.TYPE), 'data'),
+            prevent_initial_call=True,
         )
-        def update_multistage_interest(value, period):
-            if not period:
-                raise ValueError('''
-                    Errors caused by absence the id of the term of the ordinary or subsidy loan.
-                    Please check the functions of 'MortgageOptions.term' and/or 'AdvancedOptions.subsidy()' are in the contorol options.
-                '''
-                                 )
+        def toggle_options(
+            value,
+            term,
+            memory):
             if value[-1] == 1:
-                return addon(
-                    type=type,  # type: ignore
-                    dropdown_list=[c for c in range(1, period)],
-                    dropdown_label='Multistage Interest Rate',
-                    placeholder='Input the interest rate',
-                )
+                memory.append(term[0])
+                return {'display': 'block'}, {'display': 'none'}, memory
             else:
-                return html.Div(
-                    [
-                        dbc.Label('Applied Interest'),
-                        dbc.Input(
-                            id=suffix_for_type(LOAN.INTEREST, type),
-                            type='number',
-                            step=1,
-                            value=0,
-                            min=0,
-                        ),
-                    ]
-                )
+                return {'display': 'none'}, {'display': 'block'}, memory
+        # @callback(
+            # Output(suffix_for_type(ADVANCED.TOGGLE.ITEMS, type), 'children'),
+            # Output(suffix_for_type('momory for the term', LOAN.TYPE), 'data', allow_duplicate=True), # type: ignore
+            # Input(suffix_for_type(ADVANCED.TOGGLE.BUTTON, type), 'value'),
+            # State({'index': ALL, 'type': suffix_for_type(LOAN.TERM, LOAN.TYPE)}, 'value'),
+            # State(suffix_for_type('momory for the term', LOAN.TYPE), 'data'),
+            # prevent_initial_call=True,
+        # )
+        # def update_multistage_interest(
+            # value, 
+            # term,
+            # memory
+            # ):
+            # if value[-1] == 1:
+                # memory.append(term[0])
+                # return 
+            # else:
+                # return 
+                       
 
         return layout
 
@@ -290,19 +330,19 @@ class AdvancedOptions:
                 ),
                 addon(
                     type=type,
-                    dropdown_list=[],
                     dropdown_label='Select Prepay Arrangement',
+                    pattern_matching=True,
                     placeholder='Input Prepay Arrangement',
                 )
             ]
         )
 
         @ callback(
-            Output(suffix_for_type(ADDON.DROPDOWN.LIST, type), 'data'),
-            Input(LOAN.TERM, 'value'),
+            Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, type)}, 'data'),
+            Input({'index': ALL, 'type': suffix_for_type(LOAN.TERM, LOAN.TYPE)}, 'value'),
         )
         def update_prepay_arrangement(period):
-            return [v for v in range(1, period + 1)]
+            return [period[-1] + 1]
         return layout
 
     # subsidy
@@ -326,7 +366,7 @@ class AdvancedOptions:
                             ]
                         ),
                         MortgageOptions.interest_rate(
-                            type=type,
+                            type= type,
                         ),
                         html.Div(
                             [
@@ -345,10 +385,10 @@ class AdvancedOptions:
                             [
                                 dbc.Label('Subsidy Term'),
                                 dbc.Input(
-                                    id=LOAN.SUBSIDY.TERM,
+                                    id= suffix_for_type(LOAN.TERM, type),
                                     type='number',
                                     step=1,
-                                    value=1,
+                                    value=20,
                                     min=1,
                                 )
                             ]
@@ -357,7 +397,7 @@ class AdvancedOptions:
                             [
                                 dbc.Label('Subsidy Grace Period'),
                                 dbc.Input(
-                                    id=LOAN.SUBSIDY.GRACE,
+                                    id=suffix_for_type(LOAN.GRACE, type),
                                     type='number',
                                     step=1,
                                     value=0,
@@ -367,7 +407,7 @@ class AdvancedOptions:
                         ),
                         refreshable_dropdown(
                             label='Subsidy Payment methods',
-                            type=LOAN.SUBSIDY.TYPE,
+                            type=suffix_for_type(LOAN.OPTIONS, type),
                             options=amortization_types),
                         html.Div(
                             [
@@ -383,7 +423,6 @@ class AdvancedOptions:
                                     children=addon(
                                         # addition of extra string to avoid conflict with other addons
                                         type= LOAN.SUBSIDY.PREPAY.TYPE,
-                                        dropdown_list=[],  # type: ignore
                                         dropdown_label='Select Prepay Arrangement',
                                         placeholder='Input Prepay Arrangement',
                                         disabled=True,
@@ -398,15 +437,34 @@ class AdvancedOptions:
             className="mb-3 w-auto",
         )
 
-        @ callback(
-            Output(suffix_for_type(ADDON.DROPDOWN.LIST,
-                   LOAN.SUBSIDY.PREPAY.TYPE), 'data'),
-            Input(LOAN.SUBSIDY.TERM, 'value'),
+        @callback(
+            Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.TYPE)}, 'data'),
+            Input(suffix_for_type('momory for the term', LOAN.TYPE), 'data'),
+            prevent_initial_call=True,
+        )
+        def update_arrangement(memory):
+            # print('memory on controls line 416: ', memory)
+            return [memory[-1] + 1]                                          
+
+        @callback(
+            Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.TYPE)}, 'data'),
+            Input(suffix_for_type('momory for the term', LOAN.TYPE), 'data'),
+            prevent_initial_call=True,
+        )
+        def update_subsidy_arrangement(memory):
+            # print('memory on controls line 425: ', memory)
+            return [memory[-1] + 1]                                  
+
+        @callback(
+            Output(suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.PREPAY.TYPE), 'data'), # type: ignore
+            Input(suffix_for_type(LOAN.TERM,  type), 'value'),
             Input(LOAN.SUBSIDY.START, 'value'),
         )
-        def update_subsidy_arrangement(period, start):
-            return [v for v in range(start, period + start)]
-        # NOTE: 目前顯示標準為整個借貸週期，須評估實際計算是否須另外減start
+        def update_subsidy_prepay_arrangement(
+            period,
+            start,
+            ):
+            return [period + start + 1]
 
         @callback(
             Output(suffix_for_type(ADDON.INPUT, LOAN.SUBSIDY.PREPAY.TYPE),
@@ -430,7 +488,7 @@ class AdvancedOptions:
 
 # py -m Amort.dashboard.components.homepage.controls
 if __name__ == "__main__":
-    app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+    app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
 
     app.layout = html.Div(
         [
@@ -441,9 +499,11 @@ if __name__ == "__main__":
                             html.Div(
                                 [
                                     MortgageOptions.amount,
-                                    MortgageOptions.interest_rate(),
+                                    MortgageOptions.interest_rate(
+                                        type= LOAN.TYPE,
+                                        ),
                                     MortgageOptions.down_payment,
-                                    MortgageOptions.term,
+                                    MortgageOptions.term(type= LOAN.TYPE),
                                     MortgageOptions.grace,
                                     MortgageOptions.dropdown_refresh,
                                 ]
@@ -461,13 +521,9 @@ if __name__ == "__main__":
                                             {
                                                 'title': title,
                                                 'children': children
-                                            } for title, children in zip(['Prepayment',     'Subsidy'], [AdvancedOptions.prepayment(),   AdvancedOptions.subsidy()])
+                                            } for title, children in zip(['Prepayment',  'Subsidy'], [AdvancedOptions.prepayment(),   AdvancedOptions.subsidy()])
                                         ]
                                     )
-                                    # AdvanceOptions.collapser(
-                                    # id='prepayment', label='Prepayment',  children=AdvanceOptions.prepayment(), style= {'display': 'inline'}),
-                                    # AdvanceOptions.collapser(
-                                    # id='subsidy', label='Subsidy',    children=AdvanceOptions.subsidy(), style=  {'display': 'inline'}),
                                 ],
                             ),
                         ],

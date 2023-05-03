@@ -5,76 +5,13 @@ from re import S
 from dash import dcc, html, Input, Output, State, callback, callback_context, MATCH, ALL, Patch  # type: ignore
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
+
 from ..toolkit import to_dropdown_options, suffix_for_type
 from ..ids import *
 from ..ids import LOAN, ADDON
 from .. import amortization_types
 import json
 
-
-class className:
-    DROPDOWN_BUTTON = 'dropdown-button'
-
-# build a refeshable dropdown that can refresh the options when the refresh button is clicked.
-
-
-def refreshable_dropdown(
-        label: str,
-        # ['prepay', 'subsidy'] Consider the case of duplicate ids.
-        type: str = 'prepay',
-        placeholder: str = 'Choose methods of the payment',
-        options: dict = amortization_types,
-        disabled: bool = False,
-):
-    """
-    There are two dropdown components in the layout: one for the payment options and the other for refreshing the options accordingly. 
-    Note that since there are two kinds of types, 'prepay' and 'subsidy', the IDs of the components are formatted as {'index': type, 'type': original ID of the component} in order to separate the types within the layout.
-    """
-    dropdown = html.Div(
-        [
-            dbc.Label(label),
-            html.Div([
-                html.Div(
-                    [
-                        dcc.Dropdown(
-                            id=suffix_for_type(
-                                ADVANCED.DROPDOWN.OPTIONS, type),
-                            options=[*options],
-                            value=[*options],
-                            multi=True,
-                            # searchable=True,
-                            placeholder=placeholder,
-                            disabled=disabled,
-                            style={
-                                "width": "67%",
-                            }
-                        )
-                    ],
-                ),
-                dbc.Col(
-                    [
-                        html.Button(
-                            'Refresh',
-                            id=suffix_for_type(ADVANCED.DROPDOWN.BUTTON, type),
-                            n_clicks=0
-                        )
-                    ]
-                )
-            ],
-            ),
-        ],
-        className='mb-3'
-    )
-
-    # Refresh the Dropdown of the Payment options
-    @callback(
-        Output(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type), 'value'),
-        Input(suffix_for_type(ADVANCED.DROPDOWN.BUTTON, type), 'n_clicks'),
-        prevent_initial_call=True
-    )
-    def refresh_options(_: int):
-        return [*options]
-    return dropdown
 
 # Addons function for the payment arrangement.
 # For further information, please refer to the documentation of the addon function in the file Amort\test\ADDON.py.
@@ -83,18 +20,35 @@ def refreshable_dropdown(
 def addon(
         # Type need to be indicated within ['prepay', 'subsidy'] to distinguish the different dropdowns.
         type: str,
-        dropdown_list: list,
+        # dropdown_list: list,
         dropdown_label: str,
         placeholder: str,
+        pattern_matching=False,
         disabled: bool = False,
 
 
 ):
+    """
+    The addon function is used to generate a dict for the combined input of payment arrangement.
+    The "suffix_for_type()" function is imported from the toolkit module to make format of the id match the type which specified in the argument, to distinguish the different dropdowns.
+
+    Note that the callback function with {'index': type, 'type': ADDON.DROPDOWN.LIST} as its id of the Output component, to provide the dropdown list for the dropdown menu. for example:
+
+    @callback(
+        Output({'index': type, 'type': ADDON.DROPDOWN.LIST}, 'data'),
+        Input(suffix_for_type(LOAN.TERM), 'value'),
+    )
+    def update_dropdown_list(term: int):
+        return [c for c in range(1, term + 1)]
+
+    """
 
     layout = html.Div(
         [
-            dcc.Store(id=suffix_for_type(ADDON.DROPDOWN.LIST, type),
-                      data=[1] if dropdown_list is None else dropdown_list),
+            dcc.Store(id={False: suffix_for_type(ADDON.DROPDOWN.LIST, type),
+                          True: {'index': type, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, type)}}[pattern_matching],
+                      data=0
+                      ),
             dcc.Store(id=suffix_for_type(ADDON.DISABLED, type), data=disabled),
             # That's the outcome what we want.
             dcc.Store(id=suffix_for_type(ADDON.MEMORY, type), data={}),
@@ -111,6 +65,7 @@ def addon(
                     ),
                     dcc.Input(id=suffix_for_type(ADDON.INPUT, type),
                               type='number',
+                              min=0,
                               placeholder=placeholder,
                               disabled=disabled,
                               ),
@@ -151,13 +106,16 @@ def addon(
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'children'),
         Output(suffix_for_type(ADDON.DROPDOWN.ITEMS, type), 'data'),
         Input(suffix_for_type(ADDON.MEMORY, type), 'data'),
-        Input(suffix_for_type(ADDON.DROPDOWN.LIST, type), 'data'),
+        Input({False: suffix_for_type(ADDON.DROPDOWN.LIST, type),
+               True: {'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, type)}}[pattern_matching], 'data'),
+        prevent_initial_call=True
     )
     def load_layout(
         memory,
         lst,
     ):
-        lst = [str(element) for element in lst]
+        print('lst on widgets line 118 is triggered: ', lst)
+        lst = [element for element in range(1, int(lst[-1]) + 1)]
         dropdown_items = {f'{suffix_for_type(ADDON.DROPDOWN.MENU, type)}_{i+1}': item for i, item in enumerate(
             [str(v) for v in lst]) if item not in memory}
         return [dbc.DropdownMenuItem(
@@ -172,15 +130,16 @@ def addon(
 
 # update the label of the dbc.DropdownMenu to selected children in dbc.DropdownMenuItem.
 
+
     @callback(
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label'),
         Input({"index": ALL, "type": suffix_for_type(
             ADDON.DROPDOWN.MENUITEMS, type)}, 'n_clicks'),
         State(suffix_for_type(ADDON.MEMORY, type), 'data'),
         State(suffix_for_type(ADDON.DROPDOWN.ITEMS, type), 'data'),
-        State(suffix_for_type(ADDON.DROPDOWN.LIST, type), 'data'),
-        # [Input(dropdown_key, 'n_clicks')
-        #  for dropdown_key in dropdown_items.keys()],
+        State({False: suffix_for_type(ADDON.DROPDOWN.LIST, type),
+               True: {'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, type)}
+               }[pattern_matching], 'data'),
         prevent_initial_call=True
     )
     def update_dropdown_label(_, memory, dropdown_items, dropdown_list):
@@ -201,7 +160,6 @@ def addon(
 
 
 # callback for add button.
-
 
     @ callback(
         [
@@ -310,16 +268,80 @@ def addon(
     return layout
 
 
+# build a refeshable dropdown that can refresh the options when the refresh button is clicked.
+
+
+def refreshable_dropdown(
+        label: str,
+        # ['prepay', 'subsidy'] Consider the case of duplicate ids.
+        type: str = 'prepay',
+        placeholder: str = 'Choose methods of the payment',
+        options: dict = amortization_types,
+        disabled: bool = False,
+):
+    """
+    There are two dropdown components in the layout: one for the payment options and the other for refreshing the options accordingly. 
+    Note that since there are two kinds of types, 'prepay' and 'subsidy', 
+    the IDs of the components are formatted as {'index': type, 'type': original ID of the component} in order to separate the types within the layout.
+    """
+    dropdown = html.Div(
+        [
+            dbc.Label(label),
+            html.Div([
+                html.Div(
+                    [
+                        dcc.Dropdown(
+                            id=suffix_for_type(
+                                ADVANCED.DROPDOWN.OPTIONS, type),
+                            options=[*options],
+                            value=[*options],
+                            multi=True,
+                            # searchable=True,
+                            placeholder=placeholder,
+                            disabled=disabled,
+                            style={
+                                "width": "67%",
+                            }
+                        )
+                    ],
+                ),
+                dbc.Col(
+                    [
+                        html.Button(
+                            'Refresh',
+                            id=suffix_for_type(ADVANCED.DROPDOWN.BUTTON, type),
+                            n_clicks=0
+                        )
+                    ]
+                )
+            ],
+            ),
+        ],
+        className='mb-3'
+    )
+
+    # Refresh the Dropdown of the Payment options
+    @callback(
+        Output(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type), 'value'),
+        Input(suffix_for_type(ADVANCED.DROPDOWN.BUTTON, type), 'n_clicks'),
+        prevent_initial_call=True
+    )
+    def refresh_options(_: int):
+        return [*options]
+    return dropdown
+
+
 # py -m Amort.dashboard.components.homepage.widgets
 if __name__ == "__main__":
     from dash import Dash
-    app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+    app = Dash(__name__, external_stylesheets=[
+               dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
     app.layout = html.Div(
         [
             refreshable_dropdown(label='Test'),
             addon(
-                type='prepay',
-                dropdown_list=[1, 2, 3, 4, 5],
+                type='test',
+                # dropdown_list=[1, 2],
                 dropdown_label="TimePoint",
                 placeholder="Input the timepoint",
             )
