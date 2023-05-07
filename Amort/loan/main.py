@@ -51,7 +51,7 @@ def calculator(
 
     6. method(list): The payment method applied to the ordinary loan installment. The default options include [Eqaul Total] and [Equal Principal] which stand for eqaul total payment and equal principal payment respectively.
 
-    7. subsidy_arr(dict): The arrangement of the subsidy loan which includes:
+    7. subsidy_arr(dict): The arrangement of the subsidy loan, which includes:
 
         (1) interest(List): The interest rate(s) applied to specific period(s) of the loan.
 
@@ -59,14 +59,21 @@ def calculator(
 
         (3) time(int): The timepoint at which the subsidy loan is applied.
 
-        (4) grace_time(int): The grace period of the subsidy loan.
+        (4) grace_period(int): The grace period of the subsidy loan.
 
         (5) amount(int): The amount of the subsidy loan.
 
         (6) term(int): The term of the subsidy loan.
 
         (7) method(dict): The payment method applied to the subsidy loan installment. The default options include [Eqaul Total] and [Equal Principal] which stand for eqaul total payment and equal principal payment respectively.
-    8. prepay_arr:
+    
+        (8) prepay_arr(dict)(Optional): The arrangement of the prepayment of the subsidy loan, which includes:
+    
+            i. amount(List): Prepaid amount(s) applied to specific period(s) of the loan.
+            
+            ii. multi_arr(List)(Optional): The according period(s) of the prepayment.
+    
+    8. prepay_arr: The arrangement of the prepayment of the loan, which includes:
 
         (1) amount(List): Prepaid amount(s) applied to specific period(s) of the loan. 
 
@@ -192,15 +199,15 @@ def calculator(
         subsidy_prepay_time = _time_(
             subsidy_time=subsidy_subsidy_time,
             loan_period=loan_period,
-            prepay_arr={'multi_arr': kwargs.get('subsidy_arr', {}).get('prepay', {}).get('time', 0)})
+            prepay_arr={'multi_arr': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)})
         subsidy_prepay_amount = _amount_(
             prepay_time=subsidy_prepay_time,
             subsidy_time=subsidy_subsidy_time,
             loan_period=loan_period,
             subsidy_amount=subsidy_subsidy_amount,  # type: ignore
             prepay_arr={
-                'amount': kwargs.get('subsidy_arr', {}).get('prepay', {}).get('amount', 0),
-                'multi_arr': kwargs.get('subsidy_arr', {}).get('prepay', {}).get('time', 0)}
+                'amount': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('amount', 0),
+                'multi_arr': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)}
         )
         subsidy_interest_arr = {
             'interest': kwargs.get('subsidy_arr', {}).get('interest', 0),
@@ -249,7 +256,7 @@ def calculator(
             axis=1
         ).fillna(0)
 
-    # 加總原始貸款與補貼貸，款並新增償還總額欄位
+    # 加總原始貸款與補貼貸款並新增償還總額欄位
         # 將原始貸款選定的還款方式對應到房貸補貼對應的還款方式進行配對，以便篩出欄位加總
         idx = [
             [args, args_subsidy]
@@ -281,7 +288,7 @@ def calculator(
 if __name__ == "__main__":
     print(
         calculator(
-            interest_arr={'interest': [1.38]},
+            interest_arr={'interest': [1.38], 'multi_arr': []},
             total_amount=10_000_000,
             down_payment_rate=0.2,
             loan_period=40,
@@ -295,6 +302,8 @@ if __name__ == "__main__":
                 'time': 24,
                 'amount': 2_300_000,
                 'term': 20,
+                'grace_period': 0,
+                'prepay_arr': {'amount': [], 'multi_arr': []},
                 'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
             },
             method=['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']

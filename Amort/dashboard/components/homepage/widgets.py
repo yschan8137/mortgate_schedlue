@@ -94,7 +94,6 @@ def addon(
 
 # Control the disabled status of the input and the add button.
 
-
     @callback(
         Output(suffix_for_type(ADDON.INPUT, type), 'disabled'),
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'disabled'),
@@ -117,9 +116,10 @@ def addon(
     )
     def load_layout(
         memory,
-        lst,
+        lst: list,
     ):
-        lst = [element for element in range(1, int(lst[-1]) + 1)]
+        lst = [element for element in range(
+            int(lst[-1][0]), int(lst[-1][-1]) + 1)]
         dropdown_items = {f'{suffix_for_type(ADDON.DROPDOWN.MENU, type)}_{i+1}': item for i, item in enumerate(
             [str(v) for v in lst]) if item not in memory}
         return [dbc.DropdownMenuItem(
@@ -133,6 +133,7 @@ def addon(
 
 
 # update the label of the dbc.DropdownMenu to selected children in dbc.DropdownMenuItem.
+
 
     @callback(
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label'),
@@ -163,7 +164,6 @@ def addon(
 
 
 # callback for add button.
-
 
     @ callback(
         [
