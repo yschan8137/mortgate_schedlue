@@ -671,7 +671,7 @@ def layout():
         subsidy_result,
         prepay_result,
     ):
-        print('result: ', {**loan_result, **subsidy_result, **prepay_result})
+        # print('result: ', {**loan_result, **subsidy_result, **prepay_result})
         return {**loan_result, **subsidy_result, **prepay_result}
     return layout
 
