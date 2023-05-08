@@ -5,19 +5,18 @@ class LOAN:
     TERM = 'the term of the loan'
     INTEREST = 'single interest rate applied tp total term of the loan'
     OPTIONS = 'the repayment options of the loan'
-    TYPE = 'loan'
+    TYPE = 'Loan'
     RESULT = 'the input results'
 
     class PREPAY:
-        # ARR = 'multi arrangement of the prepayment'
-        TYPE = 'prepayment'
+        TYPE = 'Prepayment'
 
     class SUBSIDY:
         # tricks: addition 'of the subsidy' to enable interoperability between loan and subsidy
         # avoid the duplication against the loan.
         TERM = 'the term of the loan of the subsidy'
         START = 'subsidy-applying-time'
-        TYPE = 'subsidy'
+        TYPE = 'Subsidy'
 
         class PREPAY:
             OPTION = 'whether to set a prepaymet of the subsidy'

@@ -64,15 +64,19 @@ def addon(
                         [],
                         label=dropdown_label,
                         id=suffix_for_type(ADDON.DROPDOWN.MENU, type),
-                        style={'width': "100%"},
                         disabled=disabled,
                     ),
-                    dcc.Input(id=suffix_for_type(ADDON.INPUT, type),
+                    dbc.Input(id=suffix_for_type(ADDON.INPUT, type),
                               type='number',
+                              step=0.01,
                               min=0,
+                              max=100,
                               placeholder=placeholder,
-                              disabled=disabled,
-                              ),
+                              style={
+                        #   'width': '60%'
+                    },
+                        disabled=disabled,
+                    ),
                     dbc.Button(
                         id=suffix_for_type(ADDON.ADD, type),
                         color="primary",
@@ -86,13 +90,17 @@ def addon(
                         disabled=disabled,
                     )
                 ],
-                style={'display': 'inline-flex'},
+                style={
+                    'display': 'inline-flex',
+                    "maxWidth": "400px"
+                },
             ),
         ]
     )
 
 
 # Control the disabled status of the input and the add button.
+
 
     @callback(
         Output(suffix_for_type(ADDON.INPUT, type), 'disabled'),
@@ -126,14 +134,13 @@ def addon(
             dropdown_value,
             id={"index": dropdown_value,
                 "type": suffix_for_type(ADDON.DROPDOWN.MENUITEMS, type)},
-            style={'width': '100%'},
+            style={"maxWidth": "400px"},
             n_clicks=0,
         ) for dropdown_value in dropdown_items.values()
         ], dropdown_items
 
 
 # update the label of the dbc.DropdownMenu to selected children in dbc.DropdownMenuItem.
-
 
     @callback(
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label'),
@@ -164,6 +171,7 @@ def addon(
 
 
 # callback for add button.
+
 
     @ callback(
         [
@@ -243,6 +251,7 @@ def addon(
                             "display": "inline-block",
                             "margin": "5px",
                             'margin-right': '5px',
+                            "maxWidth": "400px"
                         },
                     ),
                 ],

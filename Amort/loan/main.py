@@ -95,7 +95,8 @@ def calculator(
             'grace_period': int,
             'amount': int,
             'term': int,
-            'method': list
+            'method': list,
+            'prepay_arr': dict
         },
         'prepay_arr':
         {

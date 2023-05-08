@@ -77,7 +77,7 @@ def scheduler(
     """
     The scheduler of the applied interest (feasible for single and multistage loan interest rate), loan and loan prepayment.
     Arguments:
-    1. loan_period (yearly basis): 
+    1. loan_period (on a yearly basis): 
       Length of total loan period.
 
     2. interest_arr:
@@ -88,7 +88,7 @@ def scheduler(
           Singlestage rate is not required to specified the [multi_arr], the value would be set as [0] by default. 
           Note: [mulit_arr] should be specified as list and the number of the elements is restricted to be the (number of applied interest - 1). 
 
-    3. loan (yearly basis): The total amount of the loan.    
+    3. loan (on a yearly basis): The total amount of the loan.    
 
     4. prepay_arr 
       4.1 prepay: The total amount of the loan prepayment(s). If prepayment occured multiple times within the loan period, the prepayments should be set in list.
@@ -100,17 +100,18 @@ def scheduler(
 
     Example:
 
-        Suppose a 10-year multi-stage interest rate loan of 500,000, with the interest rate changing at t=12, and a prepayment of 200,000 at t=5, and another prepayment of 400,000 at t=60. The payment schedule will be:
+        Suppose a 10-year multi-stage interest rate loan of 500,000 with the interest rate changing at t=12, along with prepayments of 200,000 at t=5 and at t=60. 
+        The arguments setting would be as follows:
 
         scheduler(
-          loan_period=10, 
+          loan_period= 10, 
           interest_arr= {
             'interest': [1.38, 1.01],
             'multi_arr': [12]
           }, 
           loan= 500_000,
           prepay_arr = {
-            'amount': [200_000, 400_000],
+            'amount': [200_000, 200_000],
             'multi_arr': [5, 60]
           }
        )
@@ -193,7 +194,7 @@ payment = scheduler(
     },
     loan=500_000,
     prepay_arr={
-        'amount': [200_000, 400_000],
+        'amount': [200_000, 200_000],
         'multi_arr': [5, 60]
     }
 )
