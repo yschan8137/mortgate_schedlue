@@ -158,11 +158,11 @@ class MortgageOptions:
                             [
                                 dbc.Input(
                                     id=suffix_for_type(LOAN.INTEREST, type),
-                                    type='float',
+                                    type='number',
                                     step= 0.01,
                                     value=value,
-                                    min=0.0,
-                                    max= 100.0
+                                    min=0,
+                                    max= 100
                                 ),
                                 dbc.InputGroupText('%')
                             ],

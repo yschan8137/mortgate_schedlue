@@ -178,6 +178,9 @@ def calculator(
         df_epp = _df_(res_epp)
         dfs_ordinry[amortization_methods['EQUAL_PRINCIPAL']] = df_epp
 
+    if dfs_ordinry == {}:
+        raise ValueError('The method(s) of amortization are not specified.')
+
     df = pd.concat(
         objs=[*dfs_ordinry.values()],
         keys=[*dfs_ordinry.keys()],
@@ -246,6 +249,11 @@ def calculator(
             keys=multi_index_subsidy,
             axis=1
         )
+
+        if df_subsidy.empty:
+            raise ValueError(
+                'The method(s) of amortization for subsidy loan are not specified.')
+
         # Add the level_0 header if subsidy_arr is given.
         df.columns = pd.MultiIndex.from_tuples(
             [('原始貸款', k, v) for (k, v) in df.columns]
