@@ -27,8 +27,8 @@ class df_schema:
 def calculator(
     interest_arr: dict,
     total_amount: int,
-    loan_period: int,
-    down_payment_rate: float = 0.2,
+    tenure: int,
+    down_payment_rate: int = 20,
     grace_period: int = 0,
     # ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
     method: list[str] = [*amortization_methods.keys()],
@@ -43,9 +43,9 @@ def calculator(
 
     2. total_amount(int): The total amount of the loan.
 
-    3. loan_period(int): The loan period of the loan. 
+    3. tenure(int): The loan period of the loan. 
 
-    4. down_payment_rate(float): The down payment rate of the loan. The default value is 0.2.
+    4. down_payment_rate(float): The down payment rate of the loan. The default value is 20.
 
     5. grace_period(int): The grace period of the loan. The default value is 0.
 
@@ -63,7 +63,7 @@ def calculator(
 
         (5) amount(int): The amount of the subsidy loan.
 
-        (6) term(int): The term of the subsidy loan.
+        (6) tenure(int): The tenure of the subsidy loan.
 
         (7) method(dict): The payment method applied to the subsidy loan installment. The default options include [Eqaul Total] and [Equal Principal] which stand for eqaul total payment and equal principal payment respectively.
     
@@ -94,7 +94,7 @@ def calculator(
             'time': int,
             'grace_period': int,
             'amount': int,
-            'term': int,
+            'tenure': int,
             'method': list,
             'prepay_arr': dict
         },
@@ -109,21 +109,21 @@ def calculator(
 
     method_applied_to_subsidy_loan = kwargs.get(
         'subsidy_arr', {}).get('method', amortization_methods.keys())
-    # multi_arr = scheduler(loan_period= loan_period, prepay_arr = {"multi_arr": kwargs.get('prepay_arr', {}).get('multi_arr', [1])})
-    loan_amount = round(total_amount * (1 - down_payment_rate))
+    # multi_arr = scheduler(tenure= loan_tenurepay_arr = {"multi_arr": kwargs.get('prepay_arr', {}).get('multi_arr', [1])})
+    loan_amount = round(total_amount * (1 - (down_payment_rate / 100)))
     subsidy_time = kwargs.get('subsidy_arr', {}).get('time', 0)
     subsidy_amount = kwargs.get('subsidy_arr', {}).get('amount', 0)
 
     prepay_time = _time_(
         subsidy_time=subsidy_time,
-        loan_period=loan_period,
+        tenure= tenure,
         prepay_arr={'multi_arr': kwargs.get(
             'prepay_arr', {}).get('multi_arr', 0)}
     )
 
     prepay_amount = _amount_(
         prepay_time=prepay_time,
-        loan_period=loan_period,
+        tenure=tenure,
         subsidy_time=subsidy_time,
         subsidy_amount=subsidy_amount,  # type: ignore
         prepay_arr={
@@ -134,7 +134,7 @@ def calculator(
 
     def _df_(objs,
              name=None,
-             index_range=[0, loan_period * 12 + 1],
+             index_range=[0, tenure * 12 + 1],
              **kwargs):
         suffix = kwargs.get('suffix', "")
         suffix = ("_" + suffix if len(suffix) > 0 else suffix)
@@ -157,7 +157,7 @@ def calculator(
 
     if 'EQUAL_TOTAL' in method_applied:
         res_etp = _ETP_arr_(
-            loan_period=loan_period,
+            tenure= tenure,
             loan_amount=loan_amount,
             interest_arr=interest_arr,
             prepay_time=prepay_time,
@@ -168,7 +168,7 @@ def calculator(
         dfs_ordinry[amortization_methods['EQUAL_TOTAL']] = df_etp
     if 'EQUAL_PRINCIPAL' in method_applied:
         res_epp = _EPP_arr_(
-            loan_period=loan_period,
+            tenure=tenure,
             loan_amount=loan_amount,
             grace_period=grace_period,
             interest_arr=interest_arr,
@@ -192,8 +192,8 @@ def calculator(
         DL = 24  # The deadline of applying for preferential loan
         if subsidy_time > DL:
             raise ValueError(f'超過申請購屋補貼期限(不可晚於購房後{DL/2}年)')
-        subsidy_term = kwargs.get('subsidy_arr', {}).get(
-            'term', 0)  # period of the subsidy loan
+        subsidy_tenure = kwargs.get('subsidy_arr', {}).get(
+            'tenure', 0)  # period of the subsidy loan
         subsidy_grace_period = kwargs.get(
             'subsidy_arr', {}).get('grace_period', 0)
         subsidy_subsidy_time = kwargs.get(
@@ -202,12 +202,12 @@ def calculator(
             'subsidy_arr', {}).get('subsidy', {}).get('amount', 0)
         subsidy_prepay_time = _time_(
             subsidy_time=subsidy_subsidy_time,
-            loan_period=loan_period,
+            tenure=tenure,
             prepay_arr={'multi_arr': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)})
         subsidy_prepay_amount = _amount_(
             prepay_time=subsidy_prepay_time,
             subsidy_time=subsidy_subsidy_time,
-            loan_period=loan_period,
+            tenure=tenure,
             subsidy_amount=subsidy_subsidy_amount,  # type: ignore
             prepay_arr={
                 'amount': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('amount', 0),
@@ -220,7 +220,7 @@ def calculator(
         method_applied_to_subsidy = [v for v in method_applied_to_subsidy_loan if v in amortization_methods.keys()
                                      ]
         kwargs_subsidy = {
-            "loan_period": subsidy_term,
+            "tenure": subsidy_tenure,
             "loan_amount": subsidy_amount,
             "interest_arr": subsidy_interest_arr,
             "prepay_time": subsidy_prepay_time,
@@ -231,13 +231,13 @@ def calculator(
         if 'EQUAL_TOTAL' in method_applied_to_subsidy:
             res_ETP_subsidy = _ETP_arr_(**kwargs_subsidy)
             df_etp_subsidy = _df_(res_ETP_subsidy, index_range=[
-                                  subsidy_time, subsidy_time + subsidy_term * 12 + 1])
+                                  subsidy_time, subsidy_time + subsidy_tenure * 12 + 1])
             dfs_subsidy[amortization_methods['EQUAL_TOTAL']
                         ] = df_etp_subsidy
         if 'EQUAL_PRINCIPAL' in method_applied_to_subsidy:
             res_EPP_subsidy = _EPP_arr_(**kwargs_subsidy)
             df_epp_subsidy = _df_(res_EPP_subsidy, index_range=[
-                                  subsidy_time, subsidy_time + subsidy_term * 12 + 1])
+                                  subsidy_time, subsidy_time + subsidy_tenure * 12 + 1])
             dfs_subsidy[amortization_methods['EQUAL_PRINCIPAL']
                         ] = df_epp_subsidy
 
@@ -299,8 +299,8 @@ if __name__ == "__main__":
         calculator(
             interest_arr={'interest': [1.38], 'multi_arr': []},
             total_amount=10_000_000,
-            down_payment_rate=0.2,
-            loan_period=40,
+            down_payment_rate= 20,
+            tenure=40,
             grace_period=0,
             prepay_arr={
                 'multi_arr': [120, 160],
@@ -310,7 +310,7 @@ if __name__ == "__main__":
                 'multi_arr': [],
                 'time': 24,
                 'amount': 2_300_000,
-                'term': 20,
+                'tenure': 20,
                 'grace_period': 0,
                 'prepay_arr': {'amount': [], 'multi_arr': []},
                 'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']

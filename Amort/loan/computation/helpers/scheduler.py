@@ -20,7 +20,7 @@ def ensure_list_type(x) -> list:
 
 def kwargs_detection(
     kws_spec={
-        'loan_period': int,
+        'tenure': int,
         'loan': int,
         'interest_arr': {
         'interest': list,
@@ -70,14 +70,14 @@ def kwargs_detection(
 
 
 def scheduler(
-        loan_period: int,
+        tenure: int,
         loan: int = 0,
         convert_to_month_rate: bool = True,
         **kwargs: dict) -> list:
     """
     The scheduler of the applied interest (feasible for single and multistage loan interest rate), loan and loan prepayment.
     Arguments:
-    1. loan_period (on a yearly basis): 
+    1. tenure (on a yearly basis): 
       Length of total loan period.
 
     2. interest_arr:
@@ -104,7 +104,7 @@ def scheduler(
         The arguments setting would be as follows:
 
         scheduler(
-          loan_period= 10, 
+          tenure= 10, 
           interest_arr= {
             'interest': [1.38, 1.01],
             'multi_arr': [12]
@@ -118,8 +118,7 @@ def scheduler(
     """
     kwargs_detection(
         kws_spec={
-            'loan_period': int,
-            # 'loan': int,
+            'tenure': int,
             'interest_arr': {'interest': list,
                              'multi_arr': list},
             'prepay_arr': {'amount': list,
@@ -128,7 +127,7 @@ def scheduler(
         },
         **kwargs)
 
-    loan_period = loan_period * 12
+    tenure = tenure * 12
     interest = list(map(
         lambda x: x/100, ensure_list_type(kwargs.get('interest_arr', {}).get('interest', 0))))
     interest_arr = [
@@ -156,7 +155,7 @@ def scheduler(
                 '\r' + f'The adjustments of the interest rate is {len(interest)}, exceed the given time points, which is {len(interest_arr)}' + '\n')
 
     def _arr_(
-        period: int = loan_period,
+        period: int = tenure,
         amount_arr=None,
         time_arr=[0]
     ):
@@ -187,7 +186,7 @@ def scheduler(
 
 # py -m Amort.loan.computation.helpers.scheduler
 payment = scheduler(
-    loan_period=10,
+    tenure=10,
     interest_arr={
         'interest': [1.38, 1.01],
         'multi_arr': [12]

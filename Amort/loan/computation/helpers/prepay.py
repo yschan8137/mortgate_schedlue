@@ -5,7 +5,7 @@ from typing import Optional
 
 def _time_(
     subsidy_time: Optional[int],
-    loan_period: int,
+    tenure: int,
     **kwargs
 ) -> list:
     kws_prepay_multi_arr = sorted(
@@ -14,7 +14,7 @@ def _time_(
         + ensure_list_type(subsidy_time)
     )
     prepay_time = scheduler(
-        loan_period=loan_period,
+        tenure=tenure,
         prepay_arr={
             "multi_arr": kws_prepay_multi_arr
         }
@@ -24,7 +24,7 @@ def _time_(
 
 def _amount_(
     prepay_time: list,
-    loan_period: int,
+    tenure: int,
     subsidy_time: Optional[int],
     subsidy_amount=Optional[int],
     **kwargs
@@ -35,7 +35,7 @@ def _amount_(
         + ensure_list_type(subsidy_time)
     )
     prepay_amount = scheduler(
-        loan_period=loan_period,
+        tenure=tenure,
         prepay_arr={
             'amount': ensure_list_type(kwargs.get('prepay_arr', {}).get('amount', 0)),
             'multi_arr': [

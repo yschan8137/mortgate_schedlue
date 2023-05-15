@@ -1,14 +1,15 @@
-# This file is the collection of control components for the homepage
+# This file is the collectikwargs_schemaon of control components for the homepage
 
 from dataclasses import dataclass
 from gc import disable
-from re import S
+from re import I, S
 from sre_constants import IN
 from unittest.mock import call
-from dash import Dash, html, dcc, Input, Output, State, callback, MATCH, ALL, ALLSMALLER
+from dash import Dash, html, dcc, Input, Output, State, callback, MATCH, ALL, ALLSMALLER, no_update
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from numpy import place
+from traitlets import default
 
 from .. import amortization_types
 from .widgets import refreshable_dropdown, addon
@@ -20,6 +21,30 @@ from ..toolkit import suffix_for_type
 # [X] 2. collect the all result from all inputs.
 # [X] 3. enable the format for multi-stage interest rate, which combines results of the sigle interest rate and the addon on multi-stage interest rates.
         
+kwargs_schema={
+                'interest_arr': {'interest': [1.38], 'multi_arr': []},
+                'total_amount': 10_000_000,
+                'down_payment_rate': 20,
+                'tenure': 30,
+                'grace_period': 0,
+                'method':['EQUAL_TOTAL', 'EQUAL_PRINCIPAL'],
+                'prepay_arr':{
+                                'amount': [],
+                                'multi_arr': []
+                              },
+                'subsidy_arr': {
+                                  'interest': [0],
+                                  'multi_arr': [],
+                                  'time': 0,
+                                  'amount': 0,
+                                  'tenure': 0,
+                                  'grace_period': 0,
+                                  'prepay_arr': {'amount': [], 'multi_arr': []},
+                                  'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
+                                },
+}
+
+
 @dataclass
 class MortgageOptions:
     type= LOAN.TYPE
@@ -40,16 +65,26 @@ class MortgageOptions:
                     placeholder='Enter the loan amount',
                     min=0,
                     step=1,
-                    value=10_000_000,
+                    value=kwargs_schema['total_amount'],
                     style={
-                        # 'width': "20%",
                         'textAlign': 'left'
                     },
                 ),
-                # width=10
             ),
         ]
     )
+    @callback(
+        Output(LOAN.RESULT, 'data', allow_duplicate=True), # type: ignore
+        Input(suffix_for_type(LOAN.AMOUNT, type), 'value'),
+        State(LOAN.RESULT, 'data'),
+        prevent_initial_call=True
+    )
+    def _amount(total_amount, memory):
+        if total_amount is None:
+            raise PreventUpdate
+        else:
+            memory['total_amount'] = total_amount
+        return memory
 
     # Down Payment Rate
     down_payment = html.Div(
@@ -65,38 +100,47 @@ class MortgageOptions:
                         min=0,
                         max=100,
                         step=10,
-                        value=20,
+                        value=kwargs_schema['down_payment_rate'],
                         style={
                             'textAlign': 'left'
                         }
                     ), dbc.InputGroupText('%')
                     ],
-                    style={
-                        # 'width': "15%",
-                    }
                 ),
             )
         ]
     )
+    @callback(
+        Output(LOAN.RESULT, 'data', allow_duplicate=True), # type: ignore
+        Input(LOAN.DOWNPAYMENT, 'value'),
+        State(LOAN.RESULT, 'data'),
+        prevent_initial_call=True
+    )
+    def _down_payment(downpayment_rate, memory):
+        if downpayment_rate is None:
+            return no_update
+        else:
+            memory['down_payment_rate'] = downpayment_rate
+        return memory
 
     # Mortgage Period
     @classmethod
-    def term(cls): 
+    def tenure(cls): 
         return html.Div(
             [
-                dcc.Store(suffix_for_type('momory for the term', cls.type), data= []),
+                dcc.Store(suffix_for_type('momory for the tenure', cls.type), data= []),
                 dbc.Label(
-                    'Mortgate Term',
+                    'Mortgate tenure',
                     size='md'
                 ),
                 dbc.Col(
                     dbc.Input(
                         min=1,
                         max=40,
-                        value=30,
+                        value=kwargs_schema['tenure'],
                         step=1,
                         type='number',
-                        id= LOAN.TERM,
+                        id= LOAN.TENURE,
                         style={
                             # 'width': "10%",
                             'textAlign': 'left'
@@ -105,6 +149,19 @@ class MortgageOptions:
                 )
             ]
         )
+    @callback(
+        Output(LOAN.RESULT, 'data', allow_duplicate=True), # type: ignore
+        Input(LOAN.TENURE, 'value'),
+        State(LOAN.RESULT, 'data'),
+        prevent_initial_call=True
+    )
+    def _tenure(tenure, memory):
+        if tenure is None:
+            raise PreventUpdate
+        else:
+            memory['tenure'] = tenure
+        return memory
+    
     # Grace Period
     grace = html.Div(
         [
@@ -117,7 +174,7 @@ class MortgageOptions:
                     min=0,
                     max=5,
                     step=1,
-                    value=0,
+                    value=kwargs_schema['grace_period'],
                     type='number',
                     id=suffix_for_type(LOAN.GRACE, type),
                     style={
@@ -128,6 +185,18 @@ class MortgageOptions:
             )
         ]
     )
+    @callback(
+        Output(LOAN.RESULT, 'data', allow_duplicate=True), # type: ignore
+        Input(suffix_for_type(LOAN.GRACE, type), 'value'),
+        State(LOAN.RESULT, 'data'),
+        prevent_initial_call=True
+    )
+    def _grace(grace_period, memory):
+        if grace_period is None:
+            raise PreventUpdate
+        else:
+            memory['grace_period'] = grace_period
+        return memory
 
     # Payment Methods
     dropdown_refresh = html.Div(
@@ -139,12 +208,23 @@ class MortgageOptions:
             )
         ]
     )
+    @callback(
+        Output(LOAN.RESULT, 'data', allow_duplicate=True), # type: ignore
+        Input(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type), 'value'),
+        State(LOAN.RESULT, 'data'),
+        prevent_initial_call=True
+    )
+    def _payment_methods(repayment_methods, memory):
+        if repayment_methods is None:
+            raise PreventUpdate
+        else:
+            memory['method'] = repayment_methods
+        return memory
 
 
     @classmethod
     def interest_rate(
         cls,
-        value= 0,
         type: str = None,  # type: ignore
         label: str = 'Multistage Interest Rate',
         placeholder='Input the interest rate',
@@ -160,7 +240,7 @@ class MortgageOptions:
                                     id=suffix_for_type(LOAN.INTEREST, type),
                                     type='number',
                                     step= 0.01,
-                                    value=value,
+                                    value= (kwargs_schema['interest_arr']['interest'][0] if type == LOAN.TYPE else kwargs_schema['subsidy_arr']['interest'][0]),
                                     min=0,
                                     max= 100
                                 ),
@@ -206,99 +286,53 @@ class MortgageOptions:
         )
         @callback(
             Output(suffix_for_type('toggle to show the options', type), 'style'),
-            Output(suffix_for_type('momory for the term', LOAN.TYPE), 'data', allow_duplicate=True), # type: ignore
+            Output(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data', allow_duplicate=True), # type: ignore
             Input(suffix_for_type(ADVANCED.TOGGLE.BUTTON, type), 'value'),
-            State(LOAN.TERM, 'value'),
-            State(suffix_for_type('momory for the term', LOAN.TYPE), 'data'),
+            State(LOAN.TENURE, 'value'),
+            State(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data'),
             prevent_initial_call=True,
         )
         def toggle_options(
             value,
-            term,
+            tenure,
             memory
             ):
             if value[-1] == 1:
-                memory.append(term)
+                memory.append(tenure)
                 return {'display': 'block'}, memory
             else:
                 return {'display': 'none'}, memory
         
         @callback(
-            Output(suffix_for_type('momory for the term', LOAN.TYPE), 'data', allow_duplicate=True), # type: ignore
-            Input(LOAN.TERM, 'value'),
-            State(suffix_for_type('momory for the term', LOAN.TYPE), 'data'),
+            Output(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data', allow_duplicate=True), # type: ignore
+            Input(LOAN.TENURE, 'value'),
+            State(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data'),
             prevent_initial_call=True,
         )
-        def update_momery_of_term(term, memory):
-            memory.append(term)
+        def update_momery_of_tenure(tenure, memory):
+            memory.append(tenure)
             return memory
         
-        return layout
-    
-    @classmethod
-    def setup(cls):
-        layout= html.Div(
-                    [
-                        dcc.Store(
-                            id= suffix_for_type(LOAN.RESULT, cls.type),
-                            data= {
-                                'interest_arr': {'interest': [], 'multi_arr': []},
-                                'total_amount': 0,
-                                'down_payment_rate': 0,
-                                'loan_period': 0,
-                                'grace_period': 0,
-                                'method':['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
-                            }
-                        ),
-                        cls.amount,
-                        cls.interest_rate(
-                            type= cls.type,
-                            value= 1.38  # type: ignore
-                        ),
-                        cls.down_payment,
-                        cls.term(),
-                        cls.grace,
-                        cls.dropdown_refresh,
-                    ]
-                )
         @callback(
-            Output(suffix_for_type(LOAN.RESULT, cls.type), 
-                   'data', 
-                   ),
-            Input(suffix_for_type(LOAN.AMOUNT, cls.type), 'value'),
-            Input(suffix_for_type(LOAN.GRACE, cls.type), 'value'),
-            Input(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, cls.type), 'value'),
-            Input(LOAN.TERM, 'value'),
-            Input(LOAN.DOWNPAYMENT, 'value'),
-            Input(suffix_for_type(ADVANCED.TOGGLE.BUTTON, cls.type), 'value'),
-            Input(suffix_for_type(LOAN.INTEREST, cls.type), 'value'),
-            Input(suffix_for_type(ADDON.MEMORY, cls.type), 'data'),
-            State(suffix_for_type(LOAN.RESULT, cls.type), 'data'),
+            Output(LOAN.RESULT, 'data', allow_duplicate=True), # type: ignore
+            Input(suffix_for_type(LOAN.INTEREST, type), 'value'),
+            Input(suffix_for_type(ADDON.MEMORY, type), 'data'),
+            Input(suffix_for_type(ADVANCED.TOGGLE.BUTTON, type), 'value'),
+            State(LOAN.RESULT, 'data'),
+            prevent_initial_call=True
         )
-        def update_result_for_loan(
-            loan_amount,
-            grace_period,
-            repayment_options,
-            term,
-            downpayment_rate,
-            multi_stage_interest,
-            interest,
-            arr,
-            memory
-        ):
-            memory['total_amount'] = loan_amount
-            memory['grace_period'] = grace_period
-            memory['method'] = repayment_options
-            memory['interest_arr'] = {
-                'interest': [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1], 
-                'multi_arr': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
-            }
-            memory['loan_period'] = term
-            memory['down_payment_rate'] = downpayment_rate/100
+        def _interest_rate(interest, arr, multi_stage_interest, memory):
+            # print('multi_stage_interest', multi_stage_interest)
+            if interest is None:
+                raise PreventUpdate
+            else:
+                memory['interest_arr'] = {
+                    'interest': [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1],
+                    'multi_arr': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
+                }
             return memory
         
         return layout
-
 
 @ dataclass
 class AdvancedOptions:
@@ -356,15 +390,6 @@ class AdvancedOptions:
     def prepayment(cls, type=LOAN.PREPAY.TYPE):
         layout = html.Div(
             [
-                dcc.Store(
-                    suffix_for_type(LOAN.RESULT, LOAN.PREPAY.TYPE),
-                    data= {
-                        'prepay_arr':{
-                              'multi_arr': [],
-                              'amount': []
-                          }
-                    }
-                ),
                 dbc.Label(
                     'Prepay Arrangement',
                     size='md',
@@ -379,10 +404,10 @@ class AdvancedOptions:
         )
         @ callback(
             Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, type)}, 'data'),
-            Input(LOAN.TERM, 'value'),
+            Input(LOAN.TENURE, 'value'),
         )
-        def update_prepay_arrangement(term):
-            return [[1, term - 1]]
+        def update_prepay_arrangement(tenure):
+            return [[1, tenure - 1]]
         
         # Toggle the addon setting for prepay
         @callback(
@@ -401,9 +426,10 @@ class AdvancedOptions:
 
 
         @callback(
-            Output(suffix_for_type(LOAN.RESULT, type), 'data'), # type: ignore
+            Output(LOAN.RESULT, 'data', allow_duplicate= True), # type: ignore
             Input(suffix_for_type(ADDON.MEMORY, type), 'data'),
-            State(suffix_for_type(LOAN.RESULT, type), 'data'),
+            State(LOAN.RESULT, 'data'),
+            prevent_initial_call=True,
         )
         def update_result_for_prepay(arr, memory):
             memory['prepay_arr'] = {
@@ -420,21 +446,6 @@ class AdvancedOptions:
     def subsidy(cls, type=LOAN.SUBSIDY.TYPE):
         layout = html.Div(
             [
-                dcc.Store( 
-                    suffix_for_type(LOAN.RESULT, type),
-                    data= {                
-                        'subsidy_arr': {
-                            'interest': [],
-                            'multi_arr': [],
-                            'time': 0,
-                            'amount': 0,
-                            'term': 0,
-                            'grace_period': 0,
-                            'prepay_arr': {'amount': [], 'multi_arr': []},
-                            'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
-                        },
-                    }
-                ),
                 dbc.Card(
                     [
                         dbc.CardBody(
@@ -446,7 +457,7 @@ class AdvancedOptions:
                                             id= suffix_for_type(LOAN.AMOUNT, type),
                                             type='number',
                                             step=1,
-                                            value=0,
+                                            value=kwargs_schema['subsidy_arr']['amount'],
                                             min=0,
                                         ),
                                     ]
@@ -461,7 +472,7 @@ class AdvancedOptions:
                                             id=LOAN.SUBSIDY.START,
                                             type='number',
                                             step=1,
-                                            value=0,
+                                            value=kwargs_schema['subsidy_arr']['time'],
                                             min=0,
                                             max=24,
                                         )
@@ -469,12 +480,12 @@ class AdvancedOptions:
                                 ),
                                 html.Div(
                                     [
-                                        dbc.Label('Subsidy Term'),
+                                        dbc.Label('Subsidy tenure'),
                                         dbc.Input(
-                                            id= LOAN.SUBSIDY.TERM,
+                                            id= LOAN.SUBSIDY.TENURE,
                                             type='number',
                                             step=1,
-                                            value=0,
+                                            value=kwargs_schema['subsidy_arr']['tenure'],
                                             min=0,
                                         )
                                     ]
@@ -486,7 +497,7 @@ class AdvancedOptions:
                                             id=suffix_for_type(LOAN.GRACE, type),
                                             type='number',
                                             step=1,
-                                            value=0,
+                                            value=kwargs_schema['subsidy_arr']['grace_period'],
                                             min=0,
                                         )
                                     ]
@@ -526,7 +537,7 @@ class AdvancedOptions:
         )
         @callback(
             Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.TYPE)}, 'data'),
-            Input(suffix_for_type('momory for the term', LOAN.TYPE), 'data'),
+            Input(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data'),
             prevent_initial_call=True,
         )
         def update_arrangement(memory):
@@ -537,7 +548,7 @@ class AdvancedOptions:
 
         @callback(
             Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.TYPE)}, 'data'),
-            Input(suffix_for_type('momory for the term', LOAN.TYPE), 'data'),
+            Input(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data'),
             Input(LOAN.SUBSIDY.START, 'value'),
             prevent_initial_call=True,
         )
@@ -545,21 +556,24 @@ class AdvancedOptions:
             memory,
             start
             ):
-            if len(memory) == 0:
-                return PreventUpdate()
+            if len(memory) == 0 or not start:
+                return no_update
             else:
                 return [[start, memory[-1] - 1]]                                  
 
         @callback(
             Output(suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.PREPAY.TYPE), 'data'), # type: ignore
-            Input(LOAN.SUBSIDY.TERM, 'value'),
+            Input(LOAN.SUBSIDY.TENURE, 'value'),
             Input(LOAN.SUBSIDY.START, 'value'),
         )
         def update_subsidy_prepay_arrangement(
             period,
             start,
             ):
-            return [[start, period + start - 1]]
+            if period and start:
+                return [[start, period + start - 1]]
+            else:
+                return no_update
 
         @callback(
             Output(suffix_for_type(ADDON.INPUT, LOAN.SUBSIDY.PREPAY.TYPE),
@@ -580,17 +594,18 @@ class AdvancedOptions:
                 return [True] * 4
         
         @callback(
-            Output(suffix_for_type(LOAN.RESULT, type), 'data'), # type: ignore
+            Output(LOAN.RESULT, 'data', allow_duplicate= True), # type: ignore
             Input(suffix_for_type(LOAN.AMOUNT, type), 'value'),
             Input(suffix_for_type(LOAN.GRACE, type), 'value'),
             Input(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type), 'value'),
             Input(suffix_for_type(ADDON.MEMORY, LOAN.SUBSIDY.PREPAY.TYPE), 'data'),
             Input(LOAN.SUBSIDY.START, 'value'),
-            Input(LOAN.SUBSIDY.TERM, 'value'),
+            Input(LOAN.SUBSIDY.TENURE, 'value'),
             Input(suffix_for_type(ADVANCED.TOGGLE.BUTTON, type), 'value'),
             Input(suffix_for_type(LOAN.INTEREST, type), 'value'),
             Input(suffix_for_type(ADDON.MEMORY, type), 'data'),
-            State(suffix_for_type(LOAN.RESULT, type), 'data'),
+            State(LOAN.RESULT, 'data'),
+            prevent_initial_call=True,
         )
         def update_result_for_subsidy(
             loan_amount,
@@ -598,7 +613,7 @@ class AdvancedOptions:
             repayment_options,
             prepay_arr,
             start,
-            term,
+            tenure,
             multi_stage_interest,
             interest,
             arr,
@@ -615,7 +630,7 @@ class AdvancedOptions:
                     'multi_arr': [int(v) for v in prepay_arr.keys()],
                     'amount': [*prepay_arr.values()],    
                 },
-                'term': term,
+                'tenure': tenure,
                 'time': start
             }
             return memory
@@ -627,13 +642,24 @@ class AdvancedOptions:
 def layout():
     layout = html.Div(
                  [
-                     dcc.Store(suffix_for_type(LOAN.RESULT, 'all'), data={}),
+                     dcc.Store(
+                        LOAN.RESULT, 
+                        data= kwargs_schema
+                     ),
                      dbc.Card(
                          [
                              dbc.CardBody(
                                  [
-                                     MortgageOptions.setup(),
-                                     html.Div(
+                                     MortgageOptions.amount,
+                                     MortgageOptions.interest_rate(
+                                      type= LOAN.TYPE,
+                                     ),
+                                     MortgageOptions.down_payment,
+                                     MortgageOptions.tenure(),
+                                     MortgageOptions.grace,
+                                     MortgageOptions.dropdown_refresh,
+                                    
+                                     dbc.Col(
                                          [
                                              AdvancedOptions.accordion(
                                                  style={
@@ -660,19 +686,6 @@ def layout():
                      )
                  ]
              )
-    @callback(
-        Output(suffix_for_type(LOAN.RESULT, 'all'), 'data'),
-        Input(suffix_for_type(LOAN.RESULT, LOAN.TYPE), 'data'),
-        Input(suffix_for_type(LOAN.RESULT, LOAN.SUBSIDY.TYPE), 'data'),
-        Input(suffix_for_type(LOAN.RESULT, LOAN.PREPAY.TYPE), 'data'),
-    )
-    def consolidate_result(
-        loan_result,
-        subsidy_result,
-        prepay_result,
-    ):
-        # print('result: ', {**loan_result, **subsidy_result, **prepay_result})
-        return {**loan_result, **subsidy_result, **prepay_result}
     return layout
 
 # py -m Amort.dashboard.components.homepage.controls

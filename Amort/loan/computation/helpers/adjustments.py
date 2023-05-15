@@ -20,7 +20,7 @@ def Adjustments(
 def ETR(
     t: int, 
     interest_arr: list, 
-    loan_period: int, 
+    tenure: int, 
     grace_period: int = 0, 
     **kwargs
     ):
@@ -38,7 +38,7 @@ def ETR(
     若在寬限期到期後提前付款，調整項存在重複扣除項，須再扣除grace_period * 12。
     若在寬限期內提前付款，雖然已經有設定本金攤還率為0，但保險起見，還是把調整項(grace_period_adjustments)設為0 
   """
-  full_length = loan_period * 12 + 1
+  full_length = tenure * 12 + 1
   prepay_time = kwargs.get('prepay', {}).get('multi_arr', full_length)
   multi_arr = [0] + kwargs.get('interest_arr', [])
   
@@ -46,7 +46,7 @@ def ETR(
     pass
   else: 
     interest_arr = scheduler(
-        loan_period= loan_period,
+        tenure= tenure,
         interest_arr = {
             'interest': ensure_list_type(interest_arr),
             'interest_arr': ensure_list_type(multi_arr),    
@@ -56,13 +56,13 @@ def ETR(
        (
         (
          (
-          (1 + interest_arr[t])**((loan_period - grace_period) * 12 + Adjustments(t, grace_period= grace_period ,prepay_time= prepay_time))
+          (1 + interest_arr[t])**((tenure - grace_period) * 12 + Adjustments(t, grace_period= grace_period ,prepay_time= prepay_time))
          ) * interest_arr[t] 
        )
        / 
         (
          (
-          (1 + interest_arr[t])**((loan_period - grace_period) * 12 + Adjustments(t, grace_period= grace_period ,prepay_time= prepay_time))
+          (1 + interest_arr[t])**((tenure - grace_period) * 12 + Adjustments(t, grace_period= grace_period ,prepay_time= prepay_time))
          ) - 1
         )
        ) if interest_arr[t] > 0 and t > grace_period * 12 else 0

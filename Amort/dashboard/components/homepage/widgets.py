@@ -72,11 +72,8 @@ def addon(
                               min=0,
                               max=100,
                               placeholder=placeholder,
-                              style={
-                        #   'width': '60%'
-                    },
-                        disabled=disabled,
-                    ),
+                              disabled=disabled,
+                              ),
                     dbc.Button(
                         id=suffix_for_type(ADDON.ADD, type),
                         color="primary",
@@ -90,17 +87,21 @@ def addon(
                         disabled=disabled,
                     )
                 ],
-                style={
-                    'display': 'inline-flex',
-                    "maxWidth": "400px"
-                },
             ),
-        ]
+        ],
+        # make the width not exceed the width of the container.
+        style={
+            'width': '100%',
+            # 'display': 'inline-flex',
+            # 'flex-wrap': 'column wrap',
+            # 'justify-content': 'space-between',
+            # 'align-items': 'center',
+            # 'margin': '0px 0px 10px 0px'
+        },
     )
 
 
 # Control the disabled status of the input and the add button.
-
 
     @callback(
         Output(suffix_for_type(ADDON.INPUT, type), 'disabled'),
@@ -142,6 +143,7 @@ def addon(
 
 # update the label of the dbc.DropdownMenu to selected children in dbc.DropdownMenuItem.
 
+
     @callback(
         Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label'),
         Input({"index": ALL, "type": suffix_for_type(
@@ -171,7 +173,6 @@ def addon(
 
 
 # callback for add button.
-
 
     @ callback(
         [

@@ -6,7 +6,7 @@ from .helpers.scheduler import ensure_list_type, scheduler
 
 
 def _EPP_arr_(
-    loan_period: int,
+    tenure: int,
     loan_amount: int,
     interest_arr: dict,
     prepay_time: list,
@@ -14,15 +14,15 @@ def _EPP_arr_(
     grace_period: int = 0,
 ) -> list:
     if isinstance(prepay_amount, int):
-        prepay_amount = [prepay_amount] * (loan_period * 12 + 1)
+        prepay_amount = [prepay_amount] * (tenure * 12 + 1)
     if isinstance(prepay_time, int):
-        prepay_time = [prepay_time] * (loan_period * 12 + 1)
+        prepay_time = [prepay_time] * (tenure * 12 + 1)
     _payments_ = []
     _residual_ = []
     _interest_ = []
     _total_ = []
     _interest_arr_ = scheduler(
-        loan_period=loan_period,
+        tenure=tenure,
         interest_arr={
             'interest': ensure_list_type(interest_arr.get('interest', 0)),
             'multi_arr': ensure_list_type(interest_arr.get('multi_arr', []))
@@ -35,7 +35,7 @@ def _EPP_arr_(
     def payments(t,
                  amount=loan_amount,
                  grace_period=grace_period,
-                 loan_period=loan_period,
+                 tenure=tenure,
                  prepay_time=prepay_time,
                  ):
         return (
@@ -45,7 +45,7 @@ def _EPP_arr_(
             /
             (
                 (
-                    (loan_period - grace_period) * 12
+                    (tenure - grace_period) * 12
                 ) + Adjustments(
                     t,
                     grace_period=grace_period,
@@ -95,7 +95,7 @@ def _EPP_arr_(
 
 
 def _ETP_arr_(
-    loan_period: int,
+    tenure,
     loan_amount: int,
     interest_arr: dict,
     prepay_time: list,
@@ -103,28 +103,29 @@ def _ETP_arr_(
     grace_period: int = 0,
 ) -> list:
     if isinstance(prepay_amount, int):
-        prepay_amount = [prepay_amount] * (loan_period * 12 + 1)
+        prepay_amount = [prepay_amount] * (tenure * 12 + 1)
     if isinstance(prepay_time, int):
-        prepay_time = [prepay_time] * (loan_period * 12 + 1)
+        prepay_time = [prepay_time] * (tenure * 12 + 1)
     _principal_payment_ = []
     _residual_ = []
     _interest_ = []
     _total_ = []
     _interest_arr_ = scheduler(
-        loan_period=loan_period,
+        tenure=tenure,
         interest_arr={
             'interest': ensure_list_type(interest_arr.get('interest', 0)),
             'multi_arr': ensure_list_type(interest_arr.get('multi_arr', []))
         }
     )
 
-    def principal_ratio_at_(timing, prepay_time): return ETR(
-        t=timing,
-        interest_arr=_interest_arr_,
-        loan_period=loan_period,
-        grace_period=grace_period,
-        prepay={'multi_arr': prepay_time},
-    ) * (1 + _interest_arr_[t])**(-(1 + loan_period * 12 - t))
+    def principal_ratio_at_(timing, prepay_time): 
+        return ETR(
+                t=timing,
+                interest_arr=_interest_arr_,
+                tenure=tenure,
+                grace_period=grace_period,
+                prepay={'multi_arr': prepay_time},
+            ) * (1 + _interest_arr_[t])**(-(1 + tenure * 12 - t))
     for t in range(0, len(_interest_arr_)):
         if t > 0:
             if (prepay_time[t] == 0):

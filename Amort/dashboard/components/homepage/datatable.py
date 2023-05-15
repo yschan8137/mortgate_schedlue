@@ -68,7 +68,7 @@ datatable = dash_table.DataTable(
         Output(DATATABLE.TABLE, 'page_count'),
     ],
     [
-        Input(suffix_for_type(LOAN.RESULT, 'all'), 'data'),
+        Input(LOAN.RESULT, 'data'),
         Input(DATATABLE.TABLE, 'page_current'),
         Input(DATATABLE.PAGE.SIZE, 'value')  # 調整列數
     ]

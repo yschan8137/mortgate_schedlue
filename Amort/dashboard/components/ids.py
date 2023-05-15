@@ -2,8 +2,8 @@ class LOAN:
     AMOUNT = 'the amount of the loan'
     DOWNPAYMENT = 'downpayment rate of the loan'
     GRACE = 'the grace period of the loan'
-    TERM = 'the term of the loan'
-    INTEREST = 'single interest rate applied tp total term of the loan'
+    TENURE = 'the tenure of the loan'
+    INTEREST = 'single interest rate applied tp total tenure of the loan'
     OPTIONS = 'the repayment options of the loan'
     TYPE = 'Loan'
     RESULT = 'the input results'
@@ -14,7 +14,7 @@ class LOAN:
     class SUBSIDY:
         # tricks: addition 'of the subsidy' to enable interoperability between loan and subsidy
         # avoid the duplication against the loan.
-        TERM = 'the term of the loan of the subsidy'
+        TENURE = 'the tenurere of the loan of the subsidy'
         START = 'subsidy-applying-time'
         TYPE = 'Subsidy'
 
