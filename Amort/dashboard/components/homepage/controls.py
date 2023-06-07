@@ -275,7 +275,7 @@ class MortgageOptions:
                         ],
                         style= {
                             'display': 'none',
-                            "maxWidth": "400px"
+                            "maxWidth": "100%"
                                 },
                         id= suffix_for_type('toggle to show the options', type)
                     ),
@@ -322,7 +322,6 @@ class MortgageOptions:
             prevent_initial_call=True
         )
         def _interest_rate(interest, arr, multi_stage_interest, memory):
-            # print('multi_stage_interest', multi_stage_interest)
             if interest is None:
                 raise PreventUpdate
             else:
@@ -370,7 +369,16 @@ class AdvancedOptions:
                             title=title,
                             id= 'accordion-{}'.format(title),
                             item_id= title, 
-                            style= {"maxWidth": "400px"}
+                            style= {
+                                'width': '100%',
+                                'align-items': 'right',
+                                'justify-content': 'right',
+                                'margin': '0px',
+                                'padding': '0px',
+                                'border': '0px',
+                                'border-radius': '0px',
+                                'background-color': 'transparent',
+                                }
                         ) for title, children in zip(titles, childrens)
                     ],
                     id=f"accordion",
@@ -441,7 +449,6 @@ class AdvancedOptions:
         return layout
 
     # subsidy
-
     @ classmethod
     def subsidy(cls, type=LOAN.SUBSIDY.TYPE):
         layout = html.Div(
@@ -450,6 +457,19 @@ class AdvancedOptions:
                     [
                         dbc.CardBody(
                             [
+                                html.Div(
+                                    [
+                                        dbc.Label('Subsidy Start timepoint'),
+                                        dbc.Input(
+                                            id=LOAN.SUBSIDY.START,
+                                            type='number',
+                                            step=1,
+                                            value=kwargs_schema['subsidy_arr']['time'],
+                                            min=0,
+                                            max=24,
+                                        )
+                                    ]
+                                ),
                                 html.Div(
                                     [
                                         dbc.Label('Subsidy Amount'),  # 優惠貸款金額
@@ -464,19 +484,6 @@ class AdvancedOptions:
                                 ),
                                 MortgageOptions.interest_rate(
                                     type= type,
-                                ),
-                                html.Div(
-                                    [
-                                        dbc.Label('Subsidy Start timepoint'),
-                                        dbc.Input(
-                                            id=LOAN.SUBSIDY.START,
-                                            type='number',
-                                            step=1,
-                                            value=kwargs_schema['subsidy_arr']['time'],
-                                            min=0,
-                                            max=24,
-                                        )
-                                    ]
                                 ),
                                 html.Div(
                                     [
@@ -531,7 +538,8 @@ class AdvancedOptions:
                             ]
                         ),
                     ],
-                    className="mb-3 w-auto",
+                    style={'width': '100%'},
+                    # className="mb-3 w-auto",
                 ),
             ]
         )
@@ -619,22 +627,32 @@ class AdvancedOptions:
             arr,
             memory
         ):
-            memory['subsidy_arr'] = {
-                'amount': loan_amount,
-                'time': grace_period,
-                'grace_period': grace_period,
-                'method': repayment_options,
-                'multi_arr': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1],
-                'interest': [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1],
-                'prepay_arr': {
-                    'multi_arr': [int(v) for v in prepay_arr.keys()],
-                    'amount': [*prepay_arr.values()],    
-                },
-                'tenure': tenure,
-                'time': start
-            }
+            if start and loan_amount:
+                if (start > 0 and start <= 24) and loan_amount > 0:
+                    memory['subsidy_arr'] = {
+                        'amount': loan_amount,
+                        'time': grace_period,
+                        'grace_period': grace_period,
+                        'method': repayment_options,
+                        'multi_arr': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1],
+                        'interest': [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1],
+                        'prepay_arr': {
+                            'multi_arr': [int(v) for v in prepay_arr.keys()],
+                            'amount': [*prepay_arr.values()],    
+                        },
+                        'tenure': tenure,
+                        'time': start
+                    }
+            else:
+                memory['subsidy_arr']= {
+                    'amount': 0,
+                    'time': 0,
+                    'grace_period': 0,
+                    'method': 0,
+                    'tenure': 0,
+                    'time': 0
+                }
             return memory
-
         return layout
 
 
@@ -663,8 +681,9 @@ def layout():
                                          [
                                              AdvancedOptions.accordion(
                                                  style={
-                                                     'display': 'inline-block',
-                                                     'active-bg': 'red',
+                                                        'width': '100%',
+                                                        # 'display': 'inline-block',
+                                                        'active-bg': 'red',
                                                  },
                                                  content=[
                                                      {

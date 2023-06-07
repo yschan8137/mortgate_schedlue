@@ -9,8 +9,14 @@ from .controls import MortgageOptions, AdvancedOptions
 from ..toolkit import suffix_for_type
 
 from Amort.dashboard.components.homepage import controls
-class config:
-    PAGE_SIZE = 50
+class CONFIG:
+    PAGE_SIZE = 24
+    class SPLITS:
+        XS= 6
+        SM= 5
+        MD= 5
+        LG= 4
+        XL= 3
 
 
 # 設定data table的列數
@@ -20,7 +26,7 @@ rows_per_page = dbc.Row(
         dbc.Input(
             type='number',
             id=DATATABLE.PAGE.SIZE,
-            value= config.PAGE_SIZE,
+            value= CONFIG.PAGE_SIZE,
             min=1,
             max=481,
             step=1,
@@ -45,7 +51,7 @@ datatable = dash_table.DataTable(
     merge_duplicate_headers=True,
     editable=True,
     page_current=0,
-    page_size=config.PAGE_SIZE,
+    page_size= CONFIG.PAGE_SIZE,
     page_count=0,
     page_action='custom',
     sort_action='custom',
@@ -100,21 +106,29 @@ if __name__ == "__main__":
                 dbc.Col(
                     [
                         controls.layout(),
-                    ]
-                ),
+                    ],
+                    xs=CONFIG.SPLITS.XS,
+                    sm=CONFIG.SPLITS.SM,
+                    md=CONFIG.SPLITS.MD,
+                    lg=CONFIG.SPLITS.LG,
+                    xl=CONFIG.SPLITS.XL,
+                ),                      
                 dbc.Col(
                     [
                         rows_per_page,
                         datatable
                     ],
-                    xs=8,
-                    sm=8,
-                    md=8,
-                    lg=10,
-                    xl=10,
+                    xs= 12 - CONFIG.SPLITS.XS,
+                    sm= 12 - CONFIG.SPLITS.SM,
+                    md= 12 - CONFIG.SPLITS.MD,
+                    lg= 12 - CONFIG.SPLITS.LG,
+                    xl= 12 - CONFIG.SPLITS.XL,
                 )
             ],
-            # align='center'
+            style={
+                'marginTop': '2%',
+                'marginBottom': '2%',
+            },
         ),
         fluid=True
     )

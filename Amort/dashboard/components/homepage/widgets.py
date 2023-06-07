@@ -57,7 +57,6 @@ def addon(
             # That's the outcome what we want.
             dcc.Store(id=suffix_for_type(ADDON.MEMORY, type), data={}),
             dcc.Store(id=suffix_for_type(ADDON.DROPDOWN.ITEMS, type), data={}),
-            html.Div(id=suffix_for_type(ADDON.NEW, type)),
             html.Div(
                 [
                     dbc.DropdownMenu(
@@ -65,15 +64,11 @@ def addon(
                         label=dropdown_label,
                         id=suffix_for_type(ADDON.DROPDOWN.MENU, type),
                         disabled=disabled,
+                        color='green',
+                        # style={'width': '30%'}
                     ),
-                    dbc.Input(id=suffix_for_type(ADDON.INPUT, type),
-                              type='number',
-                              step=0.01,
-                              min=0,
-                              max=100,
-                              placeholder=placeholder,
-                              disabled=disabled,
-                              ),
+                    # html.Div(
+                    # [
                     dbc.Button(
                         id=suffix_for_type(ADDON.ADD, type),
                         color="primary",
@@ -83,20 +78,34 @@ def addon(
                     dbc.Button(
                         id=suffix_for_type(ADDON.DELETE, type),
                         color="danger",
-                        children="Delete",
+                        children="Del",
                         disabled=disabled,
                     )
+                    # ],
+                    # style={
+                    # 'display': 'inline-flex',
+                    # }
+                    # ),
                 ],
+                style={
+                    'display': 'inline-flex',
+                }
             ),
+            html.Div(
+                dbc.Input(id=suffix_for_type(ADDON.INPUT, type),
+                          type='number',
+                          step=0.01,
+                          min=0,
+                          max=100,
+                          placeholder=placeholder,
+                          disabled=disabled,
+                          ),
+            ),
+            html.Div(id=suffix_for_type(ADDON.NEW, type)),
         ],
         # make the width not exceed the width of the container.
         style={
             'width': '100%',
-            # 'display': 'inline-flex',
-            # 'flex-wrap': 'column wrap',
-            # 'justify-content': 'space-between',
-            # 'align-items': 'center',
-            # 'margin': '0px 0px 10px 0px'
         },
     )
 
@@ -295,14 +304,17 @@ def addon(
     def delete_items(_, state, memory):
         patched_item = Patch()
         values_to_remove = []
-        for i, value in enumerate(state):
-            if value:
-                values_to_remove.insert(0, i)
-        for i in values_to_remove:
-            del patched_item[i]
-            # remove corresponding items from the memory.
-            del memory[list(memory.keys())[i]]
-        return patched_item, memory
+        if memory:
+            for i, value in enumerate(state):
+                if value:
+                    values_to_remove.insert(0, i)
+            for i in values_to_remove:
+                del patched_item[i]
+                # remove corresponding items from the memory.
+                del memory[list(memory.keys())[i]]
+            return patched_item, memory
+        else:
+            raise PreventUpdate
 
     return layout
 
@@ -339,7 +351,7 @@ def refreshable_dropdown(
                             placeholder=placeholder,
                             disabled=disabled,
                             style={
-                                "width": "67%",
+                                "width": "100%",
                             }
                         )
                     ],

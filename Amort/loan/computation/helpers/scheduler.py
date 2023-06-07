@@ -76,7 +76,9 @@ def scheduler(
         **kwargs: dict) -> list:
     """
     The scheduler of the applied interest (feasible for single and multistage loan interest rate), loan and loan prepayment.
+    
     Arguments:
+
     1. tenure (on a yearly basis): 
       Length of total loan period.
 
@@ -112,7 +114,8 @@ def scheduler(
           loan= 500_000,
           prepay_arr = {
             'amount': [200_000, 200_000],
-            'multi_arr': [5, 60]
+            'multi_arr': [5, 60],
+            'accumulator': True
           }
        )
     """
@@ -132,7 +135,6 @@ def scheduler(
         lambda x: x/100, ensure_list_type(kwargs.get('interest_arr', {}).get('interest', 0))))
     interest_arr = [
         0] + sorted(ensure_list_type(kwargs.get('interest_arr', {}).get('multi_arr', [])))
-    # loan = ensure_list_type(kwargs.get('loan', 0))
     prepay = [0] + \
         ensure_list_type(kwargs.get('prepay_arr', {}).get('amount', []))
     prepay_arr = [
@@ -150,7 +152,6 @@ def scheduler(
             raise ValueError(
                 '\r' + '[time] should be indicated as the rate adjusting points. The example is shown in arguments discription for reference' + '\n')
         elif len(interest_arr) < len(interest):
-            print(len(interest_arr), len(interest))
             raise ValueError(
                 '\r' + f'The adjustments of the interest rate is {len(interest)}, exceed the given time points, which is {len(interest_arr)}' + '\n')
 
@@ -188,16 +189,18 @@ def scheduler(
 payment = scheduler(
     tenure=10,
     interest_arr={
-        'interest': [1.38, 1.01],
+        'interest': [1.38, 1],
         'multi_arr': [12]
     },
     loan=500_000,
     prepay_arr={
         'amount': [200_000, 200_000],
-        'multi_arr': [5, 60]
+        'multi_arr': [5, 60],
+        'accumulator': True
     }
 )
 if __name__ == "__main__":
+    import pandas as pd
     print(
-        [*enumerate(payment)]
+        pd.Series([*payment])
     )
