@@ -30,8 +30,7 @@ def calculator(
     tenure: int,
     down_payment_rate: int = 20,
     grace_period: int = 0,
-    # ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
-    method: list[str] = [*amortization_methods.keys()],
+    method: list[str] = [*amortization_methods.keys()], # ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
     **kwargs: dict
 ) -> pd.DataFrame:
     """
@@ -157,10 +156,10 @@ def calculator(
         res_etp = _ETP_arr_(
             tenure= tenure,
             loan_amount=loan_amount,
+            grace_period=grace_period,
             interest_arr=interest_arr,
             prepay_time=prepay_time,
             prepay_amount=prepay_amount,
-            grace_period=grace_period,
         )
         df_etp = _df_(res_etp)
         dfs_ordinry[amortization_methods['EQUAL_TOTAL']] = df_etp

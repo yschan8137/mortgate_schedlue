@@ -430,7 +430,7 @@ class AdvancedOptions:
             if _ and _[0] == LOAN.PREPAY.TYPE:
                 return 'number', 1, amount, 
             else:
-                return 'flaot', 0.01, 100
+                return 'float', 0.01, 100
 
 
         @callback(
@@ -440,10 +440,12 @@ class AdvancedOptions:
             prevent_initial_call=True,
         )
         def update_result_for_prepay(arr, memory):
+            print('arr on line 443 in contorls', arr)
             memory['prepay_arr'] = {
                 'amount': [*arr.values()], 
                 'multi_arr': [int(v) for v in arr.keys()]
             }
+            
             return memory
         
         return layout

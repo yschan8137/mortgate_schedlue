@@ -302,12 +302,16 @@ def addon(
         prevent_initial_call=True
     )
     def delete_items(_, state, memory):
+        print('memory on line 305 in widgets', memory)
+        print('state on line 306 in widgets', state)
         patched_item = Patch()
         values_to_remove = []
         if memory:
-            for i, value in enumerate(state):
+            for i, value in enumerate([s for s in state if s]): # Errors occurred when multiple components were deployed and "None" were added in the state list. To address this problem, I filtered the state list to remove all instances of "None" and only kept the instances of "done".  
                 if value:
+                    print('i and value on 312 in widgets', i, value)
                     values_to_remove.insert(0, i)
+            print('value_to_remove on line 312 in widgets', values_to_remove)
             for i in values_to_remove:
                 del patched_item[i]
                 # remove corresponding items from the memory.
