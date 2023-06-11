@@ -188,15 +188,17 @@ def _ETP_arr_(
                 prepay_amount = [prepay_amount] * len(_interest_arr_)
             if isinstance(prepay_time, int):
                 prepay_time = [prepay_time] * len(_interest_arr_)
+            prepay_t = prepay_time[interval[0] - 1:]
+            prepay_a = prepay_amount[interval[0] - 1:]
             for t in range(interval[0], interval[1]):
                 t = t - (interval[0] - 1)
-                if (prepay_time[t] == 0):
+                if (prepay_t[t] == 0):
                     principal_payment= (loan_amount - (_accum_[n])) * principal_ratio_at_(
                                                                                         timing= t,
                                                                                         interest_arr= int_arr,
                                                                                         length= len(_interest_arr_) - (interval[0] - 1),
                                                                                         grace_period= grace_t,
-                                                                                        prepay_time= prepay_time[t],
+                                                                                        prepay_time= prepay_t[t],
                                                                     )
                     # ensure the _residual_ to be positive
                     if (_residual_[-1] - principal_payment) >= 0:
@@ -204,41 +206,28 @@ def _ETP_arr_(
                     else:
                         _principal_payment_.append(_residual_[-1])
                 else:
-                    if (t == prepay_time[t] and prepay_amount[t] > 0):
+                    if (t == prepay_t[t] - (interval[0] - 1)  and prepay_a[t] > 0):
                         # 提前支付金額低於前一期餘額
-                        if prepay_amount[t] < _residual_[-1]:
-                            _principal_payment_.append(prepay_amount[t] + _residual_[prepay_time[t-1]] * principal_ratio_at_(
+                        if prepay_a[t] < _residual_[-1]:
+                            _principal_payment_.append(prepay_a[t] + (_residual_[prepay_t[t-1]] - (_accum_[n])) * principal_ratio_at_(
                                                                                                             timing=t,
                                                                                                             interest_arr= int_arr,
                                                                                                             length= len(_interest_arr_) - (interval[0] - 1),
                                                                                                             grace_period= grace_t,
-                                                                                                            prepay_time= prepay_time[t-1]
+                                                                                                            prepay_time= prepay_t[t-1]
                                                                                                         )
                             )
                         else:
                             _principal_payment_.append((loan_amount - sum(_principal_payment_[:-1])))
                     else:
-                        #########################################
-                        # 這邊是提前付款後的期間，測試金額過高
-                        _principal_payment_.append(_residual_[-1] * principal_ratio_at_(
-                                                                                        timing=t,
-                                                                                        interest_arr= int_arr,
-                                                                                        interest_arr= int_arr,
-                                                                                        length= len(_interest_arr_) - (interval[0] - 1),
-                                                                                        grace_period= grace_t,
-                                                                                        prepay_time= prepay_time[t-1]
-                                                                                        )
+                        _principal_payment_.append((_residual_[prepay_t[t]]) * principal_ratio_at_(
+                                                                                    timing=t,
+                                                                                    interest_arr= int_arr,
+                                                                                    length= len(_interest_arr_) - (interval[0] - 1),
+                                                                                    grace_period= grace_t,
+                                                                                    prepay_time= prepay_t[t] - (interval[0] - 1)
+                                                                                )
                         )
-                        
-                        # _principal_payment_.append(_residual_[prepay_time[t-1]] * principal_ratio_at_(
-                                                                                    # timing=t,
-                                                                                    # interest_arr= int_arr,
-                                                                                    # length= len(_interest_arr_) - (interval[0] - 1),
-                                                                                    # grace_period= grace_t,
-                                                                                    # prepay_time= prepay_time[t-1]
-                                                                                # )
-                        # )
-                        #########################################
                 _residual_.append(loan_amount - sum(_principal_payment_))
                 _interest_.append(_residual_[-2] * int_arr[t]) # Note the calculation of interest is based on the residual of the previous period.
                 _total_.append(_principal_payment_[-1] + _interest_[-1])
