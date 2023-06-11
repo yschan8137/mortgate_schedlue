@@ -60,19 +60,7 @@ def _EPP_arr_(
             else:
                 if (t == prepay_time[t] and prepay_amount[t] > 0):
                     if prepay_amount[t] < _residual_[-1]:
-                        _payments_.append(prepay_amount[t] + payments(t))
-                    #########################################
-                        # if prepay_amount[t] < payments(t-1):
-                            # print('prepay_time on line 64: ', prepay_time)
-                            # print("_residual_ on line 65", _residual_)
-                            # _payments_.append(
-                                # payments(t=prepay_time[t-1], amount=_residual_[prepay_time[t-1]])
-                                # )
-                            # prepay_time = [
-                                # prepay_time[t-1] if t_1 == prepay_time[t] else t_1 for t_1 in prepay_time]
-                        # else:
-                            # _payments_.append(prepay_amount[t])
-                    #########################################
+                        _payments_.append(prepay_amount[t] + payments(t-1))
                     else:
                         _payments_.append(
                             _residual_[t-1]
@@ -109,7 +97,6 @@ def _ETP_arr_(
     _residual_ = []
     _interest_ = []
     _accum_ = [] # while the multi-stages interest rate is applied, the accumulated repament is recorded in order to calculate the present value of the residual.
-    _accum_interval_= [] # the accumulated interval of the multi-stages interest rate.
     _total_ = []
 
     # The arrangement of interest rate applied to each period.
@@ -206,7 +193,7 @@ def _ETP_arr_(
                     else:
                         _principal_payment_.append(_residual_[-1])
                 else:
-                    if (t == prepay_t[t] - (interval[0] - 1)  and prepay_a[t] > 0):
+                    if (t == prepay_t[t] - (interval[0] - 1)  and prepay_a[t] > 0): # Note that the prepay_t[t] also needed to be subtracted by (interval[0] - 1).
                         # 提前支付金額低於前一期餘額
                         if prepay_a[t] < _residual_[-1]:
                             _principal_payment_.append(prepay_a[t] + (_residual_[prepay_t[t-1]] - (_accum_[n])) * principal_ratio_at_(
@@ -255,8 +242,8 @@ if __name__ == '__main__':
     }
 
     print(
-        # _EPP_arr_(**kwargs),
-        # \
+        _EPP_arr_(**kwargs),
+        \
         _ETP_arr_(**kwargs),
 
     )
