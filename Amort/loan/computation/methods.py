@@ -220,14 +220,24 @@ def _ETP_arr_(
                     else:
                         #########################################
                         # 這邊是提前付款後的期間，測試金額過高
-                        _principal_payment_.append(_residual_[prepay_time[t-1]] * principal_ratio_at_(
-                                                                                    timing=t,
-                                                                                    interest_arr= int_arr,
-                                                                                    length= len(_interest_arr_) - (interval[0] - 1),
-                                                                                    grace_period= grace_t,
-                                                                                    prepay_time= prepay_time[t-1]
-                                                                                )
+                        _principal_payment_.append(_residual_[-1] * principal_ratio_at_(
+                                                                                        timing=t,
+                                                                                        interest_arr= int_arr,
+                                                                                        interest_arr= int_arr,
+                                                                                        length= len(_interest_arr_) - (interval[0] - 1),
+                                                                                        grace_period= grace_t,
+                                                                                        prepay_time= prepay_time[t-1]
+                                                                                        )
                         )
+                        
+                        # _principal_payment_.append(_residual_[prepay_time[t-1]] * principal_ratio_at_(
+                                                                                    # timing=t,
+                                                                                    # interest_arr= int_arr,
+                                                                                    # length= len(_interest_arr_) - (interval[0] - 1),
+                                                                                    # grace_period= grace_t,
+                                                                                    # prepay_time= prepay_time[t-1]
+                                                                                # )
+                        # )
                         #########################################
                 _residual_.append(loan_amount - sum(_principal_payment_))
                 _interest_.append(_residual_[-2] * int_arr[t]) # Note the calculation of interest is based on the residual of the previous period.
