@@ -242,12 +242,6 @@ def calculator(
                 keys=multi_index_subsidy, # type: ignore
                 axis=1
             )
-            # else:
-                # df_subsidy= pd.DataFrame()
-
-            # if df_subsidy.empty:
-                # raise ValueError(
-                    # 'The method(s) of amortization for subsidy loan are not specified.')
 
             # Add the level_0 header if subsidy_arr is given.
             df.columns = pd.MultiIndex.from_tuples(
@@ -267,16 +261,21 @@ def calculator(
                 for args in df.columns if args[0] == df_schema.level_0.ORIGINAL and args[2] == df_schema.level_2.PAYMENT
                 for args_subsidy in df.columns if args_subsidy[0] == df_schema.level_0.SUBSIDY and args_subsidy[2] == df_schema.level_2.PAYMENT
             ]
+
             # 欄位加總
             for id in idx:
                 df.loc[:, (df_schema.level_0.TOTAL, id[0][1] + "(" + df_schema.level_0.ORIGINAL + ")", id[1][1] + "(" +
-                           df_schema.level_0.SUBSIDY + ")")] = df.loc[:, id].apply(lambda x: round(x)).sum(axis=1, numeric_only=True)  # type: ignore
-            #計算結果有落差，看要不要移到上面
+                           df_schema.level_0.SUBSIDY + ")")] = df.loc[:, id].apply(lambda x: round(x)).sum(axis=1, numeric_only=True) # type: ignore
+
             # 計算各期清償總和
             df.loc['Sum'] = df[1:].sum().groupby(axis=0, level=[0, 1, 2]  # type: ignore
                                                  ).transform('sum')
             df.loc['Sum', [(l0, l1, l2) for (l0, l1, l2) in df.columns if l2 == '剩餘貸款']] = df.loc[len(
                 df) - 2, [(l0, l1, l2) for (l0, l1, l2) in df.columns if l2 == '剩餘貸款']].apply(lambda x: round(x))
+            
+            # 租金補貼貸款會重覆計算，須扣除
+            df.loc['Sum', [(l0, l1, l2) for (l0, l1, l2) in df.columns if l0 == df_schema.level_0.TOTAL]] -= subsidy_amount
+        
         else:
             df.loc['Sum'] = df[1:].sum().groupby(
                 axis=0, level=[0, 1]).transform('sum')  # type: ignore
@@ -327,4 +326,3 @@ if __name__ == "__main__":
                 ]
         )
     )
-# 解決Subsidy金額低於當期還款金額，攤還本金無法加總的問題
