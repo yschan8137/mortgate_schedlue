@@ -324,11 +324,16 @@ class MortgageOptions:
         def _interest_rate(interest, arr, multi_stage_interest, memory):
             if interest is None:
                 raise PreventUpdate
-            else:
+            elif type == LOAN.TYPE:
                 memory['interest_arr'] = {
                     'interest': [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1],
                     'multi_arr': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
                 }
+            elif type== LOAN.SUBSIDY.TYPE:
+                memory['subsidy_arr'] = {
+                    'interest': [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1],
+                    'multi_arr': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
+                    }
             return memory
         
         return layout
@@ -366,7 +371,7 @@ class AdvancedOptions:
                     [
                         dbc.AccordionItem(
                             children=children,
-                            title=title,
+                            title= title,
                             id= 'accordion-{}'.format(title),
                             item_id= title, 
                             style= {
@@ -424,11 +429,12 @@ class AdvancedOptions:
                 Output(suffix_for_type(ADDON.INPUT, type), 'max'),
                 [Input('accordion', 'active_item')],
                 State(suffix_for_type(LOAN.AMOUNT, LOAN.TYPE), 'value'),
+                State(suffix_for_type(LOAN.AMOUNT, LOAN.SUBSIDY.TYPE), 'value'),
                 prevent_initial_call=True,
         )
-        def toggle_prepay_arrangement(_, amount):
+        def toggle_prepay_arrangement(_, amount, subsidy_amount):
             if _ and _[0] == LOAN.PREPAY.TYPE:
-                return 'number', 1, amount, 
+                return 'number', 1, (amount if amount else 0)
             else:
                 return 'float', 0.01, 100
 
@@ -585,22 +591,24 @@ class AdvancedOptions:
                 return no_update
 
         @callback(
-            Output(suffix_for_type(ADDON.INPUT, LOAN.SUBSIDY.PREPAY.TYPE),
-                   'disabled', allow_duplicate=True),  # type: ignore
-            Output(suffix_for_type(ADDON.DROPDOWN.MENU, LOAN.SUBSIDY.PREPAY.TYPE),
-                   'disabled', allow_duplicate=True),  # type: ignore
-            Output(suffix_for_type(ADDON.ADD, LOAN.SUBSIDY.PREPAY.TYPE), 'disabled',
-                   allow_duplicate=True),  # type: ignore
-            Output(suffix_for_type(ADDON.DELETE, LOAN.SUBSIDY.PREPAY.TYPE), 'disabled',
-                   allow_duplicate=True),  # type: ignore
+            [
+                Output(suffix_for_type(ADDON.INPUT, LOAN.SUBSIDY.PREPAY.TYPE), 'disabled', allow_duplicate=True),  # type: ignore
+                Output(suffix_for_type(ADDON.DROPDOWN.MENU, LOAN.SUBSIDY.PREPAY.TYPE),'disabled', allow_duplicate=True),  # type: ignore
+                Output(suffix_for_type(ADDON.ADD, LOAN.SUBSIDY.PREPAY.TYPE), 'disabled', allow_duplicate=True),  # type: ignore
+                Output(suffix_for_type(ADDON.DELETE, LOAN.SUBSIDY.PREPAY.TYPE), 'disabled', allow_duplicate=True),  # type: ignore
+                Output(suffix_for_type(ADDON.INPUT, LOAN.SUBSIDY.PREPAY.TYPE), 'type'),
+                Output(suffix_for_type(ADDON.INPUT, LOAN.SUBSIDY.PREPAY.TYPE), 'step'),
+                Output(suffix_for_type(ADDON.INPUT, LOAN.SUBSIDY.PREPAY.TYPE), 'max'),
+            ],
             Input(LOAN.SUBSIDY.PREPAY.OPTION, 'value'),
+            Input(suffix_for_type(LOAN.AMOUNT, type), 'value'),
             prevent_initial_call=True
         )
-        def control_disabled(value):
+        def control_disabled(value, subsidy_amount):
             if value[-1] == 1:
-                return [False] * 4
+                return [False] * 4 + ['number', 1 , (subsidy_amount if subsidy_amount else 0)]
             else:
-                return [True] * 4
+                return [True] * 4 + ['number', 0, 0]
         
         @callback(
             Output(LOAN.RESULT, 'data', allow_duplicate= True), # type: ignore

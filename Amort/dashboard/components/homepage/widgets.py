@@ -25,8 +25,6 @@ def addon(
         placeholder: str,
         pattern_matching=False,
         disabled: bool = False,
-
-
 ):
     """
     The addon function is used to generate a dict for the combined input of payment arrangement.
