@@ -5,11 +5,12 @@ from gc import disable
 from re import I, S
 from sre_constants import IN
 from unittest.mock import call
-from dash import Dash, html, dcc, Input, Output, State, callback, MATCH, ALL, ALLSMALLER, no_update
+from dash import Dash, html, dcc, Input, Output, State, callback, MATCH, ALL, ALLSMALLER, no_update, callback_context
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from numpy import place
 from traitlets import default
+from time import time
 
 from .. import amortization_types
 from .widgets import refreshable_dropdown, addon
@@ -465,6 +466,9 @@ class AdvancedOptions:
                         dbc.CardBody(
                             [
                                 html.Div(
+                                    dbc.Button("Reset", id= 'Reset', color="primary", className="me-1")
+                                ),
+                                html.Div(
                                     [
                                         dbc.Label('Subsidy Start timepoint'),
                                         dbc.Input(
@@ -546,7 +550,6 @@ class AdvancedOptions:
                         ),
                     ],
                     style={'width': '100%'},
-                    # className="mb-3 w-auto",
                 ),
             ]
         )
@@ -636,7 +639,7 @@ class AdvancedOptions:
             arr,
             memory
         ):
-            if start and loan_amount:
+            if start and loan_amount and tenure and (multi_stage_interest if multi_stage_interest else interest): # It is needed that all the sufficient parameters are given.
                 if (start > 0 and start <= 24) and loan_amount > 0:
                     memory['subsidy_arr'] = {
                         'amount': loan_amount,
@@ -652,16 +655,47 @@ class AdvancedOptions:
                         'tenure': tenure,
                         'time': start
                     }
+                    return memory
             else:
-                memory['subsidy_arr']= {
-                    'amount': 0,
-                    'time': 0,
-                    'grace_period': 0,
-                    'method': 0,
-                    'tenure': 0,
-                    'time': 0
-                }
-            return memory
+                raise PreventUpdate()
+            
+        @callback(
+            Output(LOAN.RESULT, 'data', allow_duplicate= True),
+                [
+                    Output(suffix_for_type(LOAN.AMOUNT, type), 'value', allow_duplicate=True),
+                    Output(suffix_for_type(LOAN.GRACE, type), 'value'),
+                    Output(suffix_for_type(ADDON.INPUT, LOAN.SUBSIDY.PREPAY.TYPE), 'value', allow_duplicate=True),
+                    Output(LOAN.SUBSIDY.START, 'value', allow_duplicate=True),
+                    Output(LOAN.SUBSIDY.TENURE, 'value', allow_duplicate=True),
+                    Output(suffix_for_type(LOAN.INTEREST, type), 'value', allow_duplicate=True),
+                    Output(suffix_for_type(ADDON.INPUT, type), 'value', allow_duplicate=True),
+                    Output(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type), 'value', allow_duplicate=True),
+                ],
+            Input('Reset', 'n_clicks'),
+            Input(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type), 'value'),
+            State(LOAN.RESULT, 'data'),
+            prevent_initial_call=True
+        )
+        def reset_all(_, repayment_options, memory):
+            if callback_context.triggered_id== "Reset":
+                memory['subsidy_arr'] = {
+                                            'amount': 0,
+                                            'time': 0,
+                                            'grace_period': 0,
+                                            'method': repayment_options,
+                                            'multi_arr': [],
+                                            'interest': [0],
+                                            'prepay_arr': {
+                                                'multi_arr': [],
+                                                'amount': [0],    
+                                            },
+                                            'tenure': 0,
+                                            'time': 0
+                                        }
+                return [memory] + [0]*7 + [repayment_options]
+            else:
+                return no_update
+
         return layout
 
 
@@ -716,7 +750,7 @@ def layout():
              )
     return layout
 
-# py -m Amort.dashboard.components.homepage.controls
+# py -m Amort.dashboard.components.DataTable.controls
 if __name__ == "__main__":
     app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
 

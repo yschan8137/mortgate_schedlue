@@ -8,7 +8,7 @@ from ..toolkit import convert_df_to_dash
 from .controls import MortgageOptions, AdvancedOptions
 from ..toolkit import suffix_for_type
 
-from Amort.dashboard.components.homepage import controls
+from Amort.dashboard.components.DataTable import controls
 class CONFIG:
     PAGE_SIZE = 24
     class SPLITS:
@@ -96,7 +96,7 @@ def update_datatable(
     return df_dash[1],  df_dash[0], pages
 
 
-# py -m Amort.dashboard.components.homepage.datatable
+# py -m Amort.dashboard.components.DataTable.app
 if __name__ == "__main__":
     app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 

@@ -380,7 +380,7 @@ def refreshable_dropdown(
     return dropdown
 
 
-# py -m Amort.dashboard.components.homepage.widgets
+# py -m Amort.dashboard.components.DataTable.widgets
 if __name__ == "__main__":
     from dash import Dash
     app = Dash(__name__, external_stylesheets=[

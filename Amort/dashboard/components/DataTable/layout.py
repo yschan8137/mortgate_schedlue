@@ -1,4 +1,4 @@
-# This file is for the laypot of the homepage.
+# This file is for the laypot of the app.py.
 
 import dash_bootstrap_components as dbc
 from .widgets import refreshable_dropdown
@@ -20,7 +20,7 @@ def main_items():
                         type='number',
                         name='Mortgage Amount',
                         required=True,
-                        id=LOAN.TOTAL_AMOUNT,
+                        id=LOAN.AMOUNT,
                         placeholder='Input the mortgage amount',
                         min=0,
                         step=1,
@@ -45,7 +45,7 @@ def main_items():
                             type='number',
                             name='Down Payment Rate',
                             required=True,
-                            id=LOAN.DOWN_PAYMENT_RATE,
+                            id=LOAN.DOWNPAYMENT,
                             min=0,
                             step=10,
                             value=20,
@@ -80,7 +80,7 @@ def main_items():
                         value=30,
                         step=1,
                         type='number',
-                        id=LOAN.PERIOD,
+                        id=LOAN.TENURE,
                         style={
                             'textAlign': 'left'
                         })
