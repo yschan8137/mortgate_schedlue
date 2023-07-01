@@ -1,5 +1,5 @@
-import numpy as np
-from .helpers.adjustments import ETR, Adjustments
+import numpy as np # type: ignore
+from .helpers.adjustments import ETR, Offsets
 from .helpers.scheduler import ensure_list_type, scheduler
 import itertools
 
@@ -8,14 +8,13 @@ def _EPP_arr_(
     tenure: int,
     loan_amount: int,
     interest_arr: dict,
-    prepay_time: list,
-    prepay_amount: list,
     grace_period: int = 0,
+    **kwargs
 ) -> list:
-    if isinstance(prepay_amount, int):
-        prepay_amount = [prepay_amount] * (tenure * 12 + 1)
-    if isinstance(prepay_time, int):
-        prepay_time = [prepay_time] * (tenure * 12 + 1)
+    if isinstance(prepay_time := kwargs.get('prepay_arr', {}).get('time', 0), int):
+        raise TypeError('The data type of the time in prepay_arr must be a list, which coveted from the _time_ function in the prepay module')
+    if isinstance(prepay_amount := kwargs.get('prepay_arr', {}).get('amount', 0), int):
+        raise TypeError('The data type of the amount in prepay_arr must be a list, which coveted from the _amount_ function in the prepay module')
     _payments_ = []
     _residual_ = []
     _interest_ = []
@@ -24,19 +23,17 @@ def _EPP_arr_(
         tenure=tenure,
         interest_arr={
             'interest': ensure_list_type(interest_arr.get('interest', 0)),
-            'multi_arr': ensure_list_type(interest_arr.get('multi_arr', []))
+            'time': ensure_list_type(interest_arr.get('time', []))
         }
     )
 
-    def _unique_sum_(t, prepay_amount=prepay_amount, prepay_time=prepay_time): 
-        return sum([*np.unique(prepay_amount[:prepay_time[t]])])
-
-    def payments(t,
-                 amount=loan_amount,
-                 grace_period=grace_period,
-                 tenure=tenure,
-                 prepay_time=prepay_time,
-                 ):
+    def payments(
+            t,
+            amount= loan_amount,
+            grace_period= grace_period,
+            tenure= tenure,
+            prepay_time= prepay_time,
+        ):
         return (
             (
                 amount
@@ -45,33 +42,27 @@ def _EPP_arr_(
             (
                 (
                     (tenure - grace_period) * 12
-                ) + Adjustments(
-                    t,
-                    grace_period=grace_period,
-                    prepay_time=prepay_time[t]  # type: ignore
-                )
+                ) \
+                    + Offsets(
+                        grace_period=grace_period,
+                        prepay_time=prepay_time[t-1]  # type: ignore
+                    )
             )
             if t > grace_period * 12 else 0
         )
+    
     for t in range(len(_interest_arr_)):
         if t > 0:
-            if (prepay_time[t] == 0):
-                _payments_.append(payments(t))
+            if prepay_amount[t] < _residual_[-1]:
+                _payments_.append(prepay_amount[t] + payments(
+                                                        t= t,
+                                                        amount= _residual_[prepay_time[t-1]]
+                                                     )
+                )
             else:
-                if (t == prepay_time[t] and prepay_amount[t] > 0):
-                    if prepay_amount[t] < _residual_[-1]:
-                        _payments_.append(prepay_amount[t] + payments(t-1))
-                    else:
-                        _payments_.append(
-                            _residual_[t-1]
-                        )
-                else:
-                    _payments_.append(
-                        payments(
-                            t=prepay_time[t],
-                            amount=_residual_[prepay_time[t]]
-                        )
-                    )
+                _payments_.append(
+                    _residual_[t-1]
+                )
             _interest_.append(_residual_[-1] * _interest_arr_[t])
             _residual_.append(loan_amount - sum(_payments_))
         else:
@@ -88,9 +79,8 @@ def _ETP_arr_(
     tenure,
     loan_amount: int,
     interest_arr: dict,
-    prepay_time: list,
-    prepay_amount: list,
     grace_period: int= 0,
+    **kwargs
     ) -> list:
     # default value  
     _principal_payment_ = []
@@ -104,7 +94,7 @@ def _ETP_arr_(
                         tenure=tenure,
                         interest_arr={
                             'interest': ensure_list_type(interest_arr.get('interest', 0)),
-                            'multi_arr': ensure_list_type(interest_arr.get('multi_arr', []))
+                            'time': ensure_list_type(interest_arr.get('time', []))
                         }
                     )
     # the dynamic arrangement of principal ratio of whole tenure.
@@ -120,7 +110,7 @@ def _ETP_arr_(
                     interest_arr= interest_arr,
                     length= length,
                     grace_period= grace_period,
-                    prepay={'multi_arr': prepay_time},
+                    prepay={'time': prepay_time},
                ) * (1 + interest_arr[timing])**(-(1 + (length - 1) - timing))
 
     def applied_interval(arr):
@@ -164,17 +154,18 @@ def _ETP_arr_(
          return groups
         return group_by_consecutive_elements(accumulative_summation(t))
     
-    # prepay有問題
     for (n, (interest, interval)) in enumerate(applied_interval(_interest_arr_)):   
         if n > 0:
             d = (interval[1] - interval[0] + 1) # Note that the end of the interval, namely interval[1], is not included in the calculation of the number of periods.
             _accum_.append(sum(_principal_payment_[:-1])) # To address the situation that the interest rate is changed in the middle of the tenure, the accumulated repayment is recorded in order to calculate the present value of the residual. 
             int_arr = [interest] * (len(_interest_arr_) - (interval[0] - 1))
             grace_t= (round(((grace_period * 12) - interval[0] + 1)/12) if (grace_period * 12) - interval[0] > 0 else 0)
-            if isinstance(prepay_amount, int):
-                prepay_amount = [prepay_amount] * len(_interest_arr_)
-            if isinstance(prepay_time, int):
-                prepay_time = [prepay_time] * len(_interest_arr_)
+
+            if isinstance(prepay_time := kwargs.get('prepay_arr', {}).get('time', 0), int):
+                raise TypeError('The data type of the time in prepay_arr must be a list, which coveted from the _time_ function in the prepay module')
+            if isinstance(prepay_amount := kwargs.get('prepay_arr', {}).get('amount', 0), int):
+                raise TypeError('The data type of the amount in prepay_arr must be a list, which coveted from the _amount_ function in the prepay module')
+            
             prepay_t = prepay_time[interval[0] - 1:]
             prepay_a = prepay_amount[interval[0] - 1:]
             for t in range(interval[0], interval[1]):
@@ -193,7 +184,7 @@ def _ETP_arr_(
                     else:
                         _principal_payment_.append(_residual_[-1])
                 else:
-                    if (t == prepay_t[t] - (interval[0] - 1)  and prepay_a[t] > 0): # Note that the prepay_t[t] also needed to be subtracted by (interval[0] - 1).
+                    if (t == prepay_t[t] - (interval[0] - 1) and prepay_a[t] > 0): # Note that the prepay_t[t] also needed to be subtracted by (interval[0] - 1).
                         # 提前支付金額低於前一期餘額
                         if prepay_a[t] < _residual_[-1]:
                             _principal_payment_.append(prepay_a[t] + (_residual_[prepay_t[t-1]] - (_accum_[n])) * principal_ratio_at_(
@@ -234,11 +225,11 @@ if __name__ == '__main__':
         'loan_amount': 800,
         'interest_arr': {
             'interest': [0.05],
-            'multi_arr': []
+            'time': []
         },
         'prepay_time': 0,
         'prepay_amount': 0,
-        'grace_period': 3,
+        'grace_period': 0,
     }
 
     print(

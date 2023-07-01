@@ -23,7 +23,7 @@ from ..toolkit import suffix_for_type
 # [X] 3. enable the format for multi-stage interest rate, which combines results of the sigle interest rate and the addon on multi-stage interest rates.
         
 kwargs_schema={
-                'interest_arr': {'interest': [1.38], 'multi_arr': []},
+                'interest_arr': {'interest': [1.38], 'time': []},
                 'total_amount': 10_000_000,
                 'down_payment_rate': 20,
                 'tenure': 30,
@@ -31,16 +31,16 @@ kwargs_schema={
                 'method':['EQUAL_TOTAL', 'EQUAL_PRINCIPAL'],
                 'prepay_arr':{
                                 'amount': [],
-                                'multi_arr': []
+                                'time': []
                               },
                 'subsidy_arr': {
                                   'interest': [0],
-                                  'multi_arr': [],
+                                  'time': [],
                                   'time': 0,
                                   'amount': 0,
                                   'tenure': 0,
                                   'grace_period': 0,
-                                  'prepay_arr': {'amount': [], 'multi_arr': []},
+                                  'prepay_arr': {'amount': [], 'time': []},
                                   'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
                                 },
 }
@@ -328,12 +328,12 @@ class MortgageOptions:
             elif type == LOAN.TYPE:
                 memory['interest_arr'] = {
                     'interest': [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1],
-                    'multi_arr': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
+                    'time': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
                 }
             elif type== LOAN.SUBSIDY.TYPE:
                 memory['subsidy_arr'] = {
                     'interest': [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1],
-                    'multi_arr': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
+                    'time': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
                     }
             return memory
         
@@ -449,7 +449,7 @@ class AdvancedOptions:
         def update_result_for_prepay(arr, memory):
             memory['prepay_arr'] = {
                 'amount': [*arr.values()], 
-                'multi_arr': [int(v) for v in arr.keys()]
+                'time': [int(v) for v in arr.keys()]
             }
             
             return memory
@@ -643,13 +643,12 @@ class AdvancedOptions:
                 if (start > 0 and start <= 24) and loan_amount > 0:
                     memory['subsidy_arr'] = {
                         'amount': loan_amount,
-                        'time': grace_period,
                         'grace_period': grace_period,
                         'method': repayment_options,
-                        'multi_arr': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1],
+                        'time': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1],
                         'interest': [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1],
                         'prepay_arr': {
-                            'multi_arr': [int(v) for v in prepay_arr.keys()],
+                            'time': [int(v) for v in prepay_arr.keys()],
                             'amount': [*prepay_arr.values()],    
                         },
                         'tenure': tenure,
@@ -663,13 +662,15 @@ class AdvancedOptions:
             Output(LOAN.RESULT, 'data', allow_duplicate= True),
                 [
                     Output(suffix_for_type(LOAN.AMOUNT, type), 'value', allow_duplicate=True),
-                    Output(suffix_for_type(LOAN.GRACE, type), 'value'),
-                    Output(suffix_for_type(ADDON.INPUT, LOAN.SUBSIDY.PREPAY.TYPE), 'value', allow_duplicate=True),
                     Output(LOAN.SUBSIDY.START, 'value', allow_duplicate=True),
                     Output(LOAN.SUBSIDY.TENURE, 'value', allow_duplicate=True),
-                    Output(suffix_for_type(LOAN.INTEREST, type), 'value', allow_duplicate=True),
-                    Output(suffix_for_type(ADDON.INPUT, type), 'value', allow_duplicate=True),
+                    Output(suffix_for_type(LOAN.GRACE, type), 'value'),
                     Output(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type), 'value', allow_duplicate=True),
+                    Output(suffix_for_type(LOAN.INTEREST, type), 'value', allow_duplicate=True),
+                    Output(suffix_for_type(ADDON.MEMORY, type), 'data', allow_duplicate=True),
+                    Output({'index': type, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, type)}, 'data', allow_duplicate=True),
+                    Output(suffix_for_type(ADDON.MEMORY, LOAN.SUBSIDY.PREPAY.TYPE), 'data', allow_duplicate=True),
+                    Output(suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.PREPAY.TYPE), 'data', allow_duplicate=True),
                 ],
             Input('Reset', 'n_clicks'),
             Input(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type), 'value'),
@@ -681,18 +682,17 @@ class AdvancedOptions:
                 memory['subsidy_arr'] = {
                                             'amount': 0,
                                             'time': 0,
+                                            'tenure': 0,
                                             'grace_period': 0,
                                             'method': repayment_options,
-                                            'multi_arr': [],
+                                            'time': [],
                                             'interest': [0],
                                             'prepay_arr': {
-                                                'multi_arr': [],
-                                                'amount': [0],    
+                                                'time': [],
+                                                'amount': [],    
                                             },
-                                            'tenure': 0,
-                                            'time': 0
                                         }
-                return [memory] + [0]*7 + [repayment_options]
+                return [memory] + [0, 0, 0, 0, repayment_options, 0, {}, [0], {}, [[0]]] 
             else:
                 return no_update
 

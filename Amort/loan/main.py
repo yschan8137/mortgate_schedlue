@@ -1,7 +1,5 @@
-import numpy as np
-import pandas as pd
-
-from .computation.helpers.scheduler import ensure_list_type, kwargs_detection, scheduler
+import pandas as pd # type: ignore
+from .computation.helpers.scheduler import ensure_list_type, kwargs_detection
 from .computation.helpers.prepay import _time_, _amount_
 from .computation.methods import _EPP_arr_, _ETP_arr_
 from .computation.categoties import amortization as amortization_methods
@@ -38,7 +36,7 @@ def calculator(
     1. interest_arr(dict): The arrangement of the amortization_methods interest which includes:  
       (1) interest(List): the interest rate(s) applied to specific period(s) of the loan.
 
-      (2) multi_arr(List)(Optional): The timepoints at which the loan interest rates change.
+      (2) time(List)(Optional): The timepoints at which the loan interest rates change.
 
     2. total_amount(int): The total amount of the loan.
 
@@ -54,7 +52,7 @@ def calculator(
 
         (1) interest(List): The interest rate(s) applied to specific period(s) of the loan.
 
-        (2) multi_arr(List)(Optional): The timepoints at which the subsidy loan interest rates change. 
+        (2) time(List)(Optional): The timepoints at which the subsidy loan interest rates change. 
 
         (3) time(int): The timepoint at which the subsidy loan is applied.
 
@@ -70,15 +68,15 @@ def calculator(
     
             i. amount(List): Prepaid amount(s) applied to specific period(s) of the loan.
             
-            ii. multi_arr(List)(Optional): The according period(s) of the prepayment.
+            ii. time(List)(Optional): The according period(s) of the prepayment.
     
     8. prepay_arr: The arrangement of the prepayment of the loan, which includes:
 
         (1) amount(List): Prepaid amount(s) applied to specific period(s) of the loan. 
 
-        (2) multi_arr(List)(Optional): The according period(s) of the prepayment. 
-            (Note that there is a slight difference in the multi_arr specification between prepayment and loan/subsidy loan. 
-            The multi_arr for prepayment represents the collection of timepoints for the amounts being prepaid, while the multi_arr for loan/subsidy loan refers to the collection of timepoints at which the interest rates change.)
+        (2) time(List)(Optional): The according period(s) of the prepayment. 
+            (Note that there is a slight difference in the time specification between prepayment and loan/subsidy loan. 
+            The time for prepayment represents the collection of timepoints for the amounts being prepaid, while the time for loan/subsidy loan refers to the collection of timepoints at which the interest rates change.)
     """
 
     if grace_period > 5:
@@ -89,7 +87,7 @@ def calculator(
         'subsidy_arr':
         {
             'interest': list,
-            'multi_arr': list,
+            'time': list,
             'time': int,
             'grace_period': int,
             'amount': int,
@@ -99,7 +97,7 @@ def calculator(
         },
         'prepay_arr':
         {
-            'multi_arr': list,
+            'time': list,
             'amount': list,
         },
     }
@@ -116,20 +114,18 @@ def calculator(
         subsidy_time=subsidy_time,
         tenure= tenure,
         prepay_arr={
-            'multi_arr': kwargs.get('prepay_arr', {}).get('multi_arr', 0)}
+            'time': kwargs.get('prepay_arr', {}).get('time', 0)}
     )
 
     prepay_amount = _amount_(
-        prepay_time=prepay_time,
         tenure=tenure,
         subsidy_time=subsidy_time,
         subsidy_amount=subsidy_amount,  # type: ignore
         prepay_arr={
-            'multi_arr': kwargs.get('prepay_arr', {}).get('multi_arr', 0),
+            'time': kwargs.get('prepay_arr', {}).get('time', 0),
             'amount': ensure_list_type(kwargs.get('prepay_arr', {}).get('amount', 0))
         }
     )
-
     def _df_(objs,
              name=None,
              index_range=[0, tenure * 12 + 1],
@@ -155,22 +151,26 @@ def calculator(
     if 'EQUAL_TOTAL' in method_applied:
         res_etp = _ETP_arr_(
             tenure= tenure,
-            loan_amount=loan_amount,
-            grace_period=grace_period,
-            interest_arr=interest_arr,
-            prepay_time=prepay_time,
-            prepay_amount=prepay_amount,
+            loan_amount= loan_amount,
+            grace_period= grace_period,
+            interest_arr= interest_arr,
+            prepay_arr= {
+                'time': prepay_time,
+                'amount': prepay_amount,
+            }
         )
         df_etp = _df_(res_etp)
         dfs_ordinry[amortization_methods['EQUAL_TOTAL']] = df_etp
     if 'EQUAL_PRINCIPAL' in method_applied:
         res_epp = _EPP_arr_(
-            tenure=tenure,
-            loan_amount=loan_amount,
-            grace_period=grace_period,
-            interest_arr=interest_arr,
-            prepay_time=prepay_time,
-            prepay_amount=prepay_amount,
+            tenure= tenure,
+            loan_amount= loan_amount,
+            grace_period= grace_period,
+            interest_arr= interest_arr,
+            prepay_arr= {
+                'time': prepay_time,
+                'amount': prepay_amount,
+            }
         )
         df_epp = _df_(res_epp)
         dfs_ordinry[amortization_methods['EQUAL_PRINCIPAL']] = df_epp
@@ -199,27 +199,29 @@ def calculator(
             subsidy_prepay_time = _time_(
                 subsidy_time=subsidy_subsidy_time,
                 tenure=tenure,
-                prepay_arr={'multi_arr': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)})
+                prepay_arr={'time': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)})
             subsidy_prepay_amount = _amount_(
-                prepay_time=subsidy_prepay_time,
+                # prepay_time=subsidy_prepay_time,
                 subsidy_time=subsidy_subsidy_time,
                 tenure=tenure,
                 subsidy_amount=subsidy_subsidy_amount,  # type: ignore
                 prepay_arr={
                     'amount': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('amount', 0),
-                    'multi_arr': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)}
+                    'time': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', [0])}
             )
             subsidy_interest_arr = {
                 'interest': kwargs.get('subsidy_arr', {}).get('interest', 0),
-                'multi_arr': kwargs.get('subsidy_arr', {}).get('multi_arr', [])
+                'time': kwargs.get('subsidy_arr', {}).get('time', [])
             }
             method_applied_to_subsidy = [v for v in method_applied_to_subsidy_loan if v in amortization_methods.keys()]
             kwargs_subsidy = {
                 "tenure": subsidy_tenure,
                 "loan_amount": subsidy_amount,
                 "interest_arr": subsidy_interest_arr,
-                "prepay_time": subsidy_prepay_time,
-                "prepay_amount": subsidy_prepay_amount,
+                "prepay_arr": {
+                    "time": subsidy_prepay_time,
+                    "amount": subsidy_prepay_amount
+                },
                 "grace_period": subsidy_grace_period,
             }
 
@@ -298,23 +300,23 @@ def calculator(
 if __name__ == "__main__":
     print(
         calculator(
-            interest_arr={'interest': [1.38], 'multi_arr': []},
+            interest_arr={'interest': [1.38], 'time': []},
             total_amount=10_000_000,
             down_payment_rate= 20,
             tenure=40,
             grace_period=0,
             prepay_arr={
-                'multi_arr': [120, 160],
+                'time': [120, 160],
                 'amount': [2_000_000, 200_0000]
             },
             subsidy_arr={
                 'interest': [1.01],
-                'multi_arr': [],
+                'time': [],
                 'time': 24,
                 'amount': 2_300_000,
                 'tenure': 20,
                 'grace_period': 0,
-                'prepay_arr': {'amount': [], 'multi_arr': []},
+                'prepay_arr': {'amount': [], 'time': []},
                 'method': [
                     'EQUAL_TOTAL', 
                     'EQUAL_PRINCIPAL'

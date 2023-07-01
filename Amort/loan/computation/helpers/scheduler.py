@@ -1,4 +1,3 @@
-import numpy as np
 from itertools import accumulate
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -23,12 +22,14 @@ def kwargs_detection(
         'tenure': int,
         'loan': int,
         'interest_arr': {
-        'interest': list,
-            'multi_arr': list},
+            'interest': list,
+            'time': list
+        },
         'prepay_arr': {
-        'amount': list,
-            'multi_arr': list,
-            'accumulator': bool}
+            'amount': list,
+            'time': list,
+            'accumulator': bool
+        }
     },
         **kwargs) -> None:
     """
@@ -70,24 +71,24 @@ def kwargs_detection(
 
 
 def scheduler(
-        tenure: int,
-        loan: int = 0,
-        convert_to_month_rate: bool = True,
-        **kwargs: dict) -> list:
+    tenure: int,
+    loan: int = 0,
+    convert_to_month_base: bool = True,
+    **kwargs: dict
+) -> list:
     """
     The scheduler of the applied interest (feasible for single and multistage loan interest rate), loan and loan prepayment.
-    
+
     Arguments:
 
-    1. tenure (on a yearly basis): 
-      Length of total loan period.
+    1. tenure (on a yearly basis): Length of total loan period.
 
     2. interest_arr:
 
       2.1 interest: Interest rates applied on each time point. Multistage rate is allowed if the [time] is specified in list of sequential time when the rate adjustment happended. 
 
-      2.2 multi_arr (yearly basis): The end time points of the multistage interests applied. 
-          Singlestage rate is not required to specified the [multi_arr], the value would be set as [0] by default. 
+      2.2 time (yearly basis): The end time points of the multistage interests applied. 
+          Singlestage rate is not required to specified the [time], the value would be set as [0] by default. 
           Note: [mulit_arr] should be specified as list and the number of the elements is restricted to be the (number of applied interest - 1). 
 
     3. loan (on a yearly basis): The total amount of the loan.    
@@ -95,7 +96,7 @@ def scheduler(
     4. prepay_arr 
       4.1 prepay: The total amount of the loan prepayment(s). If prepayment occured multiple times within the loan period, the prepayments should be set in list.
 
-      4.2 multi_arr (yearly basis): The time points when the prepayments occured. 
+      4.2 time (yearly basis): The time points when the prepayments occured. 
                        If prepayment occured multiple times within the loan period, the prepa_time should be set in list.  
 
       4.3 accumulator(False by default): accumulate the amount on the change point.
@@ -109,12 +110,12 @@ def scheduler(
           tenure= 10, 
           interest_arr= {
             'interest': [1.38, 1.01],
-            'multi_arr': [12]
+            'time': [12]
           }, 
           loan= 500_000,
           prepay_arr = {
             'amount': [200_000, 200_000],
-            'multi_arr': [5, 60],
+            'time': [5, 60],
             'accumulator': True
           }
        )
@@ -123,9 +124,9 @@ def scheduler(
         kws_spec={
             'tenure': int,
             'interest_arr': {'interest': list,
-                             'multi_arr': list},
+                             'time': list},
             'prepay_arr': {'amount': list,
-                           'multi_arr': list,
+                           'time': list,
                            'accumulator': bool}
         },
         **kwargs)
@@ -134,11 +135,11 @@ def scheduler(
     interest = list(map(
         lambda x: x/100, ensure_list_type(kwargs.get('interest_arr', {}).get('interest', 0))))
     interest_arr = [
-        0] + sorted(ensure_list_type(kwargs.get('interest_arr', {}).get('multi_arr', [])))
+        0] + sorted(ensure_list_type(kwargs.get('interest_arr', {}).get('time', [])))
     prepay = [0] + \
         ensure_list_type(kwargs.get('prepay_arr', {}).get('amount', []))
     prepay_arr = [
-        0] + sorted(ensure_list_type(kwargs.get('prepay_arr', {}).get('multi_arr', [])))
+        0] + sorted(ensure_list_type(kwargs.get('prepay_arr', {}).get('time', [])))
     prepay_accumulator = kwargs.get('prepay_arr', {}).get('accumulator', False)
 
     if prepay_accumulator == True:
@@ -147,7 +148,7 @@ def scheduler(
     if len(interest) > 1:
         if len(interest_arr) == 0:
             raise KeyError(
-                '\r' + 'The [multi_arr] should be specified under multistage interest rate frsmework' + '\n')
+                '\r' + 'The [time] should be specified under multistage interest rate frsmework' + '\n')
         if len(interest_arr) > len(interest):
             raise ValueError(
                 '\r' + '[time] should be indicated as the rate adjusting points. The example is shown in arguments discription for reference' + '\n')
@@ -177,7 +178,7 @@ def scheduler(
                                              0 and interest > 0 else - prepay))
         ) * (interest if interest > 0 else 1),
         _arr_(amount_arr=loan),
-        map(lambda x: (x/12 if convert_to_month_rate == True else x),
+        map(lambda x: (x/12 if convert_to_month_base == True else x),
             _arr_(amount_arr=interest, time_arr=interest_arr)),
         _arr_(amount_arr=prepay, time_arr=prepay_arr)
     )
@@ -190,17 +191,17 @@ payment = scheduler(
     tenure=10,
     interest_arr={
         'interest': [1.38, 1],
-        'multi_arr': [12]
+        'time': [12]
     },
     loan=500_000,
     prepay_arr={
         'amount': [200_000, 200_000],
-        'multi_arr': [5, 60],
+        'time': [5, 60],
         'accumulator': True
     }
 )
 if __name__ == "__main__":
-    import pandas as pd
+    import pandas as pd  # type: ignore
     print(
-        pd.Series([*payment])
+        [(t, v) for t, v in enumerate(payment)]
     )

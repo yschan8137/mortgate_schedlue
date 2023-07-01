@@ -1,19 +1,19 @@
 from .scheduler import ensure_list_type, scheduler
 
-def Adjustments(
-    t: int, 
-    grace_period: int, 
+def Offsets(
     prepay_time: int, 
+    grace_period: int, 
+    # t: int, 
     # subsidy_time: int
     ):
   """
-  The adjust item of the timepoints regarding the prepayments and payments from subsidy loan.
-  Note that the [full_length] is the whole lentgh of the data series, the data array would start from 0, 
-  it should equal to the full period of the loan + 1.   
+  The offset items for tenure of loan when prepayments occured.
+  If the prepayment occured within the grace period, the offset item is 0. 
+  Otherwise, the offset is the difference between the prepayment and the grace period.
   """
-  grace_period_adjustments = lambda x: (x - grace_period * 12 if x > grace_period * 12 else 0)
+  offset_for_prepayment = lambda x: (x - grace_period * 12 if x > grace_period * 12 else 0)
   return (
-       - (grace_period_adjustments(prepay_time)
+       - (offset_for_prepayment(prepay_time)
         )
        )
 
@@ -38,8 +38,8 @@ def ETR(
     若在寬限期到期後提前付款，調整項存在重複扣除項，須再扣除grace_period * 12。
     若在寬限期內提前付款，雖然已經有設定本金攤還率為0，但保險起見，還是把調整項(grace_period_adjustments)設為0 
   """
-  prepay_time = kwargs.get('prepay', {}).get('multi_arr', length - 1)
-  multi_arr = [0] + kwargs.get('interest_arr', [])
+  prepay_time = kwargs.get('prepay', {}).get('time', length - 1)
+  time = [0] + kwargs.get('interest_arr', [])
   length_in_year = (length - 1) / 12
 
   if len(interest_arr) == length:
@@ -49,20 +49,30 @@ def ETR(
         tenure= length_in_year,
         interest_arr = {
             'interest': ensure_list_type(interest_arr),
-            'interest_arr': ensure_list_type(multi_arr),    
+            'interest_arr': ensure_list_type(time) 
               }
           )
   return (
        (
         (
          (
-          (1 + interest_arr[t])**((length_in_year - grace_period) * 12 + Adjustments(t, grace_period= grace_period, prepay_time= prepay_time))
+          (1 + interest_arr[t])**((length_in_year - grace_period) * 12 + Offsets(
+                                                                            # t, 
+                                                                            grace_period= grace_period, 
+                                                                            prepay_time= prepay_time
+                                                                         )
+                                  )
          ) * interest_arr[t] 
        )
        / 
         (
          (
-          (1 + interest_arr[t])**((length_in_year - grace_period) * 12 + Adjustments(t, grace_period= grace_period ,prepay_time= prepay_time))
+          (1 + interest_arr[t])**((length_in_year - grace_period) * 12 + Offsets(
+                                                                            # t, 
+                                                                            grace_period= grace_period, 
+                                                                            prepay_time= prepay_time
+                                                                         )
+                                  )
          ) - 1
         )
        ) if interest_arr[t] > 0 and t > grace_period * 12 else 0

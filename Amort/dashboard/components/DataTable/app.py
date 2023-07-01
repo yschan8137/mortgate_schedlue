@@ -1,14 +1,14 @@
 
-from dash import Dash, dcc, html, Input, Output, State, callback, register_page, page_registry, dash_table
-import dash_bootstrap_components as dbc
+from dash import Dash, dcc, html, Input, Output, State, callback, register_page, page_registry, dash_table #type: ignore
+import dash_bootstrap_components as dbc #type: ignore
 
 from ..ids import LOAN, DATATABLE, ADDON, ADVANCED
-from Amort.loan import calculator
+from Amort.loan import calculator # type: ignore
 from ..toolkit import convert_df_to_dash
 from .controls import MortgageOptions, AdvancedOptions
 from ..toolkit import suffix_for_type
 
-from Amort.dashboard.components.DataTable import controls
+from Amort.dashboard.components.DataTable import controls # type: ignore
 class CONFIG:
     PAGE_SIZE = 24
     class SPLITS:
