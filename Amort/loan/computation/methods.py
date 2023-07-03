@@ -26,7 +26,6 @@ def _EPP_arr_(
             'time': ensure_list_type(interest_arr.get('time', []))
         }
     )
-
     def payments(
             t,
             amount= loan_amount,
@@ -45,7 +44,7 @@ def _EPP_arr_(
                 ) \
                     + Offsets(
                         grace_period=grace_period,
-                        prepay_time=prepay_time[t-1]  # type: ignore
+                        prepay_time= prepay_time[t-1]  # type: ignore
                     )
             )
             if t > grace_period * 12 else 0
@@ -215,7 +214,6 @@ def _ETP_arr_(
             _interest_.append(0)
             _accum_.append(0)
             _total_.append(0)
-
     return _principal_payment_, _interest_, _total_, _residual_  # type: ignore
 
 # py -m Amort.loan.computation.methods

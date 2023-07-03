@@ -107,11 +107,11 @@ def calculator(
     method_applied_to_subsidy_loan = kwargs.get(
         'subsidy_arr', {}).get('method', amortization_methods.keys())
     loan_amount = round(total_amount * (1 - (down_payment_rate / 100)))
-    subsidy_time = kwargs.get('subsidy_arr', {}).get('time', 0)
+    subsidy_time = kwargs.get('subsidy_arr', {}).get('start', 0)
     subsidy_amount = kwargs.get('subsidy_arr', {}).get('amount', 0)
 
     prepay_time = _time_(
-        subsidy_time=subsidy_time,
+        subsidy_time= subsidy_time,
         tenure= tenure,
         prepay_arr={
             'time': kwargs.get('prepay_arr', {}).get('time', 0)}
@@ -119,7 +119,7 @@ def calculator(
 
     prepay_amount = _amount_(
         tenure=tenure,
-        subsidy_time=subsidy_time,
+        subsidy_time= subsidy_time,
         subsidy_amount=subsidy_amount,  # type: ignore
         prepay_arr={
             'time': kwargs.get('prepay_arr', {}).get('time', 0),
@@ -146,6 +146,7 @@ def calculator(
         return df
 
     method_applied = [v for v in method if v in amortization_methods.keys()]
+    
     # Collection of the dataframes of applied amortization_methods method.
     dfs_ordinry = {}
     if 'EQUAL_TOTAL' in method_applied:
@@ -159,6 +160,7 @@ def calculator(
                 'amount': prepay_amount,
             }
         )
+
         df_etp = _df_(res_etp)
         dfs_ordinry[amortization_methods['EQUAL_TOTAL']] = df_etp
     if 'EQUAL_PRINCIPAL' in method_applied:
@@ -188,18 +190,15 @@ def calculator(
             DL = 24  # The deadline of applying for preferential loan
             if subsidy_time > DL:
                 raise ValueError(f'超過申請購屋補貼期限(不可晚於購房後{DL/12}年)')
-            subsidy_tenure = kwargs.get('subsidy_arr', {}).get(
-                'tenure', 0)  # period of the subsidy loan
-            subsidy_grace_period = kwargs.get(
-                'subsidy_arr', {}).get('grace_period', 0)
-            subsidy_subsidy_time = kwargs.get(
-                'subsidy_arr', {}).get('subsidy', {}).get('time', 0)
-            subsidy_subsidy_amount = kwargs.get(
-                'subsidy_arr', {}).get('subsidy', {}).get('amount', 0)
+            subsidy_tenure = kwargs.get('subsidy_arr', {}).get('tenure', 0)  # period of the subsidy loan
+            subsidy_grace_period = kwargs.get('subsidy_arr', {}).get('grace_period', 0)
+            subsidy_subsidy_time = kwargs.get('subsidy_arr', {}).get('subsidy', {}).get('time', 0)
+            subsidy_subsidy_amount = kwargs.get('subsidy_arr', {}).get('subsidy', {}).get('amount', 0)
             subsidy_prepay_time = _time_(
-                subsidy_time=subsidy_subsidy_time,
+                subsidy_time= subsidy_subsidy_time,
                 tenure=tenure,
-                prepay_arr={'time': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)})
+                prepay_arr= {'time': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)})
+            
             subsidy_prepay_amount = _amount_(
                 # prepay_time=subsidy_prepay_time,
                 subsidy_time=subsidy_subsidy_time,
@@ -207,7 +206,7 @@ def calculator(
                 subsidy_amount=subsidy_subsidy_amount,  # type: ignore
                 prepay_arr={
                     'amount': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('amount', 0),
-                    'time': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', [0])}
+                    'time': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)}
             )
             subsidy_interest_arr = {
                 'interest': kwargs.get('subsidy_arr', {}).get('interest', 0),
@@ -218,11 +217,11 @@ def calculator(
                 "tenure": subsidy_tenure,
                 "loan_amount": subsidy_amount,
                 "interest_arr": subsidy_interest_arr,
+                "grace_period": subsidy_grace_period,
                 "prepay_arr": {
                     "time": subsidy_prepay_time,
                     "amount": subsidy_prepay_amount
                 },
-                "grace_period": subsidy_grace_period,
             }
 
             dfs_subsidy = {}

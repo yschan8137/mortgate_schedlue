@@ -34,9 +34,9 @@ kwargs_schema={
                                 'time': []
                               },
                 'subsidy_arr': {
-                                  'interest': [0],
+                                  'interest': [1.3],
                                   'time': [],
-                                  'time': 0,
+                                  'start': 0,
                                   'amount': 0,
                                   'tenure': 0,
                                   'grace_period': 0,
@@ -475,7 +475,7 @@ class AdvancedOptions:
                                             id=LOAN.SUBSIDY.START,
                                             type='number',
                                             step=1,
-                                            value=kwargs_schema['subsidy_arr']['time'],
+                                            value=kwargs_schema['subsidy_arr']['start'],
                                             min=0,
                                             max=24,
                                         )
@@ -652,7 +652,7 @@ class AdvancedOptions:
                             'amount': [*prepay_arr.values()],    
                         },
                         'tenure': tenure,
-                        'time': start
+                        'start': start
                     }
                     return memory
             else:

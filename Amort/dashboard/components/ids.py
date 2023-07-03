@@ -54,6 +54,7 @@ class ADDON:
 
 class DATATABLE:
     TABLE = 'data-table'
+    SUM = 'data-sum'
 
     class PAGE:
         SIZE = 'table-page-size'

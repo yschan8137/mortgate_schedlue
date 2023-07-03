@@ -13,13 +13,12 @@ def Offsets(
   """
   offset_for_prepayment = lambda x: (x - grace_period * 12 if x > grace_period * 12 else 0)
   return (
-       - (offset_for_prepayment(prepay_time)
-        )
-       )
+            - (offset_for_prepayment(prepay_time))
+  )
 
 def ETR(
     t: int, 
-    interest_arr: list, 
+    interest_arr, 
     length: int, 
     grace_period: int = 0, 
     **kwargs
@@ -38,26 +37,26 @@ def ETR(
     若在寬限期到期後提前付款，調整項存在重複扣除項，須再扣除grace_period * 12。
     若在寬限期內提前付款，雖然已經有設定本金攤還率為0，但保險起見，還是把調整項(grace_period_adjustments)設為0 
   """
-  prepay_time = kwargs.get('prepay', {}).get('time', length - 1)
-  time = [0] + kwargs.get('interest_arr', [])
-  length_in_year = (length - 1) / 12
+  prepay_time = kwargs.get('prepay', {}).get('time', 0)
+  length_in_year = (length - 1) // 12
 
   if len(interest_arr) == length:
     pass
-  else: 
+  else:
+    time = [] + interest_arr.get('time', [])
+    interest= interest_arr.get('interest', [])
     interest_arr = scheduler(
-        tenure= length_in_year,
-        interest_arr = {
-            'interest': ensure_list_type(interest_arr),
-            'interest_arr': ensure_list_type(time) 
-              }
-          )
+          tenure= length_in_year,
+          interest_arr = {
+            'interest': ensure_list_type(interest),
+            'time': ensure_list_type(time) 
+          }
+    )
   return (
        (
         (
          (
           (1 + interest_arr[t])**((length_in_year - grace_period) * 12 + Offsets(
-                                                                            # t, 
                                                                             grace_period= grace_period, 
                                                                             prepay_time= prepay_time
                                                                          )
@@ -68,7 +67,6 @@ def ETR(
         (
          (
           (1 + interest_arr[t])**((length_in_year - grace_period) * 12 + Offsets(
-                                                                            # t, 
                                                                             grace_period= grace_period, 
                                                                             prepay_time= prepay_time
                                                                          )
@@ -83,9 +81,12 @@ def ETR(
 if __name__ == '__main__':
   print(
     ETR(
-      t= 12, 
-      interest_arr= [1.38], 
-      tenure= 30, 
-      grace_period= 0, 
+      t= 12,
+      interest_arr= {
+        'interest': [1.38],
+        'time': []
+      }, 
+      length= 361, 
+      grace_period= 5, 
       )
   )
