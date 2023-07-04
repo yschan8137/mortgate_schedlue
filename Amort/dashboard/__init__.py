@@ -1,1 +1,0 @@
-from Amort.loan.computation.categoties import *
