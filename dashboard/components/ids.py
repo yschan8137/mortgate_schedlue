@@ -6,7 +6,10 @@ class LOAN:
     INTEREST = 'single interest rate applied tp total tenure of the loan'
     OPTIONS = 'the repayment options of the loan'
     TYPE = 'Loan'
-    RESULT = 'the input results'
+
+    class RESULT:
+        KWARGS = 'the results of the keyword arguments'
+        DATAFRAME = 'the results of the dataframe'
 
     class PREPAY:
         TYPE = 'Prepayment'
@@ -55,6 +58,7 @@ class ADDON:
 class DATATABLE:
     TABLE = 'data-table'
     SUM = 'data-sum'
+    COLUMN = 'data-column'
 
     class PAGE:
         SIZE = 'table-page-size'
