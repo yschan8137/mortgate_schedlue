@@ -5,7 +5,7 @@ from dash import Dash, dcc, html, Input, Output, State, callback, register_page,
 import dash_bootstrap_components as dbc  # type: ignore
 
 from ..ids import LOAN, DATATABLE, ADDON, ADVANCED
-from loan import df_schema  # type: ignore
+from Loan import df_schema  # type: ignore
 from ..toolkit import convert_df_to_dash
 from .controls import MortgageOptions, AdvancedOptions
 from ..toolkit import suffix_for_type
@@ -36,7 +36,7 @@ rows_per_page = html.Div(
             max=481,
             step=1,
             style={
-                'textAlign': 'left',
+                'textAlign': 'center',
             },
             className='mb-3'
         )
@@ -75,7 +75,9 @@ def datatable():
                             inline=True,
                         ),
                     ],
-                    style={'display': 'inline-block'}
+                    style={
+                        'display': 'inline-block',
+                        }
                 ),
                 dbc.Row(
                     dash_table.DataTable(
@@ -95,7 +97,10 @@ def datatable():
                             #  'margin': '5%',
                             'scrollX': True
                         },
-                        style_header={'border': '1px solid black'},
+                        style_header={
+                            'textAlign': 'center',
+                            'border': '1px solid black'
+                        },
                         style_cell={
                             'border': '1px solid lightblue',
                         },
@@ -123,7 +128,10 @@ def datatable():
                             'border': 'medium'
                             # 'margin': '5%',
                         },
-                        style_header={'border': '1px solid black'},
+                        style_header={
+                            'textAlign': 'center',
+                            'border': '1px solid black'
+                        },
                         style_cell={
                             'border': '1px solid pink',
                         },
@@ -160,7 +168,8 @@ def datatable():
     ):
         merge_duplicate_headers = True
         df = pd.DataFrame.from_dict(df, 'tight')
-        if df_schema.level_0.SUBSIDY in df.columns.levels[0]:
+        if df_schema.level_0.SUBSIDY in df.columns.levels[0]: #type: ignore
+            
             df = df[[(l0, l1, l2) for (l0, l1, l2)
                      in df.columns if l2 in columns or l0 in columns]]
         else:
@@ -169,7 +178,7 @@ def datatable():
             merge_duplicate_headers = False
         page_size_editable = (
             page_size_editable if page_size_editable and page_size_editable > 0 else 1)
-        df_dash = convert_df_to_dash(df[:-1].iloc[(page_current * page_size_editable if page_current == 0 else (
+        df_dash = convert_df_to_dash(df[1:-1].iloc[(page_current * page_size_editable if page_current == 0 else (
             page_current * page_size_editable) + 1): ((page_current + 1) * page_size_editable) + 1])
         df_sum = convert_df_to_dash(df.tail(1))
         pages = round((len(df.values) - 2) // page_size_editable, 0)
@@ -177,40 +186,41 @@ def datatable():
         return df_sum[1], df_sum[0], df_dash[1],  df_dash[0], pages, merge_duplicate_headers, merge_duplicate_headers
     return layout
 
+deployment= dbc.Container(
+    dbc.Row(
+        [
+            dbc.Col(
+                [
+                    controls.layout(),
+                ],
+                xs=CONFIG.SPLITS.XS,
+                sm=CONFIG.SPLITS.SM,
+                md=CONFIG.SPLITS.MD,
+                lg=CONFIG.SPLITS.LG,
+                xl=CONFIG.SPLITS.XL,
+            ),
+            dbc.Col(
+                [
+                    datatable()
+                ],
+                xs=12 - CONFIG.SPLITS.XS,
+                sm=12 - CONFIG.SPLITS.SM,
+                md=12 - CONFIG.SPLITS.MD,
+                lg=12 - CONFIG.SPLITS.LG,
+                xl=12 - CONFIG.SPLITS.XL,
+            )
+        ],
+        style={
+            'marginTop': '2%',
+            'marginBottom': '2%',
+        },
+    ),
+    fluid=True
+)
 
-# py -m dashboard.components.DataTable.app
+
+# py -m Dashboard.components.DataTable.app
 if __name__ == "__main__":
     app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-
-    app.layout = dbc.Container(
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        controls.layout(),
-                    ],
-                    xs=CONFIG.SPLITS.XS,
-                    sm=CONFIG.SPLITS.SM,
-                    md=CONFIG.SPLITS.MD,
-                    lg=CONFIG.SPLITS.LG,
-                    xl=CONFIG.SPLITS.XL,
-                ),
-                dbc.Col(
-                    [
-                        datatable()
-                    ],
-                    xs=12 - CONFIG.SPLITS.XS,
-                    sm=12 - CONFIG.SPLITS.SM,
-                    md=12 - CONFIG.SPLITS.MD,
-                    lg=12 - CONFIG.SPLITS.LG,
-                    xl=12 - CONFIG.SPLITS.XL,
-                )
-            ],
-            style={
-                'marginTop': '2%',
-                'marginBottom': '2%',
-            },
-        ),
-        fluid=True
-    )
+    app.layout = deployment
     app.run_server(debug=True)

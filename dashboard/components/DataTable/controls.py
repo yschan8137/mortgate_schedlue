@@ -9,14 +9,14 @@ from dash import Dash, html, dcc, Input, Output, State, callback, MATCH, ALL, AL
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from numpy import place
-from traitlets import default
+# from traitlets import default
 from time import time
 
 from .. import amortization_types
 from .widgets import refreshable_dropdown, addon
 from ..ids import *
 from ..toolkit import suffix_for_type
-from loan import calculator
+from Loan import calculator
 
 # TODO:
 # [X] 1. resolve the issues of the missing id while accordion hasn't been toggled.

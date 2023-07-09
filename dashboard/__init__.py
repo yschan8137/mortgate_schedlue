@@ -1,1 +1,1 @@
-from loan.computation.categoties import *  # type: ignore
+from Loan.computation.categoties import *  # type: ignore
