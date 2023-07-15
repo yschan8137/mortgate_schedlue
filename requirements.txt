@@ -7,7 +7,6 @@ BeautifulSoup4
 asyncio
 dataclasses
 lxml
-scrapy
 Babel
 dash
 dash-bootstrap-components

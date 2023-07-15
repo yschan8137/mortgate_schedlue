@@ -1,10 +1,10 @@
-from ..loan import calculator
+from ..Loan import calculator
 
 from dash import Dash, dcc, html, page_registry, page_container  # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
-from ..dashboard import amortization
+from ..Dashboard import amortization
 
-from ..dashboard.components.DataTable.controls import *
+from ..Dashboard.components.DataTable.controls import *
 
 
 # py -m dashboard.app

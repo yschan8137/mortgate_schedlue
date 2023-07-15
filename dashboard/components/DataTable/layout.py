@@ -1,9 +1,9 @@
 # This file is for the laypot of the app.py.
 
 import dash_bootstrap_components as dbc
-from .widgets import refreshable_dropdown
-from ..ids import LOAN
-from .. import amortization_types
+from Dashboard.components.DataTable.widgets import refreshable_dropdown
+from Dashboard.components.ids import LOAN
+from Dashboard.components import amortization_types
 
 
 def main_items():

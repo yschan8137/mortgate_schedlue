@@ -12,10 +12,10 @@ from numpy import place
 # from traitlets import default
 from time import time
 
-from .. import amortization_types
-from .widgets import refreshable_dropdown, addon
-from ..ids import *
-from ..toolkit import suffix_for_type
+from Dashboard.components import amortization_types
+from Dashboard.components.DataTable.widgets import refreshable_dropdown, addon
+from Dashboard.components.ids import *
+from Dashboard.components.toolkit import suffix_for_type
 from Loan import calculator
 
 # TODO:
@@ -35,7 +35,7 @@ kwargs_schema = {
         'time': []
     },
     'subsidy_arr': {
-        'interest': [1.3],
+        'interest': [0],
         'time': [],
         'start': 0,
         'amount': 0,

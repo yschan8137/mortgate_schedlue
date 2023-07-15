@@ -1,16 +1,11 @@
-from pydoc import classname
-from tkinter.ttk import Style
 import pandas as pd  # type: ignore
 from dash import Dash, dcc, html, Input, Output, State, callback, register_page, page_registry, dash_table  # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 
-from ..ids import LOAN, DATATABLE, ADDON, ADVANCED
+from Dashboard.components.ids import LOAN, DATATABLE
 from Loan import df_schema  # type: ignore
-from ..toolkit import convert_df_to_dash
-from .controls import MortgageOptions, AdvancedOptions
-from ..toolkit import suffix_for_type
-
-from ...components.DataTable import controls  # type: ignore
+from Dashboard.components.toolkit import convert_df_to_dash, suffix_for_type
+from Dashboard.components.DataTable.controls import MortgageOptions, AdvancedOptions, layout
 
 
 class CONFIG:
@@ -79,6 +74,7 @@ def datatable():
                         'display': 'inline-block',
                         }
                 ),
+                rows_per_page,
                 dbc.Row(
                     dash_table.DataTable(
                         id=DATATABLE.SUM,
@@ -107,8 +103,6 @@ def datatable():
                     ),
                     className="mb-3"
                 ),
-                rows_per_page,
-                # html.Br(),
                 dbc.Row(
                     dash_table.DataTable(
                         id=DATATABLE.TABLE,
@@ -191,7 +185,7 @@ deployment= dbc.Container(
         [
             dbc.Col(
                 [
-                    controls.layout(),
+                    layout(),
                 ],
                 xs=CONFIG.SPLITS.XS,
                 sm=CONFIG.SPLITS.SM,
@@ -221,6 +215,6 @@ deployment= dbc.Container(
 
 # py -m Dashboard.components.DataTable.app
 if __name__ == "__main__":
-    app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+    app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])    
     app.layout = deployment
-    app.run_server(debug=True)
+    app.run_server(port=8050, host= '0.0.0.0', debug=False, use_reloader=True)

@@ -6,10 +6,9 @@ from dash import dcc, html, Input, Output, State, callback, callback_context, MA
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 
-from ..toolkit import to_dropdown_options, suffix_for_type
-from ..ids import *
-from ..ids import LOAN, ADDON
-from .. import amortization_types
+from Dashboard.components.toolkit import to_dropdown_options, suffix_for_type
+from Dashboard.components.ids import *
+from Dashboard.components import amortization_types
 import json
 
 
@@ -380,7 +379,7 @@ def refreshable_dropdown(
     return dropdown
 
 
-# py -m Amort.dashboard.components.DataTable.widgets
+# py -m Dashboard.components.DataTable.widgets
 if __name__ == "__main__":
     from dash import Dash
     app = Dash(__name__, external_stylesheets=[
