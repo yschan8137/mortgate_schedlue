@@ -1,8 +1,8 @@
 import pandas as pd  # type: ignore
-from .computation.helpers.scheduler import ensure_list_type, kwargs_detection
-from .computation.helpers.prepay import _time_, _amount_
-from .computation.methods import _EPP_arr_, _ETP_arr_
-from .computation.categoties import amortization as amortization_methods
+from Loan.computation.helpers.scheduler import ensure_list_type, kwargs_detection
+from Loan.computation.helpers.prepay import _time_, _amount_
+from Loan.computation.methods import _EPP_arr_, _ETP_arr_
+from Loan.computation.categoties import amortization as amortization_methods
 
 
 class df_schema:

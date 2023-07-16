@@ -1,6 +1,6 @@
 import numpy as np # type: ignore
-from .helpers.adjustments import ETR, Offsets
-from .helpers.scheduler import ensure_list_type, scheduler
+from Loan.computation.helpers.adjustments import ETR, Offsets
+from Loan.computation.helpers.scheduler import ensure_list_type, scheduler
 import itertools
 
 # 本金平均攤還法(Equal Principal Payment)

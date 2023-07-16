@@ -1,4 +1,4 @@
-from .scheduler import ensure_list_type, scheduler
+from Loan.computation.helpers.scheduler import ensure_list_type, scheduler
 
 def Offsets(
     prepay_time: int, 

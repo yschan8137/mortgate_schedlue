@@ -1,8 +1,8 @@
 # This file is for the tailor-made widgets for controls including OPTIONS dropdown, addon function for generating a dict for the combined input of payment arrangement.
-
+from dash import Dash
 from distutils.log import debug
 from re import S
-from dash import dcc, html, Input, Output, State, callback, callback_context, MATCH, ALL, Patch  # type: ignore
+from dash import dcc, html, Input, Output, State, callback_context, MATCH, ALL, Patch, callback  # type: ignore
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 
@@ -15,6 +15,10 @@ import json
 # Addons function for the payment arrangement.
 # For further information, please refer to the documentation of the addon function in the file Amort\test\ADDON.py.
 
+app = Dash(__name__, 
+           external_stylesheets=[dbc.themes.BOOTSTRAP], 
+           suppress_callback_exceptions=True
+           )
 
 def addon(
         # Type need to be indicated within ['prepay', 'subsidy'] to distinguish the different dropdowns.
@@ -180,7 +184,7 @@ def addon(
 
 # callback for add button.
 
-    @ callback(
+    @callback(
         [
             Output(suffix_for_type(ADDON.NEW, type), 'children',
                    allow_duplicate=True),  # type: ignore
@@ -267,7 +271,7 @@ def addon(
             patched_item.append(new_checklist_item())
         return patched_item, "", dropdown_label, memory
 
-    @ callback(
+    @callback(
         Output({"index": MATCH, "type": suffix_for_type(
             ADDON.OUTPUT, type)}, "style"),
         Input({"index": MATCH, "type": "done"}, "value"),
@@ -381,9 +385,6 @@ def refreshable_dropdown(
 
 # py -m Dashboard.components.DataTable.widgets
 if __name__ == "__main__":
-    from dash import Dash
-    app = Dash(__name__, external_stylesheets=[
-               dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
     app.layout = html.Div(
         [
             refreshable_dropdown(label='Test'),

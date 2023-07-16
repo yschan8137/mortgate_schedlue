@@ -1,5 +1,4 @@
 # This file is for the laypot of the app.py.
-
 import dash_bootstrap_components as dbc
 from Dashboard.components.DataTable.widgets import refreshable_dropdown
 from Dashboard.components.ids import LOAN

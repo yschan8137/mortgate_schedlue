@@ -5,7 +5,7 @@ from gc import disable
 from re import I, S
 from sre_constants import IN
 from unittest.mock import call
-from dash import Dash, html, dcc, Input, Output, State, callback, MATCH, ALL, ALLSMALLER, no_update, callback_context
+from dash import Dash, html, dcc, Input, Output, State, MATCH, ALL, ALLSMALLER, no_update, callback_context, callback
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from numpy import place
@@ -16,12 +16,17 @@ from Dashboard.components import amortization_types
 from Dashboard.components.DataTable.widgets import refreshable_dropdown, addon
 from Dashboard.components.ids import *
 from Dashboard.components.toolkit import suffix_for_type
-from Loan import calculator
+from Loan.main import calculator
 
 # TODO:
 # [X] 1. resolve the issues of the missing id while accordion hasn't been toggled.
 # [X] 2. collect the all result from all inputs.
 # [X] 3. enable the format for multi-stage interest rate, which combines results of the sigle interest rate and the addon on multi-stage interest rates.
+
+app = Dash(__name__, 
+           external_stylesheets=[dbc.themes.BOOTSTRAP], 
+           suppress_callback_exceptions=True
+           )
 
 kwargs_schema = {
     'interest_arr': {'interest': [1.38], 'time': []},
@@ -50,7 +55,7 @@ kwargs_schema = {
 @dataclass
 class MortgageOptions:
     type = LOAN.TYPE
-
+    app= app
     # Mortgage Amount
     amount = html.Div(
         [
@@ -435,7 +440,7 @@ class AdvancedOptions:
             ]
         )
 
-        @ callback(
+        @callback(
             Output({'index': ALL, 'type': suffix_for_type(
                 ADDON.DROPDOWN.LIST, type)}, 'data'),
             Input(LOAN.TENURE, 'value'),
@@ -744,7 +749,6 @@ class AdvancedOptions:
             Input(LOAN.RESULT.KWARGS, 'data'),
         )
         def update_data_frame(kwargs):
-            # calculator(**kwargs).to_json(orient='index')
             return calculator(**kwargs).to_dict(orient='tight')
 
         return layout
@@ -808,13 +812,9 @@ def layout():
     return layout
 
 
-# py -m Amort.dashboard.components.DataTable.controls
+# py -m Dashboard.components.DataTable.controls
 if __name__ == "__main__":
-    app = Dash(__name__, external_stylesheets=[
-               dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
-
     app.layout = layout()
-
     app.run_server(debug=True)
 
     # TODO:

@@ -14,4 +14,3 @@ pandas-stubs
 plotly
 pyyaml
 python-i18n[YAML]
-dash-mantine-components

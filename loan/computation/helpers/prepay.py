@@ -1,5 +1,5 @@
 from numpy import unique  # type: ignore
-from .scheduler import scheduler, ensure_list_type
+from Loan.computation.helpers.scheduler import scheduler, ensure_list_type
 from typing import Optional
 
 
