@@ -16,7 +16,7 @@ EXPOSE 80
 CMD ["python", "./main.py", "--host", "0.0.0.0", "--port", "80"]
 
 # deployment: docker build -t my-amort .
-# run the container: docker run -p 80:80 -e DASH_CALLBACK_FUNCTIONS_FILENAME=main.py my-amort_<date-ver.> 
+# run the container: docker run -p 80:80 my-amort_<date-ver.> 
 
 #run a command: docker run <image_name> python -c "import dash; print(dash.__version__)"
 
