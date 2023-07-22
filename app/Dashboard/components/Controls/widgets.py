@@ -58,7 +58,34 @@ def addon(
             # That's the outcome what we want.
             dcc.Store(id=suffix_for_type(ADDON.MEMORY, type), data={}),
             dcc.Store(id=suffix_for_type(ADDON.DROPDOWN.ITEMS, type), data={}),
-            html.Div(
+            # html.Div(
+                # [
+                    # dbc.DropdownMenu(
+                        # [],
+                        # label=dropdown_label,
+                        # id=suffix_for_type(ADDON.DROPDOWN.MENU, type),
+                        # disabled=disabled,
+                        # color='green',
+                        # style={'width': '30%'}
+                    # ),
+                    # dbc.Button(
+                        # id=suffix_for_type(ADDON.ADD, type),
+                        # color="primary",
+                        # children="Add",
+                        # disabled=disabled,
+                    # ),
+                    # dbc.Button(
+                        # id=suffix_for_type(ADDON.DELETE, type),
+                        # color="danger",
+                        # children="Del",
+                        # disabled=disabled,
+                    # )
+                # ],
+                # style={
+                    # 'display': 'inline-flex',
+                # }
+            # ),
+            dbc.InputGroup(
                 [
                     dbc.DropdownMenu(
                         [],
@@ -68,8 +95,14 @@ def addon(
                         color='green',
                         # style={'width': '30%'}
                     ),
-                    # html.Div(
-                    # [
+                    dbc.Input(id=suffix_for_type(ADDON.INPUT, type),
+                              type='number',
+                              step=0.01,
+                              min=0,
+                              max=100,
+                              placeholder=placeholder,
+                              disabled=disabled,
+                              ),
                     dbc.Button(
                         id=suffix_for_type(ADDON.ADD, type),
                         color="primary",
@@ -82,28 +115,11 @@ def addon(
                         children="Del",
                         disabled=disabled,
                     )
-                    # ],
-                    # style={
-                    # 'display': 'inline-flex',
-                    # }
-                    # ),
-                ],
-                style={
-                    'display': 'inline-flex',
-                }
-            ),
-            html.Div(
-                dbc.Input(id=suffix_for_type(ADDON.INPUT, type),
-                          type='number',
-                          step=0.01,
-                          min=0,
-                          max=100,
-                          placeholder=placeholder,
-                          disabled=disabled,
-                          ),
+                ]
             ),
             html.Div(id=suffix_for_type(ADDON.NEW, type)),
         ],
+        
         # make the width not exceed the width of the container.
         style={
             'width': '100%',
@@ -383,7 +399,7 @@ def refreshable_dropdown(
     return dropdown
 
 
-# py -m Dashboard.components.DataTable.widgets
+# py -m app.Dashboard.components.Controls.widgets
 if __name__ == "__main__":
     app.layout = html.Div(
         [

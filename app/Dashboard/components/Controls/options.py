@@ -13,7 +13,7 @@ from numpy import place
 from time import time
 
 from app.Dashboard.components import amortization_types
-from app.Dashboard.components.DataTable.widgets import refreshable_dropdown, addon
+from app.Dashboard.components.Controls.widgets import refreshable_dropdown, addon
 from app.Dashboard.components.ids import *
 from app.Dashboard.components.toolkit import suffix_for_type
 from app.Loan.main import calculator
@@ -22,11 +22,6 @@ from app.Loan.main import calculator
 # [X] 1. resolve the issues of the missing id while accordion hasn't been toggled.
 # [X] 2. collect the all result from all inputs.
 # [X] 3. enable the format for multi-stage interest rate, which combines results of the sigle interest rate and the addon on multi-stage interest rates.
-
-app = Dash(__name__, 
-           external_stylesheets=[dbc.themes.BOOTSTRAP], 
-           suppress_callback_exceptions=True
-           )
 
 kwargs_schema = {
     'interest_arr': {'interest': [1.38], 'time': []},
@@ -55,7 +50,6 @@ kwargs_schema = {
 @dataclass
 class MortgageOptions:
     type = LOAN.TYPE
-    app= app
     # Mortgage Amount
     amount = html.Div(
         [
@@ -155,7 +149,7 @@ class MortgageOptions:
                         id=LOAN.TENURE,
                         style={
                             # 'width': "10%",
-                            'textAlign': 'left'
+                            # 'textAlign': 'left'
                         }
                     )
                 )
@@ -215,12 +209,12 @@ class MortgageOptions:
         return memory
 
     # Payment Methods
-    dropdown_refresh = html.Div(
+    repayment_methods = html.Div(
         [
             refreshable_dropdown(
                 label='Payment methods',
                 type=LOAN.TYPE,
-                options=amortization_types
+                options= amortization_types
             )
         ]
     )
@@ -250,7 +244,24 @@ class MortgageOptions:
             [
                 html.Div(
                     [
-                        dbc.Label('Applied Interest'),
+                        html.Div(
+                            [
+                                dbc.Label('Applied Interest'),
+                                dbc.Checklist(
+                                    options=[
+                                        {'label': '', 'value': 1}
+                                    ],
+                                    value=[0],
+                                    id=suffix_for_type(ADVANCED.TOGGLE.BUTTON, type),
+                                    inline=True,
+                                    # switch=True,
+                                ),
+                            ],
+                            style={
+                                    'display': 'flex',
+                            },
+                            # className='mb-2'
+                        ),
                         dbc.InputGroup(
                             [
                                 dbc.Input(
@@ -272,15 +283,15 @@ class MortgageOptions:
                         )
                     ]
                 ),
-                dbc.Checklist(
-                    options=[
-                        {'label': label, 'value': 1}
-                    ],
-                    value=[0],
-                    id=suffix_for_type(ADVANCED.TOGGLE.BUTTON, type),
-                    inline=True,
-                    switch=True,
-                ),
+                # dbc.Checklist(
+                    # options=[
+                        # {'label': label, 'value': 1}
+                    # ],
+                    # value=[0],
+                    # id=suffix_for_type(ADVANCED.TOGGLE.BUTTON, type),
+                    # inline=True,
+                    # switch=True,
+                # ),
                 html.Div(
                     [html.Div(
                         [
@@ -744,77 +755,15 @@ class AdvancedOptions:
             else:
                 return no_update
 
-        @callback(
-            Output(LOAN.RESULT.DATAFRAME, 'data'),
-            Input(LOAN.RESULT.KWARGS, 'data'),
-        )
-        def update_data_frame(kwargs):
-            return calculator(**kwargs).to_dict(orient='tight')
-
         return layout
 
-
-# layout
-def layout():
-    layout = html.Div(
-        [
-            dcc.Store(
-                LOAN.RESULT.KWARGS,
-                data=kwargs_schema
-            ),
-            dcc.Store(
-                LOAN.RESULT.DATAFRAME,
-                data={}
-            ),
-            dbc.Card(
-                [
-                    dbc.CardBody(
-                        [
-                            MortgageOptions.amount,
-                            MortgageOptions.interest_rate(
-                                type=LOAN.TYPE,
-                            ),
-                            MortgageOptions.down_payment,
-                            MortgageOptions.tenure(),
-                            MortgageOptions.grace,
-                            MortgageOptions.dropdown_refresh,
-
-                            dbc.Col(
-                                [
-                                    AdvancedOptions.accordion(
-                                        style={
-                                            'width': '100%',
-                                                     # 'display': 'inline-block',
-                                                     'active-bg': 'red',
-                                        },
-                                        content=[
-                                            {
-                                                'id': title,
-                                                'title': title,
-                                                'children': children
-                                            } for title, children in zip(
-                                                [LOAN.PREPAY.TYPE,
-                                                 LOAN.SUBSIDY.TYPE],
-                                                [AdvancedOptions.prepayment(
-                                                ),   AdvancedOptions.subsidy()]
-                                            )
-                                        ]
-                                    )
-                                ],
-                            ),
-                        ],
-                    )
-                ],
-                body=True,
-            )
-        ]
-    )
-    return layout
-
-
-# py -m Dashboard.components.DataTable.controls
+# py -m app.Dashboard.components.Controls.app
 if __name__ == "__main__":
-    app.layout = layout()
+    app = Dash(__name__, 
+           external_stylesheets=[dbc.themes.BOOTSTRAP], 
+           suppress_callback_exceptions=True
+           )
+    
     app.run_server(debug=True)
 
     # TODO:

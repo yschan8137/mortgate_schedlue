@@ -1,48 +1,18 @@
-from dash import Dash
-import dash_bootstrap_components as dbc
-from app.Dashboard.components.DataTable.app import datatable, CONFIG
-from app.Dashboard.components.DataTable.controls import layout
+from Loan import calculator
 
-app = Dash(__name__, 
-           external_stylesheets=[dbc.themes.BOOTSTRAP],
-        #    suppress_callback_exceptions=True
-           )
+from dash import Dash, dcc, html, page_registry, page_container  # type: ignore
+import dash_bootstrap_components as dbc  # type: ignore
+from Loan.computation.categoties import amortization
+from Dashboard.components.Controls.options import *
 
-app.layout = dbc.Container(
-    dbc.Row(
-        [
-            dbc.Col(
-                [
-                    layout(),
-                ],
-                xs=CONFIG.SPLITS.XS,
-                sm=CONFIG.SPLITS.SM,
-                md=CONFIG.SPLITS.MD,
-                lg=CONFIG.SPLITS.LG,
-                xl=CONFIG.SPLITS.XL,
-            ),
-            dbc.Col(
-                [
-                    datatable()
-                ],
-                xs=12 - CONFIG.SPLITS.XS,
-                sm=12 - CONFIG.SPLITS.SM,
-                md=12 - CONFIG.SPLITS.MD,
-                lg=12 - CONFIG.SPLITS.LG,
-                xl=12 - CONFIG.SPLITS.XL,
-            )
-        ],
-        style={
-            'marginTop': '2%',
-            'marginBottom': '2%',
-        },
-    ),
-    fluid=True
-)
 
 # py -m app.main
-app.run_server(
-    debug= True, 
-    # host='0.0.0.0', 
-    # port=8500 
-    )
+if __name__ == '__main__':
+    app = Dash(
+        __name__,
+        # use_pages=True,
+        external_stylesheets=[dbc.themes.BOOTSTRAP])
+
+    # app.run(debug=True)
+
+# example: https://dash-bootstrap-components.opensource.faculty.ai/examples/simple-sidebar/

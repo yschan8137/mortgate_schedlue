@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.10
 
 WORKDIR /app
 
@@ -6,12 +6,14 @@ WORKDIR /app
 COPY ./requirements.txt .
 
 RUN --mount=type=cache,target=/root/.cache \
-    pip install --upgrade -r requirements.txt pip install dash gunicorn
+    pip install --upgrade -r requirements.txt pip install gunicorn
 # copy files in root path to the reposity in docker image.
 COPY ./app ./app
 
+EXPOSE 8000
+
 # Set the command to run when the container starts
-CMD gunicorn --bind 0.0.0.0:8500 app.main
+CMD gunicorn --bind 0.0.0.0:8000 app.main
 
 # deployment: docker build -t my-amort .
 # run the container: docker run -p 80:80 my-amort_<date-ver.> 

@@ -5,7 +5,7 @@ import dash_bootstrap_components as dbc  # type: ignore
 from app.Dashboard.components.ids import LOAN, DATATABLE
 from app.Loan import df_schema  # type: ignore
 from app.Dashboard.components.toolkit import convert_df_to_dash
-from app.Dashboard.components.DataTable.controls import layout
+from app.Dashboard.components.Controls import app as controls
 
 class CONFIG:
     PAGE_SIZE = 24
@@ -179,20 +179,13 @@ def datatable():
         return df_sum[1], df_sum[0], df_dash[1],  df_dash[0], pages, merge_duplicate_headers, merge_duplicate_headers
     return layout
 
-
-# py -m Dashboard.components.DataTable.app
-if __name__ == "__main__":  
-    app = Dash(__name__, 
-           external_stylesheets=[dbc.themes.BOOTSTRAP],
-           suppress_callback_exceptions=True
-           ) 
-
-    app.layout = dbc.Container(
+def deployment():
+    layout = dbc.Container(
         dbc.Row(
             [
                 dbc.Col(
                     [
-                        layout(),
+                        controls.layout(),
                     ],
                     xs=CONFIG.SPLITS.XS,
                     sm=CONFIG.SPLITS.SM,
@@ -218,5 +211,16 @@ if __name__ == "__main__":
         ),
         fluid=True
     )
+    return layout
+
+
+# py -m app.Dashboard.components.DataTable.app
+if __name__ == "__main__":  
+    app = Dash(__name__, 
+           external_stylesheets=[dbc.themes.BOOTSTRAP],
+           suppress_callback_exceptions=True
+           ) 
+
+    app.layout = deployment()
     app.run_server(debug= True)
     # app.run_server(port=80, host= '0.0.0.0', debug=False, use_reloader=True)
