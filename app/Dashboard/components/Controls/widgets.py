@@ -14,11 +14,8 @@ import json
 
 # Addons function for the payment arrangement.
 # For further information, please refer to the documentation of the addon function in the file Amort\test\ADDON.py.
-
-app = Dash(__name__, 
-           external_stylesheets=[dbc.themes.BOOTSTRAP], 
-           suppress_callback_exceptions=True
-           )
+# code of the color: https://useaxentix.com/docs/general/colors/
+# dash bootstrap components template: https://hellodash.pythonanywhere.com/
 
 def addon(
         # Type need to be indicated within ['prepay', 'subsidy'] to distinguish the different dropdowns.
@@ -92,12 +89,12 @@ def addon(
                         label=dropdown_label,
                         id=suffix_for_type(ADDON.DROPDOWN.MENU, type),
                         disabled=disabled,
-                        color='green',
-                        # style={'width': '30%'}
+                        color='#4C9F85',
                     ),
                     dbc.Input(id=suffix_for_type(ADDON.INPUT, type),
                               type='number',
                               step=0.01,
+                              value= 0,
                               min=0,
                               max=100,
                               placeholder=placeholder,
@@ -106,16 +103,18 @@ def addon(
                     dbc.Button(
                         id=suffix_for_type(ADDON.ADD, type),
                         color="primary",
+                        outline= False,
                         children="Add",
                         disabled=disabled,
                     ),
                     dbc.Button(
                         id=suffix_for_type(ADDON.DELETE, type),
                         color="danger",
+                        outline= False,
                         children="Del",
                         disabled=disabled,
                     )
-                ]
+                ],
             ),
             html.Div(id=suffix_for_type(ADDON.NEW, type)),
         ],
@@ -338,7 +337,6 @@ def addon(
 
 # build a refeshable dropdown that can refresh the options when the refresh button is clicked.
 
-
 def refreshable_dropdown(
         label: str,
         # ['prepay', 'subsidy'] Consider the case of duplicate ids.
@@ -346,6 +344,7 @@ def refreshable_dropdown(
         placeholder: str = 'Choose methods of the payment',
         options: dict = amortization_types,
         disabled: bool = False,
+        **kwargs
 ):
     """
     There are two dropdown components in the layout: one for the payment options and the other for refreshing the options accordingly. 
@@ -367,9 +366,7 @@ def refreshable_dropdown(
                             # searchable=True,
                             placeholder=placeholder,
                             disabled=disabled,
-                            style={
-                                "width": "100%",
-                            }
+                            **kwargs
                         )
                     ],
                 ),
@@ -401,13 +398,21 @@ def refreshable_dropdown(
 
 # py -m app.Dashboard.components.Controls.widgets
 if __name__ == "__main__":
+    app = Dash(__name__, 
+           external_stylesheets=[dbc.themes.BOOTSTRAP], 
+           suppress_callback_exceptions=True
+           )
+
     app.layout = html.Div(
         [
-            refreshable_dropdown(label='Test'),
+            refreshable_dropdown(
+                label='Test for refreshable dropdown'),
+            html.Hr(),
+            html.H6('Test for addon'),
             addon(
                 type='test',
                 # dropdown_list=[1, 2],
-                dropdown_label="TimePoint",
+                dropdown_label="Time",
                 placeholder="Input the timepoint",
             )
         ]

@@ -5,7 +5,7 @@ import dash_bootstrap_components as dbc  # type: ignore
 from app.Dashboard.components.ids import LOAN, DATATABLE
 from app.Loan import df_schema  # type: ignore
 from app.Dashboard.components.toolkit import convert_df_to_dash
-from app.Dashboard.components.Controls import app as controls
+from app.Dashboard.components.Controls.main import panel
 
 class CONFIG:
     PAGE_SIZE = 24
@@ -185,7 +185,7 @@ def deployment():
             [
                 dbc.Col(
                     [
-                        controls.layout(),
+                        panel.side(),
                     ],
                     xs=CONFIG.SPLITS.XS,
                     sm=CONFIG.SPLITS.SM,
@@ -217,7 +217,7 @@ def deployment():
 # py -m app.Dashboard.components.DataTable.app
 if __name__ == "__main__":  
     app = Dash(__name__, 
-           external_stylesheets=[dbc.themes.BOOTSTRAP],
+           external_stylesheets=[dbc.themes.LUMEN],
            suppress_callback_exceptions=True
            ) 
 

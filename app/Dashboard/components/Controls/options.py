@@ -16,7 +16,6 @@ from app.Dashboard.components import amortization_types
 from app.Dashboard.components.Controls.widgets import refreshable_dropdown, addon
 from app.Dashboard.components.ids import *
 from app.Dashboard.components.toolkit import suffix_for_type
-from app.Loan.main import calculator
 
 # TODO:
 # [X] 1. resolve the issues of the missing id while accordion hasn't been toggled.
@@ -240,13 +239,18 @@ class MortgageOptions:
         label: str = 'Multistage Interest Rate',
         placeholder='Input the interest rate',
     ):
+        """
+        """
         layout = html.Div(
             [
                 html.Div(
                     [
                         html.Div(
                             [
-                                dbc.Label('Applied Interest'),
+                                dbc.Label(
+                                    'Applied Interest',
+                                    size='md'
+                                    ),
                                 dbc.Checklist(
                                     options=[
                                         {'label': '', 'value': 1}
@@ -254,7 +258,7 @@ class MortgageOptions:
                                     value=[0],
                                     id=suffix_for_type(ADVANCED.TOGGLE.BUTTON, type),
                                     inline=True,
-                                    # switch=True,
+                                    switch=True,
                                 ),
                             ],
                             style={
@@ -293,22 +297,23 @@ class MortgageOptions:
                     # switch=True,
                 # ),
                 html.Div(
-                    [html.Div(
-                        [
-                            addon(
-                                type=type,  # type: ignore
-                                dropdown_label='Time',
-                                # avoid the errors regarding the nonexistent objects.
-                                pattern_matching=True,
-                                placeholder=placeholder,
-                            )
-                        ],
-                        style={
-                            'display': 'none',
-                            "maxWidth": "100%"
-                        },
-                        id=suffix_for_type('toggle to show the options', type)
-                    ),
+                    [
+                        html.Div(
+                            [
+                                addon(
+                                    type=type,  # type: ignore
+                                    dropdown_label='Time',
+                                    # avoid the errors regarding the nonexistent objects.
+                                    pattern_matching=True,
+                                    placeholder=placeholder,
+                                )
+                            ],
+                            style={
+                                'display': 'none',
+                                "maxWidth": "100%"
+                            },
+                            id=suffix_for_type('toggle to show the options', type)
+                        ),
                     ],
                 )
             ],
@@ -317,10 +322,9 @@ class MortgageOptions:
 
         @callback(
             Output(suffix_for_type('toggle to show the options', type), 'style'),
-            Output(suffix_for_type('momory for the tenure', LOAN.TYPE),
-                   'data', allow_duplicate=True),  # type: ignore
+            Output(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data', allow_duplicate=True),  # type: ignore
             Input(suffix_for_type(ADVANCED.TOGGLE.BUTTON, type), 'value'),
-            State(LOAN.TENURE, 'value'),
+            Input(LOAN.TENURE, 'value'),
             State(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data'),
             prevent_initial_call=True,
         )
@@ -336,15 +340,26 @@ class MortgageOptions:
                 return {'display': 'none'}, memory
 
         @callback(
-            Output(suffix_for_type('momory for the tenure', LOAN.TYPE),
-                   'data', allow_duplicate=True),  # type: ignore
-            Input(LOAN.TENURE, 'value'),
-            State(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data'),
+            Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, type)}, 'data'),
+            Input(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data'),
             prevent_initial_call=True,
         )
-        def update_momery_of_tenure(tenure, memory):
-            memory.append(tenure)
-            return memory
+        def update_arrangement(memory):
+            if len(memory) == 0:
+                return PreventUpdate()
+            else:
+                return [[1, memory[-1] - 1]]
+
+        # @callback(
+            # Output(suffix_for_type('momory for the tenure', LOAN.TYPE),
+                #    'data', allow_duplicate=True),  # type: ignore
+            # Input(LOAN.TENURE, 'value'),
+            # State(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data'),
+            # prevent_initial_call=True,
+        # )
+        # def update_momery_of_tenure(tenure, memory):
+            # memory.append(tenure)
+            # return memory
 
         @callback(
             Output(LOAN.RESULT.KWARGS, 'data',
@@ -452,8 +467,7 @@ class AdvancedOptions:
         )
 
         @callback(
-            Output({'index': ALL, 'type': suffix_for_type(
-                ADDON.DROPDOWN.LIST, type)}, 'data'),
+            Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, type)}, 'data'),
             Input(LOAN.TENURE, 'value'),
         )
         def update_prepay_arrangement(tenure):
@@ -464,13 +478,16 @@ class AdvancedOptions:
             Output(suffix_for_type(ADDON.INPUT, type), 'type'),
             Output(suffix_for_type(ADDON.INPUT, type), 'step'),
             Output(suffix_for_type(ADDON.INPUT, type), 'max'),
-            [Input('accordion', 'active_item')],
-            State(suffix_for_type(LOAN.AMOUNT, LOAN.TYPE), 'value'),
-            State(suffix_for_type(LOAN.AMOUNT, LOAN.SUBSIDY.TYPE), 'value'),
-            prevent_initial_call=True,
+            [
+                Input(suffix_for_type(ADDON.INPUT, type), 'value'),
+                #Input('accordion', 'active_item'),
+                State(suffix_for_type(LOAN.AMOUNT, LOAN.TYPE), 'value'),
+                State(suffix_for_type(LOAN.AMOUNT, LOAN.SUBSIDY.TYPE), 'value'),
+            ],
+                prevent_initial_call=True,
         )
         def toggle_prepay_arrangement(_, amount, subsidy_amount):
-            if _ and _[0] == LOAN.PREPAY.TYPE:
+            if _ and callback_context.triggered_id== suffix_for_type(ADDON.INPUT, type):
                 return 'number', 1, (amount if amount else 0)
             else:
                 return 'float', 0.01, 100
@@ -594,20 +611,7 @@ class AdvancedOptions:
         )
 
         @callback(
-            Output({'index': ALL, 'type': suffix_for_type(
-                ADDON.DROPDOWN.LIST, LOAN.TYPE)}, 'data'),
-            Input(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data'),
-            prevent_initial_call=True,
-        )
-        def update_arrangement(memory):
-            if len(memory) == 0:
-                return PreventUpdate()
-            else:
-                return [[1, memory[-1] - 1]]
-
-        @callback(
-            Output({'index': ALL, 'type': suffix_for_type(
-                ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.TYPE)}, 'data'),
+            Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.TYPE)}, 'data', allow_duplicate=True), 
             Input(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data'),
             Input(LOAN.SUBSIDY.START, 'value'),
             prevent_initial_call=True,
@@ -622,8 +626,7 @@ class AdvancedOptions:
                 return [[start, memory[-1] - 1]]
 
         @callback(
-            Output(suffix_for_type(ADDON.DROPDOWN.LIST,
-                   LOAN.SUBSIDY.PREPAY.TYPE), 'data'),  # type: ignore
+            Output(suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.PREPAY.TYPE), 'data'),  # type: ignore
             Input(LOAN.SUBSIDY.TENURE, 'value'),
             Input(LOAN.SUBSIDY.START, 'value'),
         )
@@ -724,12 +727,9 @@ class AdvancedOptions:
                        'value', allow_duplicate=True),
                 Output(suffix_for_type(ADDON.MEMORY, type),
                        'data', allow_duplicate=True),
-                Output({'index': type, 'type': suffix_for_type(
-                        ADDON.DROPDOWN.LIST, type)}, 'data', allow_duplicate=True),
-                Output(suffix_for_type(
-                    ADDON.MEMORY, LOAN.SUBSIDY.PREPAY.TYPE), 'data', allow_duplicate=True),
-                Output(suffix_for_type(
-                    ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.PREPAY.TYPE), 'data', allow_duplicate=True),
+                Output({'index': type, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, type)}, 'data', allow_duplicate=True),
+                Output(suffix_for_type(ADDON.MEMORY, LOAN.SUBSIDY.PREPAY.TYPE), 'data', allow_duplicate=True),
+                Output(suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.PREPAY.TYPE), 'data', allow_duplicate=True),
             ],
             Input('Reset', 'n_clicks'),
             Input(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type), 'value'),
@@ -751,19 +751,32 @@ class AdvancedOptions:
                         'amount': [],
                     },
                 }
-                return [memory] + [0, 0, 0, 0, repayment_options, 0, {}, [0], {}, [[0]]]
+                return [memory] + [0, 0, 0, 0, repayment_options, 0, {}, {}, [[0]]]
             else:
                 return no_update
 
         return layout
 
-# py -m app.Dashboard.components.Controls.app
+# py -m app.Dashboard.components.Controls.options
 if __name__ == "__main__":
     app = Dash(__name__, 
            external_stylesheets=[dbc.themes.BOOTSTRAP], 
            suppress_callback_exceptions=True
            )
-    
+    app.layout= html.Div(
+        [
+            MortgageOptions.amount,
+            MortgageOptions.tenure(),
+            MortgageOptions.down_payment,
+            MortgageOptions.grace,
+            MortgageOptions.interest_rate(
+                type= LOAN.TYPE
+            ),
+            html.Hr(),
+            AdvancedOptions.prepayment(),
+            AdvancedOptions.subsidy(),
+        ]
+    )
     app.run_server(debug=True)
 
     # TODO:
