@@ -91,25 +91,27 @@ class MortgageOptions:
     # Down Payment Rate
     down_payment = html.Div(
         [
-            dbc.Label('Down Payment Rate'),
+            dbc.Label('Down Payment rate'),
             dbc.Col(
                 dbc.InputGroup(
-                    [dbc.Input(
-                        type='number',
-                        name='Down Payment Rate',
-                        required=True,
-                        id=LOAN.DOWNPAYMENT,
-                        min=0,
-                        max=100,
-                        step=10,
-                        value=kwargs_schema['down_payment_rate'],
-                        style={
-                            'textAlign': 'left'
-                        }
-                    ), dbc.InputGroupText('%')
+                    [
+                                dbc.Input(
+                                    type='number',
+                                    name='Down Payment Rate',
+                                    required=True,
+                                    id=LOAN.DOWNPAYMENT,
+                                    min=0,
+                                    max=100,
+                                    step=10,
+                                    value=kwargs_schema['down_payment_rate'],
+                                    style={
+                                        # 'textAlign': 'left'
+                                    }
+                                ),
+                        dbc.InputGroupText('%')
                     ],
-                ),
-            )
+                )
+            ),
         ]
     )
 
@@ -130,6 +132,8 @@ class MortgageOptions:
     # Mortgage Period
     @classmethod
     def tenure(cls):
+        max= 40
+        min= 1
         return html.Div(
             [
                 dcc.Store(suffix_for_type(
@@ -138,20 +142,31 @@ class MortgageOptions:
                     'Mortgate tenure',
                     size='md'
                 ),
-                dbc.Col(
-                    dbc.Input(
-                        min=1,
-                        max=40,
-                        value=kwargs_schema['tenure'],
-                        step=1,
-                        type='number',
-                        id=LOAN.TENURE,
-                        style={
+                dcc.Slider(
+                    min= min,
+                    max= max,
+                    value=kwargs_schema['tenure'],
+                    step=1,
+                    id= LOAN.TENURE,
+                    marks={
+                        v: str(v) for v in [min, 10, 20, 30, max]
+                    },
+                    tooltip={"placement": "bottom", "always_visible": True}
+                ),
+                # dbc.Col(
+                    # dbc.Input(
+                        # min=1,
+                        # max=40,
+                        # value=kwargs_schema['tenure'],
+                        # step=1,
+                        # type='number',
+                        # id=LOAN.TENURE,
+                        # style={
                             # 'width': "10%",
                             # 'textAlign': 'left'
-                        }
-                    )
-                )
+                        # }
+                    # )
+                # )
             ]
         )
 
@@ -163,10 +178,10 @@ class MortgageOptions:
         prevent_initial_call=True
     )
     def _tenure(tenure, memory):
-        if tenure is None:
-            raise PreventUpdate
-        else:
+        if tenure:
             memory['tenure'] = tenure
+        else:
+            raise PreventUpdate
         return memory
 
     # Grace Period
@@ -174,7 +189,7 @@ class MortgageOptions:
         [
             dbc.Label(
                 'Grace Period',
-                size='md'
+                # size='md'
             ),
             dbc.Col(
                 dbc.Input(
@@ -186,7 +201,7 @@ class MortgageOptions:
                     id=suffix_for_type(LOAN.GRACE, type),
                     style={
                         # 'width': "10%",
-                        'textAlign': 'left',
+                        # 'textAlign': 'left',
                     }
                 )
             )
@@ -237,118 +252,129 @@ class MortgageOptions:
         cls,
         type: str = None,  # type: ignore
         label: str = 'Multistage Interest Rate',
-        placeholder='Input the interest rate',
+        placeholder='key in a interest rate',
     ):
-        """
-        """
         layout = html.Div(
             [
-                html.Div(
+                dbc.Row(
                     [
-                        html.Div(
-                            [
-                                dbc.Label(
-                                    'Applied Interest',
-                                    size='md'
-                                    ),
-                                dbc.Checklist(
-                                    options=[
-                                        {'label': '', 'value': 1}
-                                    ],
-                                    value=[0],
-                                    id=suffix_for_type(ADVANCED.TOGGLE.BUTTON, type),
-                                    inline=True,
-                                    switch=True,
-                                ),
-                            ],
-                            style={
-                                    'display': 'flex',
-                            },
-                            # className='mb-2'
+                        dbc.Col(
+                            dbc.Label(
+                                'Interest Rate',
+                                size='md',
+                                # id= 'label for interest',
+                                style={
+                                    'display': 'inline-block',
+                                    'textAlign': 'left',
+                                }
+                            ),
+                            width= 3,
+                            # className= 'border border-black'
                         ),
-                        dbc.InputGroup(
-                            [
-                                dbc.Input(
-                                    id=suffix_for_type(LOAN.INTEREST, type),
-                                    type='number',
-                                    step=0.01,
-                                    value=(kwargs_schema['interest_arr']['interest'][0] if type ==
-                                           LOAN.TYPE else kwargs_schema['subsidy_arr']['interest'][0]),
-                                    min=0,
-                                    max=100
-                                ),
-                                dbc.InputGroupText('%')
-                            ],
-                            style={
-                                # ''
-                                # 'width': "20%",
-                            },
-                            className='mb-2'
+                        dbc.Col(
+                            dbc.Checklist(
+                                options=[
+                                    {'label': 'Multi-stage', 'value': 1}
+                                ],
+                                value=[0],
+                                id=suffix_for_type(ADVANCED.TOGGLE.BUTTON, type),
+                                inline=True,
+                                switch=True,
+                                label_style={
+                                    'font-size': '16px',
+                                    "text-align": "center",
+                                },
+                                style={
+                                    "display": "inline-block", 
+                                    "textAlign": "center",
+                                    'font-size': '16px',
+                                },
+                                # className='pad-row border bordr-black',
+                            ),
+                            align='center',
+                            width= 9,
+                            # className= 'border border-black'
                         )
-                    ]
+                    ],
+                    style={
+                            'display': 'flex',
+                    },
+                    className="g-0"
+                    # className= 'border border-blue'
                 ),
-                # dbc.Checklist(
-                    # options=[
-                        # {'label': label, 'value': 1}
-                    # ],
-                    # value=[0],
-                    # id=suffix_for_type(ADVANCED.TOGGLE.BUTTON, type),
-                    # inline=True,
-                    # switch=True,
-                # ),
+                dbc.InputGroup(
+                    [
+                        dbc.Input(
+                            id=suffix_for_type(LOAN.INTEREST, type),
+                            type='number',
+                            step=0.01,
+                            value=(kwargs_schema['interest_arr']['interest'][0] if type ==
+                                   LOAN.TYPE else kwargs_schema['subsidy_arr']['interest'][0]),
+                            min=0,
+                            max=100
+                        ),
+                        dbc.InputGroupText('%')
+                    ],
+                    style={
+                        'display': 'flex',
+                    },
+                    id= suffix_for_type('toggle to show the options for single interest rate', type),
+                    className='mb-2',
+                    loading_state= {
+                        # 'component_name': , #(string; optional): Holds the name of the component that is loading.
+                        'is_loading': True, #(boolean; optional): Determines if the component is loading or not.
+                        'prop_name': "loading", #(string; optional): Holds which property is loading.
+                    }
+                ),
                 html.Div(
                     [
-                        html.Div(
-                            [
-                                addon(
-                                    type=type,  # type: ignore
-                                    dropdown_label='Time',
-                                    # avoid the errors regarding the nonexistent objects.
-                                    pattern_matching=True,
-                                    placeholder=placeholder,
-                                )
-                            ],
-                            style={
-                                'display': 'none',
-                                "maxWidth": "100%"
-                            },
-                            id=suffix_for_type('toggle to show the options', type)
-                        ),
+                        addon(
+                            type=type,  # type: ignore
+                            dropdown_label='Time',
+                            # avoid the errors regarding the nonexistent objects.
+                            pattern_matching=True,
+                            placeholder=placeholder,
+                        )
                     ],
-                )
+                    style={
+                        'display': 'none',
+                        "maxWidth": "100%"
+                    },
+                    id=suffix_for_type('toggle to show the options of the multistages interest', type),
+                    className='mb-2',
+                    loading_state= {
+                        # 'component_name': suffix_for_type('toggle to show the options of the multistages interest', type), #(string; optional): Holds the name of the component that is loading.
+                        'is_loading': True, #(boolean; optional): Determines if the component is loading or not.
+                        # 'prop_name': "loading", #(string; optional): Holds which property is loading.
+                        'message': 'Loading...',
+                        'color': 'primary',
+                    }
+                ),
             ],
-            className='mb-3'
+            className='mb-2'
         )
 
         @callback(
-            Output(suffix_for_type('toggle to show the options', type), 'style'),
-            Output(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data', allow_duplicate=True),  # type: ignore
+            Output(suffix_for_type('toggle to show the options of the multistages interest', type), 'style'),
+            Output(suffix_for_type('toggle to show the options for single interest rate', type), 'style'),
             Input(suffix_for_type(ADVANCED.TOGGLE.BUTTON, type), 'value'),
-            Input(LOAN.TENURE, 'value'),
-            State(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data'),
             prevent_initial_call=True,
         )
         def toggle_options(
             value,
-            tenure,
-            memory
         ):
             if value[-1] == 1:
-                memory.append(tenure)
-                return {'display': 'block'}, memory
+                return {'display': 'block'}, {'display': 'none'}
             else:
-                return {'display': 'none'}, memory
+                return {'display': 'none'}, {'display': 'flex'}
 
         @callback(
             Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, type)}, 'data'),
-            Input(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data'),
-            prevent_initial_call=True,
+            Input(LOAN.RESULT.KWARGS, 'data'),
+            # prevent_initial_call=True,
         )
         def update_arrangement(memory):
-            if len(memory) == 0:
-                return PreventUpdate()
-            else:
-                return [[1, memory[-1] - 1]]
+            return [[1, memory['tenure'] - 1]]
 
         # @callback(
             # Output(suffix_for_type('momory for the tenure', LOAN.TYPE),
@@ -371,18 +397,16 @@ class MortgageOptions:
             prevent_initial_call=True
         )
         def _interest_rate(interest, arr, multi_stage_interest, memory):
-            if interest is None:
+            if interest or arr is None:
                 raise PreventUpdate
             elif type == LOAN.TYPE:
-                memory['interest_arr'] = {
-                    'interest': [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1],
-                    'time': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
-                }
+                memory['interest_arr']['interest']= [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1]
+                memory['interest_arr']['time']= [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
+            
             elif type == LOAN.SUBSIDY.TYPE:
-                memory['subsidy_arr'] = {
-                    'interest': [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1],
-                    'time': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
-                }
+                memory['subsidy_arr']['interest'] = [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1]
+                memory['subsidy_arr']['time'] = [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
+            
             return memory
 
         return layout
@@ -468,10 +492,10 @@ class AdvancedOptions:
 
         @callback(
             Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, type)}, 'data'),
-            Input(LOAN.TENURE, 'value'),
+            Input(LOAN.RESULT.KWARGS, 'data'),
         )
-        def update_prepay_arrangement(tenure):
-            return [[1, tenure - 1]]
+        def update_prepay_arrangement(memory):
+            return [[1, memory['tenure'] - 1]]
 
         # Toggle the addon setting for prepay
         @callback(
@@ -612,7 +636,7 @@ class AdvancedOptions:
 
         @callback(
             Output({'index': ALL, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.TYPE)}, 'data', allow_duplicate=True), 
-            Input(suffix_for_type('momory for the tenure', LOAN.TYPE), 'data'),
+            Input(LOAN.RESULT.KWARGS, 'data'),
             Input(LOAN.SUBSIDY.START, 'value'),
             prevent_initial_call=True,
         )
@@ -620,10 +644,11 @@ class AdvancedOptions:
             memory,
             start
         ):
-            if len(memory) == 0 or not start:
+            tenure= memory['subsidy_arr']['tenure']
+            if (tenure == 0) or not start:
                 return no_update
             else:
-                return [[start, memory[-1] - 1]]
+                return [[start, tenure - 1]]
 
         @callback(
             Output(suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.PREPAY.TYPE), 'data'),  # type: ignore
@@ -751,7 +776,7 @@ class AdvancedOptions:
                         'amount': [],
                     },
                 }
-                return [memory] + [0, 0, 0, 0, repayment_options, 0, {}, {}, [[0]]]
+                return [memory] + [0, 0, 0, 0, repayment_options, 0, {}, [[0]], {}, [[0]]]
             else:
                 return no_update
 

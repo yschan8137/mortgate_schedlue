@@ -15,7 +15,6 @@ import json
 # Addons function for the payment arrangement.
 # For further information, please refer to the documentation of the addon function in the file Amort\test\ADDON.py.
 # code of the color: https://useaxentix.com/docs/general/colors/
-# dash bootstrap components template: https://hellodash.pythonanywhere.com/
 
 def addon(
         # Type need to be indicated within ['prepay', 'subsidy'] to distinguish the different dropdowns.
@@ -90,22 +89,25 @@ def addon(
                         id=suffix_for_type(ADDON.DROPDOWN.MENU, type),
                         disabled=disabled,
                         color='#4C9F85',
+                        toggle_class_name= "fst-italic border border-1"
                     ),
-                    dbc.Input(id=suffix_for_type(ADDON.INPUT, type),
-                              type='number',
-                              step=0.01,
-                              value= 0,
-                              min=0,
-                              max=100,
-                              placeholder=placeholder,
-                              disabled=disabled,
-                              ),
+                    dbc.Input(
+                        id=suffix_for_type(ADDON.INPUT, type),
+                        type='number',
+                        step=0.01,
+                        value= 0,
+                        min=0,
+                        max=100,
+                        placeholder=placeholder,
+                        disabled=disabled,
+                    ),
                     dbc.Button(
                         id=suffix_for_type(ADDON.ADD, type),
                         color="primary",
                         outline= False,
                         children="Add",
                         disabled=disabled,
+                        class_name= "fst-italic",
                     ),
                     dbc.Button(
                         id=suffix_for_type(ADDON.DELETE, type),
@@ -113,6 +115,7 @@ def addon(
                         outline= False,
                         children="Del",
                         disabled=disabled,
+                        class_name= "fst-italic",
                     )
                 ],
             ),
@@ -120,9 +123,9 @@ def addon(
         ],
         
         # make the width not exceed the width of the container.
-        style={
-            'width': '100%',
-        },
+        # style={
+            # 'width': '100%',
+        # },
     )
 
 

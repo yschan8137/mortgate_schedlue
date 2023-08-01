@@ -7,10 +7,13 @@ from app.Dashboard.components.ids import *
 from app.Dashboard.components.Controls.options import kwargs_schema, MortgageOptions, AdvancedOptions
 from app.Loan.main import calculator
 
+# dash bootstrap components template: https://hellodash.pythonanywhere.com/
+
+
 def register():
     """
-    Process the inputs into a dataframe with the calculator function from the Loan module. 
-    Then, convert the dataframe into dictionary form and store it as a cache for further use in multiple pages.
+    Process the options inputs into a dataframe with the calculator function from the Loan module. 
+    Then, convert the dataframe into dictionary form in oder to store it as a cache for further use in multiple pages.
     """
     layout= html.Div(
         [
@@ -47,7 +50,7 @@ class panel:
                             [MortgageOptions.amount],
                             align= 'center',
                             style= {
-                                'width': '50%',
+                                # 'width': '50%',
                             }
                         ),
                         dbc.Row(
@@ -57,7 +60,7 @@ class panel:
                                         MortgageOptions.tenure()
                                     ],
                                     style= {
-                                        "width": "50%"
+                                        "width": "80%"
                                     }
                                 ),
                                 dbc.Col(
@@ -67,40 +70,24 @@ class panel:
                                 ),
                             ],
                             align= 'start',
-                            # className='pad-row'
-
-
+                            className='pad-row'
 
                         ),
-                        dbc.CardBody(
+                        dbc.Row(
                             [
-                                MortgageOptions.down_payment,
-                                MortgageOptions.grace,
+                                dbc.Col(MortgageOptions.down_payment),
+                                dbc.Col(MortgageOptions.grace),
                             ],
+                        ),
+                        html.Div(dbc.Button(
+                            'Enter',
                             style={
-                                'display': 'flex',
-                                'justify-content': 'space-between',
-                                'align-items': 'center',
-                                'flex-direction': 'row',
-                                'width': '100%',
                                 'margin-top': '20px',
-                                'margin-bottom': '20px',
-                                'padding': '20px',
-                                'border': '1px solid #ccc',
-                                'border-radius': '5px',
-                                'background-color': '#f5f5f5',
-                                'box-shadow': '0 0 5px #ccc',
-                                'text-align': 'center',
-                                'font-size': '20px',
-                                'font-weight': 'bold',
-                                'color': '#333',
-                                'height': '100px',
-                                'overflow': 'hidden',
+                                # 'margin-bottom': '20px',
                                 'position': 'relative',
-                                'z-index': '1',
-                                'transition': 'all .3s',
-                            }
-                        )
+                            },
+                            active= True               
+                        ))
                     ],
                     body=True,
                     style={
@@ -110,25 +97,13 @@ class panel:
                         'border': '1px solid #ccc',
                         'border-radius': '5px',
                         'box-shadow': '0 0 5px #ccc',
-                        'text-align': 'center',
                         'font-size': '20px',
-                        'font-weight': 'bold',
                         'font-weight': 'bold',
                         'color': '#333',
                         'position': 'relative',
                         'z-index': '1',
-                        'transition': 'all .3s',
-                        'overflow': 'hidden',
-                        'padding': '20px',
-                        'margin-top': '20px',
-                        'margin-bottom': '20px',
-                        'margin-left': '20px',
-                        'margin-right': '20px',
-                        'display': 'flex',
-                        'justify-content': 'space-between',
-                        'align-items': 'center', 
                     },
-                    className='pad-row',
+                    # className='pad-row',
                 )
 
         return layout
@@ -186,8 +161,8 @@ class panel:
 # py -m app.Dashboard.components.Controls.main
 if __name__ == "__main__":
     app = Dash(__name__, 
-           external_stylesheets=[dbc.themes.LUMEN], 
+           external_stylesheets=[dbc.themes.LITERA], 
            suppress_callback_exceptions=True
            )
-    app.layout = panel.front()
+    app.layout = panel.side()
     app.run_server(debug=True)

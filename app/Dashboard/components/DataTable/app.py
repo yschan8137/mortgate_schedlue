@@ -171,8 +171,7 @@ def datatable():
             merge_duplicate_headers = False
         page_size_editable = (
             page_size_editable if page_size_editable and page_size_editable > 0 else 1)
-        df_dash = convert_df_to_dash(df[1:-1].iloc[(page_current * page_size_editable if page_current == 0 else (
-            page_current * page_size_editable) + 1): ((page_current + 1) * page_size_editable) + 1])
+        df_dash = convert_df_to_dash(df[0:-1].iloc[(page_current * page_size_editable) + 1: ((page_current + 1) * page_size_editable) + 1])
         df_sum = convert_df_to_dash(df.tail(1))
         pages = round((len(df.values) - 2) // page_size_editable, 0)
 
