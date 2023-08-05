@@ -91,8 +91,19 @@ def addon(
                         class_name= "fst-italic",
                     )
                 ],
+                className= 'mb-1'
             ),
-            html.Div(id=suffix_for_type(ADDON.NEW, type)),
+            dbc.Card(
+                [
+                    dbc.CardBody(id= suffix_for_type(ADDON.NEW, type))
+                ],
+                style= {
+                    'height': '100px',
+                    'overflow': 'auto',
+                },
+                # className= 'mb-3'
+            )
+            # html.Div(id=suffix_for_type(ADDON.NEW, type)),
         ],
     )
 
@@ -200,18 +211,15 @@ def addon(
         patched_item= []
         if current_input and current_label:
             memory[current_label] = float(current_input)
-
-        """
-
-        """
-
+            
         dropdown_items = {key: value for key,
                           value in dropdown_items.items() if value not in memory}
         
         if (current_label and current_label != dropdown_label) and current_input:
             # patched_item.append(new_checklist_item())
-            sorted_memory= dict(sorted(memory.items())) # unfinished item: sorted by Keys.
-            print(f'sorted memory on line 214 in widgets.py is {sorted_memory}')
+            sorted_memory= {}
+            for k in [str(sorted_key) for sorted_key in sorted([int(key) for key in memory.keys()])]: 
+                sorted_memory[k]= memory[k]
             patched_item= [new_checklist_item(_, type= type, result= {k: v}) for (k, v) in sorted_memory.items()]
         return patched_item, "", dropdown_label, memory
 
@@ -275,7 +283,7 @@ def new_checklist_item(index, type, result):
                     "type": "done"
                 },
                 style={"display": "inline-block",
-                       "margin-right": "15px"},
+                       "margin-right": "5px"},
             ),
             html.Div(
                 [

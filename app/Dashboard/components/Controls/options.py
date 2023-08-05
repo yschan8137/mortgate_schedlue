@@ -297,7 +297,7 @@ class MortgageOptions:
                     style={
                             'display': 'flex',
                     },
-                    className= 'border border-blue'
+                    # className= 'border border-blue'
                 ),
                 dbc.InputGroup(
                     [
