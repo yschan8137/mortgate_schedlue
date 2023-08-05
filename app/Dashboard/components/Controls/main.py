@@ -164,5 +164,5 @@ if __name__ == "__main__":
            external_stylesheets=[dbc.themes.LITERA], 
            suppress_callback_exceptions=True
            )
-    app.layout = panel.side()
+    app.layout = panel.front()
     app.run_server(debug=True)

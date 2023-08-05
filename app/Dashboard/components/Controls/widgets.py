@@ -54,33 +54,6 @@ def addon(
             # That's the outcome what we want.
             dcc.Store(id=suffix_for_type(ADDON.MEMORY, type), data={}),
             dcc.Store(id=suffix_for_type(ADDON.DROPDOWN.ITEMS, type), data={}),
-            # html.Div(
-                # [
-                    # dbc.DropdownMenu(
-                        # [],
-                        # label=dropdown_label,
-                        # id=suffix_for_type(ADDON.DROPDOWN.MENU, type),
-                        # disabled=disabled,
-                        # color='green',
-                        # style={'width': '30%'}
-                    # ),
-                    # dbc.Button(
-                        # id=suffix_for_type(ADDON.ADD, type),
-                        # color="primary",
-                        # children="Add",
-                        # disabled=disabled,
-                    # ),
-                    # dbc.Button(
-                        # id=suffix_for_type(ADDON.DELETE, type),
-                        # color="danger",
-                        # children="Del",
-                        # disabled=disabled,
-                    # )
-                # ],
-                # style={
-                    # 'display': 'inline-flex',
-                # }
-            # ),
             dbc.InputGroup(
                 [
                     dbc.DropdownMenu(
@@ -121,11 +94,6 @@ def addon(
             ),
             html.Div(id=suffix_for_type(ADDON.NEW, type)),
         ],
-        
-        # make the width not exceed the width of the container.
-        # style={
-            # 'width': '100%',
-        # },
     )
 
 
@@ -228,65 +196,23 @@ def addon(
         memory,
         dropdown_items
     ):
-        patched_item = Patch()
+        # patched_item = Patch()
+        patched_item= []
         if current_input and current_label:
             memory[current_label] = float(current_input)
 
+        """
+
+        """
+
         dropdown_items = {key: value for key,
                           value in dropdown_items.items() if value not in memory}
-
-        def new_checklist_item():
-            return html.Div(
-                [
-                    dcc.Checklist(
-                        options=[
-                            {"label": "", "value": "done"}
-                        ],
-                        id={
-                            "index": _,
-                            "type": "done"
-                        },
-                        style={"display": "inline-block",
-                               "margin-right": "15px"},
-                    ),
-                    html.Div(
-                        [
-                            html.Li('Apply', style={
-                                    'display': 'inline-block',
-                                    "margin-right": "5px",
-                                    }
-                                    ),
-                            html.Li([*memory.values()][-1],
-                                    style={
-                                        'display': 'inline-block',
-                                        "margin-right": "5px",
-                            }
-                            ),
-                            html.Li('on', style={
-                                    'display': 'inline-block',
-                                    "margin-right": "5px",
-                                    }
-                                    ),
-                            html.Li([*memory][-1],
-                                    style={'display': 'inline-block'}
-                                    ),
-
-                        ],
-                        id={
-                            "index": _,
-                            "type": suffix_for_type(ADDON.OUTPUT, type)
-                        },
-                        style={
-                            "display": "inline-block",
-                            "margin": "5px",
-                            'margin-right': '5px',
-                            "maxWidth": "400px"
-                        },
-                    ),
-                ],
-            )
+        
         if (current_label and current_label != dropdown_label) and current_input:
-            patched_item.append(new_checklist_item())
+            # patched_item.append(new_checklist_item())
+            sorted_memory= dict(sorted(memory.items())) # unfinished item: sorted by Keys.
+            print(f'sorted memory on line 214 in widgets.py is {sorted_memory}')
+            patched_item= [new_checklist_item(_, type= type, result= {k: v}) for (k, v) in sorted_memory.items()]
         return patched_item, "", dropdown_label, memory
 
     @callback(
@@ -337,9 +263,68 @@ def addon(
 
     return layout
 
+def new_checklist_item(index, type, result):
+    return html.Div(
+        [
+            dcc.Checklist(
+                options=[
+                    {"label": "", "value": "done"}
+                ],
+                id={
+                    "index": index,
+                    "type": "done"
+                },
+                style={"display": "inline-block",
+                       "margin-right": "15px"},
+            ),
+            html.Div(
+                [
+                    html.Li('Apply', style={
+                            'display': 'inline-block',
+                            "margin-right": "5px",
+                            }
+                            ),
+                    html.Li([*result.values()][-1],
+                            style={
+                                'display': 'inline-block',
+                                "margin-right": "5px",
+                    }
+                    ),
+                    html.Li('from the', style={
+                            'display': 'inline-block',
+                            "margin-right": "5px",
+                            }
+                    ),
+                    html.Li([*result][-1],
+                            style={
+                                'display': 'inline-block',
+                                "margin-right": "1px",
+                            }
+                    ),
+                    html.Li(('st' if c == "1" 
+                                  else ('nd' if c == "2" else ('rd' if c == "3" else 'th'))) if len(c := [*result.keys()][-1]) == 1 else ('st' if c[-1] == '1' else ('nd' if c[-1] == '2' else ('rd' if c[-1] == '3' else 'th'))), 
+                            style={
+                            'display': 'inline-block',
+                            "margin-right": "5px",
+                            },
+                    ),
+                ],
+                id={
+                    "index": index,
+                    "type": suffix_for_type(ADDON.OUTPUT, type)
+                },
+                style={
+                    "display": "inline-block",
+                    "margin": "5px",
+                    'margin-right': '5px',
+                    "maxWidth": "400px"
+                },
+            ),
+        ],
+    )
+
 
 # build a refeshable dropdown that can refresh the options when the refresh button is clicked.
-
 def refreshable_dropdown(
         label: str,
         # ['prepay', 'subsidy'] Consider the case of duplicate ids.

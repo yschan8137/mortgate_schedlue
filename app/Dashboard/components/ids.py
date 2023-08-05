@@ -47,6 +47,9 @@ class ADDON:
     OUTPUT = 'output'
     DISABLED = 'disabled'
 
+    class LABEL:
+        TIME= 'Time'
+
     class DROPDOWN:
         MENU = 'dropdown menu'
         MENUITEMS = 'items in the dropdown menu'

@@ -265,10 +265,9 @@ class MortgageOptions:
                                 # id= 'label for interest',
                                 style={
                                     'display': 'inline-block',
-                                    'textAlign': 'left',
                                 }
                             ),
-                            width= 3,
+                            width= 4,
                             # className= 'border border-black'
                         ),
                         dbc.Col(
@@ -278,29 +277,27 @@ class MortgageOptions:
                                 ],
                                 value=[0],
                                 id=suffix_for_type(ADVANCED.TOGGLE.BUTTON, type),
-                                inline=True,
+                                # inline=True,
                                 switch=True,
                                 label_style={
-                                    'font-size': '16px',
-                                    "text-align": "center",
+                                    'font-size': '14px',
                                 },
                                 style={
-                                    "display": "inline-block", 
-                                    "textAlign": "center",
-                                    'font-size': '16px',
+                                    'display': 'inline-block',
+                                    'margin': "px px",
+                                    'font-size': '14px',
                                 },
                                 # className='pad-row border bordr-black',
                             ),
                             align='center',
-                            width= 9,
+                            width= 8,
                             # className= 'border border-black'
                         )
                     ],
                     style={
                             'display': 'flex',
                     },
-                    className="g-0"
-                    # className= 'border border-blue'
+                    className= 'border border-blue'
                 ),
                 dbc.InputGroup(
                     [
@@ -330,7 +327,7 @@ class MortgageOptions:
                     [
                         addon(
                             type=type,  # type: ignore
-                            dropdown_label='Time',
+                            dropdown_label= ADDON.LABEL.TIME,
                             # avoid the errors regarding the nonexistent objects.
                             pattern_matching=True,
                             placeholder=placeholder,
@@ -397,16 +394,30 @@ class MortgageOptions:
             prevent_initial_call=True
         )
         def _interest_rate(interest, arr, multi_stage_interest, memory):
-            if interest or arr is None:
+            if interest is None or ([*arr.keys()][-1] == ADDON.LABEL.TIME if len(arr) > 0 else False):
                 raise PreventUpdate
             elif type == LOAN.TYPE:
-                memory['interest_arr']['interest']= [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1]
-                memory['interest_arr']['time']= [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
-            
+                if multi_stage_interest[-1] == 1:
+                    memory['interest_arr']['interest']= [interest, *arr.values()]
+                    memory['interest_arr']['time']= [int(v) for v in arr.keys()]
+                else: 
+                    memory['interest_arr']['interest']= [interest]
+                    memory['interest_arr']['time']= []
+                # memory['interest_arr'] = {
+                    # 'interest': [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1],
+                    # 'time': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
+                # }
             elif type == LOAN.SUBSIDY.TYPE:
-                memory['subsidy_arr']['interest'] = [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1]
-                memory['subsidy_arr']['time'] = [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
-            
+                if multi_stage_interest[-1] == 1:
+                    memory['subsidy_arr']['interest'] = [interest, *arr.values()]
+                    memory['subsidy_arr']['time'] = [int(v) for v in arr.keys()]
+                else:
+                    memory['subsidy_arr']['interest'] = [interest]
+                    memory['subsidy_arr']['time'] = []
+                    # memory['subsidy_arr'] = {
+                    # 'interest': [[interest, *arr.values()] if multi_stage_interest[-1] == 1 else [interest]][-1],
+                    # 'time': [[int(v) for v in arr.keys()] if multi_stage_interest[-1] == 1 else []][-1]
+                # }
             return memory
 
         return layout
@@ -644,11 +655,10 @@ class AdvancedOptions:
             memory,
             start
         ):
-            tenure= memory['subsidy_arr']['tenure']
-            if (tenure == 0) or not start:
+            if memory['subsidy_arr']['tenure'] == 0 or not start:
                 return no_update
             else:
-                return [[start, tenure - 1]]
+                return [[start, memory['subsidy_arr']['tenure'] - 1]]
 
         @callback(
             Output(suffix_for_type(ADDON.DROPDOWN.LIST, LOAN.SUBSIDY.PREPAY.TYPE), 'data'),  # type: ignore
@@ -674,12 +684,9 @@ class AdvancedOptions:
                        'disabled', allow_duplicate=True),  # type: ignore
                 Output(suffix_for_type(ADDON.DELETE, LOAN.SUBSIDY.PREPAY.TYPE),
                        'disabled', allow_duplicate=True),  # type: ignore
-                Output(suffix_for_type(ADDON.INPUT,
-                       LOAN.SUBSIDY.PREPAY.TYPE), 'type'),
-                Output(suffix_for_type(ADDON.INPUT,
-                       LOAN.SUBSIDY.PREPAY.TYPE), 'step'),
-                Output(suffix_for_type(ADDON.INPUT,
-                       LOAN.SUBSIDY.PREPAY.TYPE), 'max'),
+                Output(suffix_for_type(ADDON.INPUT, LOAN.SUBSIDY.PREPAY.TYPE), 'type'),
+                Output(suffix_for_type(ADDON.INPUT, LOAN.SUBSIDY.PREPAY.TYPE), 'step'),
+                Output(suffix_for_type(ADDON.INPUT, LOAN.SUBSIDY.PREPAY.TYPE), 'max'),
             ],
             Input(LOAN.SUBSIDY.PREPAY.OPTION, 'value'),
             Input(suffix_for_type(LOAN.AMOUNT, type), 'value'),
@@ -692,8 +699,7 @@ class AdvancedOptions:
                 return [True] * 4 + ['number', 0, 0]
 
         @callback(
-            Output(LOAN.RESULT.KWARGS, 'data',
-                   allow_duplicate=True),  # type: ignore
+            Output(LOAN.RESULT.KWARGS, 'data', allow_duplicate=True),  # type: ignore
             Input(suffix_for_type(LOAN.AMOUNT, type), 'value'),
             Input(suffix_for_type(LOAN.GRACE, type), 'value'),
             Input(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type), 'value'),
@@ -748,8 +754,7 @@ class AdvancedOptions:
                 Output(suffix_for_type(LOAN.GRACE, type), 'value'),
                 Output(suffix_for_type(ADVANCED.DROPDOWN.OPTIONS,
                                        type), 'value', allow_duplicate=True),
-                Output(suffix_for_type(LOAN.INTEREST, type),
-                       'value', allow_duplicate=True),
+                Output(suffix_for_type(LOAN.INTEREST, type), 'value', allow_duplicate=True),
                 Output(suffix_for_type(ADDON.MEMORY, type),
                        'data', allow_duplicate=True),
                 Output({'index': type, 'type': suffix_for_type(ADDON.DROPDOWN.LIST, type)}, 'data', allow_duplicate=True),
@@ -776,7 +781,7 @@ class AdvancedOptions:
                         'amount': [],
                     },
                 }
-                return [memory] + [0, 0, 0, 0, repayment_options, 0, {}, [[0]], {}, [[0]]]
+                return [memory] + [0, 0, 0, 0, repayment_options, 0, {}, {}, [[0]]]
             else:
                 return no_update
 
