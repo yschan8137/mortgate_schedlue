@@ -98,7 +98,10 @@ def datatable():
                         },
                         style_cell={
                             'border': '1px solid lightblue',
-                        },
+                        }, 
+                        style_data={
+                            'transition': {'duration': 1000, 'timing_function': 'ease-in-out'}
+                        }
                     ),
                     className="mb-3"
                 ),
@@ -128,6 +131,10 @@ def datatable():
                         style_cell={
                             'border': '1px solid pink',
                         },
+                        loading_state= {
+                            'is_loading': True,
+                            'prop_nane': 'data', 
+                        }
                     )
                 )
             ]
@@ -176,6 +183,18 @@ def datatable():
         pages = round((len(df.values) - 2) // page_size_editable, 0)
 
         return df_sum[1], df_sum[0], df_dash[1],  df_dash[0], pages, merge_duplicate_headers, merge_duplicate_headers
+    
+    @callback(
+        Output(DATATABLE.SUM, 'style_data'),
+        Output(DATATABLE.TABLE, 'style_data'),
+        Input(DATATABLE.SUM, 'data'),
+        prevent_initial_call=True,
+    )
+    def update_datatable_style(values):
+        return [{'transition': {'duration': 5000, 'timing_function': 'linear'}}, {'transition': {'duration': 1000, 'timing_function': 'ease-in-out'}}]
+
+    
+
     return layout
 
 def deployment():
@@ -216,7 +235,7 @@ def deployment():
 # py -m app.Dashboard.components.DataTable.app
 if __name__ == "__main__":  
     app = Dash(__name__, 
-           external_stylesheets=[dbc.themes.LUMEN],
+           external_stylesheets=[dbc.themes.LUMEN, dbc.icons.BOOTSTRAP],
            suppress_callback_exceptions=True
            ) 
 

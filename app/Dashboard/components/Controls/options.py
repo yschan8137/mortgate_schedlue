@@ -45,7 +45,6 @@ kwargs_schema = {
     },
 }
 
-
 @dataclass
 class MortgageOptions:
     type = LOAN.TYPE
@@ -153,20 +152,6 @@ class MortgageOptions:
                     },
                     tooltip={"placement": "bottom", "always_visible": True}
                 ),
-                # dbc.Col(
-                    # dbc.Input(
-                        # min=1,
-                        # max=40,
-                        # value=kwargs_schema['tenure'],
-                        # step=1,
-                        # type='number',
-                        # id=LOAN.TENURE,
-                        # style={
-                            # 'width': "10%",
-                            # 'textAlign': 'left'
-                        # }
-                    # )
-                # )
             ]
         )
 
@@ -189,7 +174,6 @@ class MortgageOptions:
         [
             dbc.Label(
                 'Grace Period',
-                # size='md'
             ),
             dbc.Col(
                 dbc.Input(
@@ -199,10 +183,6 @@ class MortgageOptions:
                     value=kwargs_schema['grace_period'],
                     type='number',
                     id=suffix_for_type(LOAN.GRACE, type),
-                    style={
-                        # 'width': "10%",
-                        # 'textAlign': 'left',
-                    }
                 )
             )
         ]
@@ -264,11 +244,10 @@ class MortgageOptions:
                                 size='md',
                                 # id= 'label for interest',
                                 style={
-                                    'display': 'inline-block',
+                                    # 'display': 'inline-block',
                                 }
                             ),
-                            width= 4,
-                            # className= 'border border-black'
+                            # width= 4,
                         ),
                         dbc.Col(
                             dbc.Checklist(
@@ -283,21 +262,16 @@ class MortgageOptions:
                                     'font-size': '14px',
                                 },
                                 style={
-                                    'display': 'inline-block',
+                                    # 'display': 'inline-block',
                                     'margin': "px px",
                                     'font-size': '14px',
                                 },
-                                # className='pad-row border bordr-black',
                             ),
                             align='center',
-                            width= 8,
-                            # className= 'border border-black'
                         )
                     ],
                     style={
-                            'display': 'flex',
                     },
-                    # className= 'border border-blue'
                 ),
                 dbc.InputGroup(
                     [
@@ -327,7 +301,7 @@ class MortgageOptions:
                     [
                         addon(
                             type=type,  # type: ignore
-                            dropdown_label= ADDON.LABEL.TIME,
+                            # dropdown_label= ADDON.LABEL.TIME,
                             # avoid the errors regarding the nonexistent objects.
                             pattern_matching=True,
                             placeholder=placeholder,
@@ -494,7 +468,7 @@ class AdvancedOptions:
                 ),
                 addon(
                     type=type,
-                    dropdown_label='Time',
+                    # dropdown_label='Time',
                     pattern_matching=True,
                     placeholder='Input Prepay Arrangement',
                 )
@@ -629,7 +603,7 @@ class AdvancedOptions:
                                             children=addon(
                                                 # addition of extra string to avoid conflict with other addons
                                                 type=LOAN.SUBSIDY.PREPAY.TYPE,
-                                                dropdown_label='Time',
+                                                # dropdown_label='Time',
                                                 placeholder='Input Prepay Arrangement',
                                                 disabled=True,
                                             ),
@@ -781,7 +755,7 @@ class AdvancedOptions:
                         'amount': [],
                     },
                 }
-                return [memory] + [0, 0, 0, 0, repayment_options, 0, {}, {}, [[0]]]
+                return [memory] + [0, 0, 0, 0, repayment_options, 0, {}, {}, {},[[0]]]
             else:
                 return no_update
 

@@ -20,7 +20,7 @@ def addon(
         # Type need to be indicated within ['prepay', 'subsidy'] to distinguish the different dropdowns.
         type: str,
         # dropdown_list: list,
-        dropdown_label: str,
+        # dropdown_label: str,
         placeholder: str,
         pattern_matching=False,
         disabled: bool = False,
@@ -57,13 +57,13 @@ def addon(
             dbc.InputGroup(
                 [
                     dbc.DropdownMenu(
-                        [],
-                        label=dropdown_label,
-                        id=suffix_for_type(ADDON.DROPDOWN.MENU, type),
-                        disabled=disabled,
-                        color='#4C9F85',
-                        toggle_class_name= "fst-italic border border-1"
-                    ),
+                                [],
+                                id=suffix_for_type(ADDON.DROPDOWN.MENU, type),
+                                disabled=disabled,
+                                label= "📆",
+                                color='#4C9F85',
+                                # toggle_class_name= "fst-italic border border-1"
+                            ),
                     dbc.Input(
                         id=suffix_for_type(ADDON.INPUT, type),
                         type='number',
@@ -73,37 +73,53 @@ def addon(
                         max=100,
                         placeholder=placeholder,
                         disabled=disabled,
+                        # style= {
+                            # 'width': '30%',
+                        # }
                     ),
-                    dbc.Button(
-                        id=suffix_for_type(ADDON.ADD, type),
-                        color="primary",
-                        outline= False,
-                        children="Add",
-                        disabled=disabled,
-                        class_name= "fst-italic",
-                    ),
-                    dbc.Button(
-                        id=suffix_for_type(ADDON.DELETE, type),
-                        color="danger",
-                        outline= False,
-                        children="Del",
-                        disabled=disabled,
-                        class_name= "fst-italic",
+                    html.Div(
+                        [
+                            dbc.Button(
+                                id=suffix_for_type(ADDON.ADD, type),
+                                color="primary",
+                                outline= False,
+                                children=[html.I(className="bi bi-ui-checks")],
+                                disabled=disabled,
+                                class_name= "fst-italic",
+                                # style= {
+                                    # 'width': '50%',
+                                # }
+                            ),
+                            dbc.Button(
+                                id=suffix_for_type(ADDON.DELETE, type),
+                                color="danger",
+                                outline= False,
+                                children=[
+                                    html.I(className="bi bi-trash3"),
+                                ],
+                                disabled=disabled,
+                                # class_name= "fst-italic",
+                                # className="d-flex align-items-center",
+                                # style= {
+                                    # 'width': '50%',
+                                # }
+                            )
+                        ]
                     )
                 ],
+                style= {
+                    'display': 'flex',
+                    'width': '100%',
+                },
                 className= 'mb-1'
             ),
             dbc.Card(
-                [
-                    dbc.CardBody(id= suffix_for_type(ADDON.NEW, type))
-                ],
+                children= [dbc.CardBody(id= suffix_for_type(ADDON.NEW, type))],
                 style= {
                     'height': '100px',
                     'overflow': 'auto',
                 },
-                # className= 'mb-3'
             )
-            # html.Div(id=suffix_for_type(ADDON.NEW, type)),
         ],
     )
 
@@ -186,10 +202,10 @@ def addon(
             Output(suffix_for_type(ADDON.NEW, type), 'children',
                    allow_duplicate=True),  # type: ignore
             Output(suffix_for_type(ADDON.INPUT, type), 'value'),
-            Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label',
-                   allow_duplicate=True),  # type: ignore
+            # Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label',
+                #    allow_duplicate=True),  # type: ignore
             Output(suffix_for_type(ADDON.MEMORY, type), 'data',
-                   allow_duplicate=True),  # type: ignore
+                   allow_duplicate=True),  # type: ignore       
         ],
         Input(suffix_for_type(ADDON.ADD, type), 'n_clicks'),
         [
@@ -215,13 +231,13 @@ def addon(
         dropdown_items = {key: value for key,
                           value in dropdown_items.items() if value not in memory}
         
-        if (current_label and current_label != dropdown_label) and current_input:
+        if current_label  and current_input:
             # patched_item.append(new_checklist_item())
             sorted_memory= {}
             for k in [str(sorted_key) for sorted_key in sorted([int(key) for key in memory.keys()])]: 
                 sorted_memory[k]= memory[k]
             patched_item= [new_checklist_item(_, type= type, result= {k: v}) for (k, v) in sorted_memory.items()]
-        return patched_item, "", dropdown_label, memory
+        return patched_item, "", memory
 
     @callback(
         Output({"index": MATCH, "type": suffix_for_type(
@@ -408,7 +424,7 @@ if __name__ == "__main__":
             addon(
                 type='test',
                 # dropdown_list=[1, 2],
-                dropdown_label="Time",
+                # dropdown_label="Time",
                 placeholder="Input the timepoint",
             )
         ]

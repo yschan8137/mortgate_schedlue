@@ -18,7 +18,7 @@ class df_schema:
     class level_2:
         PRINCIPAL = '攤還本金'  # Principal
         INTEREST = '利息'  # Interest
-        PAYMENT = '每期貸款'  # Payment
+        PAYMENT = '還本利和'  # Payment
         RESIDUAL = '剩餘貸款'  # Residual
 
 
@@ -138,7 +138,7 @@ def calculator(
             {
                 f'攤還本金{suffix}': objs[0],
                 f'利息{suffix}': objs[1],
-                f'每期貸款{suffix}': objs[2],
+                f'還本利和{suffix}': objs[2],
                 f'剩餘貸款{suffix}': objs[3]
             },
             index=[v for v in range(index_range[0], index_range[1])]
