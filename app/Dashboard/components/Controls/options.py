@@ -472,7 +472,10 @@ class AdvancedOptions:
                     pattern_matching=True,
                     placeholder='Input Prepay Arrangement',
                 )
-            ]
+            ],
+            style= {
+                'maxWidth': '100%'
+            }
         )
 
         @callback(

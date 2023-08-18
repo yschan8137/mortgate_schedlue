@@ -60,8 +60,11 @@ def addon(
                                 [],
                                 id=suffix_for_type(ADDON.DROPDOWN.MENU, type),
                                 disabled=disabled,
-                                label= "📆",
+                                label= "Time",
                                 color='#4C9F85',
+                                toggle_style= {
+                                    'font-size': '14px',
+                                }
                                 # toggle_class_name= "fst-italic border border-1"
                             ),
                     dbc.Input(
@@ -73,9 +76,9 @@ def addon(
                         max=100,
                         placeholder=placeholder,
                         disabled=disabled,
-                        # style= {
-                            # 'width': '30%',
-                        # }
+                        style= {
+                            'width': '28%',
+                        }
                     ),
                     html.Div(
                         [

@@ -131,8 +131,8 @@ class panel:
                                         AdvancedOptions.accordion(
                                             style={
                                                 'width': '100%',
-                                                         # 'display': 'inline-block',
-                                                         'active-bg': 'red',
+                                                # 'display': 'inline-block',
+                                                'active-bg': 'red',
                                             },
                                             content=[
                                                 {
