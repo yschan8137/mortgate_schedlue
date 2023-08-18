@@ -66,3 +66,6 @@ class DATATABLE:
     class PAGE:
         SIZE = 'table-page-size'
         COUNT = 'table-page-count'
+
+class CONTROLS:
+    BUTTON = 'controls-button'

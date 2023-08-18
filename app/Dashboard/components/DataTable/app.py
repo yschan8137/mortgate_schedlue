@@ -1,4 +1,5 @@
 import pandas as pd  # type: ignore
+import dash
 from dash import Dash, html, Input, Output, dash_table, callback  # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 
@@ -238,7 +239,6 @@ if __name__ == "__main__":
            external_stylesheets=[dbc.themes.LUMEN, dbc.icons.BOOTSTRAP],
            suppress_callback_exceptions=True
            ) 
-
     app.layout = deployment()
     app.run_server(debug= True)
     # app.run_server(port=80, host= '0.0.0.0', debug=False, use_reloader=True)

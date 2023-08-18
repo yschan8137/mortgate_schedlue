@@ -1,27 +1,38 @@
+import dash
 from dash import Dash, html, dcc, Input, Output, State, callback
 import dash_bootstrap_components as dbc
+from app.Dashboard.components.Controls.main import panel
 from app.Dashboard.components.Controls.options import AdvancedOptions
 from app.Dashboard.components.DataTable.app import deployment
 
-def mainpage():
-    layout = html.Div([
-        dcc.Location(id='url', refresh=False),
-        html.Div(id='page-content')
-    ])
-    
-    @callback(
-            Output('page-content', 'children'),
-            [Input('url', 'pathname')]
+# https://dash.plotly.com/urls
+# https://medium.com/@mcmanus_data_works/how-to-create-a-multipage-dash-app-261a8699ac3f
+app = Dash(__name__, use_pages=True)
+
+app.layout = html.Div([
+	html.H1('Multi-page app with Dash Pages'),
+
+    html.Div(
+        [
+            html.Div(
+                dcc.Link(
+                    f"{page['name']} - {page['path']}", href=page["relative_path"]
+                )
             )
-    def display_page(pathname):
-        if pathname == '/page-1':
-            return deployment()
-        # elif pathname == '/page-2':
-            # return page2.layout
-        else:
-            return '404'
-    
-    return layout
+            for page in dash.page_registry.values()
+        ]
+    ),
+
+	dash.page_container
+])
+
+if __name__ == '__main__':
+	app.run(debug=True)
+
+
+
+
+
 
 
 

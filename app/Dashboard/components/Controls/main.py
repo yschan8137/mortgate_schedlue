@@ -42,7 +42,7 @@ class panel:
     The layout of the panels    
     """
     @classmethod
-    def front(cls):
+    def front(cls, href= None):
         layout= dbc.Card(
                     [
                         register(),
@@ -80,13 +80,15 @@ class panel:
                             ],
                         ),
                         html.Div(dbc.Button(
-                            'Enter',
+                            "Enter",
+                            id= CONTROLS.BUTTON,
                             style={
                                 'margin-top': '20px',
                                 # 'margin-bottom': '20px',
                                 'position': 'relative',
                             },
-                            active= True               
+                            active= True,
+                            href= href,              
                         ))
                     ],
                     body=True,
@@ -161,7 +163,7 @@ class panel:
 # py -m app.Dashboard.components.Controls.main
 if __name__ == "__main__":
     app = Dash(__name__, 
-           external_stylesheets=[dbc.themes.LITERA], 
+           external_stylesheets=[dbc.themes.LUMEN, dbc.icons.BOOTSTRAP], 
            suppress_callback_exceptions=True
            )
     app.layout = panel.front()

@@ -20,8 +20,8 @@ def addon(
         # Type need to be indicated within ['prepay', 'subsidy'] to distinguish the different dropdowns.
         type: str,
         # dropdown_list: list,
-        # dropdown_label: str,
         placeholder: str,
+        dropdown_label: str= 'Time',
         pattern_matching=False,
         disabled: bool = False,
 ):
@@ -60,7 +60,7 @@ def addon(
                                 [],
                                 id=suffix_for_type(ADDON.DROPDOWN.MENU, type),
                                 disabled=disabled,
-                                label= "Time",
+                                label= dropdown_label,
                                 color='#4C9F85',
                                 toggle_style= {
                                     'font-size': '14px',
@@ -88,7 +88,7 @@ def addon(
                                 outline= False,
                                 children=[html.I(className="bi bi-ui-checks")],
                                 disabled=disabled,
-                                class_name= "fst-italic",
+                                # class_name= "fst-italic",
                                 # style= {
                                     # 'width': '50%',
                                 # }
@@ -205,8 +205,8 @@ def addon(
             Output(suffix_for_type(ADDON.NEW, type), 'children',
                    allow_duplicate=True),  # type: ignore
             Output(suffix_for_type(ADDON.INPUT, type), 'value'),
-            # Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label',
-                #    allow_duplicate=True),  # type: ignore
+            Output(suffix_for_type(ADDON.DROPDOWN.MENU, type), 'label',
+                   allow_duplicate=True),  # type: ignore
             Output(suffix_for_type(ADDON.MEMORY, type), 'data',
                    allow_duplicate=True),  # type: ignore       
         ],
@@ -234,13 +234,13 @@ def addon(
         dropdown_items = {key: value for key,
                           value in dropdown_items.items() if value not in memory}
         
-        if current_label  and current_input:
+        if (current_label and current_label != dropdown_label)  and current_input:
             # patched_item.append(new_checklist_item())
             sorted_memory= {}
             for k in [str(sorted_key) for sorted_key in sorted([int(key) for key in memory.keys()])]: 
                 sorted_memory[k]= memory[k]
             patched_item= [new_checklist_item(_, type= type, result= {k: v}) for (k, v) in sorted_memory.items()]
-        return patched_item, "", memory
+        return patched_item, "", dropdown_label, memory
 
     @callback(
         Output({"index": MATCH, "type": suffix_for_type(
@@ -414,7 +414,7 @@ def refreshable_dropdown(
 # py -m app.Dashboard.components.Controls.widgets
 if __name__ == "__main__":
     app = Dash(__name__, 
-           external_stylesheets=[dbc.themes.BOOTSTRAP], 
+           external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP], 
            suppress_callback_exceptions=True
            )
 
