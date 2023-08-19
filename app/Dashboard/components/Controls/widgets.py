@@ -226,20 +226,20 @@ def addon(
         memory,
         dropdown_items
     ):
-        # patched_item = Patch()
-        patched_item= []
+        patched_item = Patch()
+        # patched_item= []
         if current_input and current_label:
             memory[current_label] = float(current_input)
-            
-        dropdown_items = {key: value for key,
-                          value in dropdown_items.items() if value not in memory}
+        # dropdown_items = {key: value for key, value in dropdown_items.items() if value not in memory}
         
-        if (current_label and current_label != dropdown_label)  and current_input:
-            # patched_item.append(new_checklist_item())
+        # if (current_label and current_label != dropdown_label)  and current_input:
+            # patched_item.append(new_checklist_item(_, type= type, result= {current_label: float(current_input)}))
             sorted_memory= {}
             for k in [str(sorted_key) for sorted_key in sorted([int(key) for key in memory.keys()])]: 
                 sorted_memory[k]= memory[k]
             patched_item= [new_checklist_item(_, type= type, result= {k: v}) for (k, v) in sorted_memory.items()]
+        else:
+            raise PreventUpdate
         return patched_item, "", dropdown_label, memory
 
     @callback(
