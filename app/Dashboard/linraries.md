@@ -1,1 +1,3 @@
-[icons library](https://fontawesome.com/search?p=3)
+[icons library][def]
+
+[def]: https://fontawesome.com/search?p=3

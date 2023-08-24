@@ -1,47 +1,71 @@
-import dash
-from dash import Dash, html, dcc, Input, Output, State, callback
+from dash import Dash, html, dcc, Input, Output, State, page_container
 import dash_bootstrap_components as dbc
-from app.Dashboard.components.Controls.main import panel
-from app.Dashboard.components.Controls.options import AdvancedOptions
-from app.Dashboard.components.DataTable.app import deployment
+from app.Dashboard.pages.components.Controls.main import panel
+from app.Dashboard.pages.components.Controls.options import AdvancedOptions
+from app.Dashboard.pages.components.ids import APP
+from app.Dashboard.navbar import create_navbar
 
 # https://dash.plotly.com/urls
-# https://medium.com/@mcmanus_data_works/how-to-create-a-multipage-dash-app-261a8699ac3f
-app = Dash(__name__, use_pages=True)
+# Template reference from: https://medium.com/@mcmanus_data_works/how-to-create-a-multipage-dash-app-261a8699ac3f
+# https://dash.plotly.com/urls
+# https://github.com/AnnMarieW/dash-multi-page-app-demos/blob/main/multi_page_example1/app.py
 
-app.layout = html.Div([
-	html.H1('Multi-page app with Dash Pages'),
+NAVBAR = create_navbar()
+# To use Font Awesome Icons
+FA621 = "https://use.fontawesome.com/releases/v6.2.1/css/all.css"
+APP_TITLE = "Amort"
 
-    html.Div(
-        [
-            html.Div(
-                dcc.Link(
-                    f"{page['name']} - {page['path']}", href=page["relative_path"]
-                )
-            )
-            for page in dash.page_registry.values()
-        ]
-    ),
+app = Dash(
+    __name__,
+    suppress_callback_exceptions=True,
+    external_stylesheets=[
+        dbc.themes.LUMEN,  # Dash Themes CSS
+        dbc.icons.BOOTSTRAP,
+        FA621,  # Font Awesome Icons CSS
+    ],
+    title=APP_TITLE,
+    use_pages=True, 
+)
 
-	dash.page_container
-])
+# To use if you're planning on using Google Analytics
+app.index_string = f'''
+    <!DOCTYPE html>
+    <html>
+        <head>
+            {{%metas%}}
+            <title>{APP_TITLE}</title>
+            {{%favicon%}}
+            {{%css%}}
+        </head>
+        <body>
+            {{%app_entry%}}
+            <footer>
+                {{%config%}}
+                {{%scripts%}}
+                {{%renderer%}}
+            </footer>
+        </body>
+    </html>
+    '''
 
-if __name__ == '__main__':
-	app.run(debug=True)
+app.layout = html.Div(  # <- Wrap App with Loading Component
+    id= APP.LOADING,
+    children=[
+                NAVBAR,
+                page_container
+    ],
+    style={
+        'width': '100%',
+    },
+    # color='primary',  # <- Color of the loading spinner
+    # fullscreen=True,  # <- Loading Spinner should take up full screen
+)
 
-
-
-
-
-
-
+server = app.server
 
 # py -m app.Dashboard.app
-if __name__ == "__main__":
-    app= Dash(
-        __name__,
-        external_stylesheets= [dbc.themes.LUMEN, dbc.icons.BOOTSTRAP],
-        suppress_callback_exceptions= True,
-        )
-    app.layout= mainpage()
-    app.run_server(debug=True)
+if __name__ == '__main__':
+    app.run_server(
+        debug=True, 
+        threaded=True
+    )

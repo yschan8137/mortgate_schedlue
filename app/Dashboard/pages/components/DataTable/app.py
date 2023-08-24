@@ -1,12 +1,17 @@
 import pandas as pd  # type: ignore
 import dash
-from dash import Dash, html, Input, Output, dash_table, callback  # type: ignore
+from dash import Dash, html, Input, Output, dash_table, callback
 import dash_bootstrap_components as dbc  # type: ignore
 
-from app.Dashboard.components.ids import LOAN, DATATABLE
+from app.Dashboard.pages.components.ids import LOAN, DATATABLE
 from app.Loan import df_schema  # type: ignore
-from app.Dashboard.components.toolkit import convert_df_to_dash
-from app.Dashboard.components.Controls.main import panel
+from app.Dashboard.pages.components.toolkit import convert_df_to_dash
+from app.Dashboard.pages.components.Controls.main import panel
+
+app = Dash(__name__, 
+       external_stylesheets=[dbc.themes.LUMEN, dbc.icons.BOOTSTRAP],
+       suppress_callback_exceptions=True,
+       ) 
 
 class CONFIG:
     PAGE_SIZE = 24
@@ -17,7 +22,6 @@ class CONFIG:
         MD = 5
         LG = 4
         XL = 3
-
 
 # 設定data table的列數
 rows_per_page = html.Div(
@@ -224,6 +228,7 @@ def deployment():
                 )
             ],
             style={
+                'width': '100%',
                 'marginTop': '2%',
                 'marginBottom': '2%',
             },
@@ -235,10 +240,6 @@ def deployment():
 
 # py -m app.Dashboard.components.DataTable.app
 if __name__ == "__main__":  
-    app = Dash(__name__, 
-           external_stylesheets=[dbc.themes.LUMEN, dbc.icons.BOOTSTRAP],
-           suppress_callback_exceptions=True
-           ) 
     app.layout = deployment()
     app.run_server(debug= True)
     # app.run_server(port=80, host= '0.0.0.0', debug=False, use_reloader=True)

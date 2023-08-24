@@ -1,10 +1,10 @@
 
 from dash import Dash, html, dcc, Input, Output, callback
 import dash_bootstrap_components as dbc
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
-from app.Dashboard.components.ids import *
-from app.Dashboard.components.Controls.options import kwargs_schema, MortgageOptions, AdvancedOptions
+from app.Dashboard.pages.components.ids import *
+from app.Dashboard.pages.components.Controls.options import kwargs_schema, MortgageOptions, AdvancedOptions
 from app.Loan.main import calculator
 
 # dash bootstrap components template: https://hellodash.pythonanywhere.com/
@@ -28,8 +28,9 @@ def register():
         ]
     )
     @callback(
-        Output(LOAN.RESULT.DATAFRAME, 'data'),
+        Output(LOAN.RESULT.DATAFRAME, 'data', allow_duplicate= True),
         Input(LOAN.RESULT.KWARGS, 'data'),
+        prevent_initial_call= True
     )
     def update_data_frame(kwargs):
         return calculator(**kwargs).to_dict(orient='tight')
@@ -42,12 +43,14 @@ class panel:
     The layout of the panels    
     """
     @classmethod
-    def front(cls, href= None):
-        layout= dbc.Card(
+    def front(cls, href= None, index= 'Homepage'):
+        _MortgageOptions= MortgageOptions
+        _MortgageOptions.index = index
+        layout= html.Div(
                     [
                         register(),
                         dbc.Row(
-                            [MortgageOptions.amount],
+                            [_MortgageOptions.amount],
                             align= 'center',
                             style= {
                                 # 'width': '50%',
@@ -57,7 +60,7 @@ class panel:
                             [
                                 dbc.Col(
                                     [
-                                        MortgageOptions.tenure()
+                                        _MortgageOptions.tenure()
                                     ],
                                     style= {
                                         "width": "80%"
@@ -65,7 +68,7 @@ class panel:
                                 ),
                                 dbc.Col(
                                         [
-                                        MortgageOptions.interest_rate(type=LOAN.TYPE),
+                                        _MortgageOptions.interest_rate(type=LOAN.TYPE),
                                     ]
                                 ),
                             ],
@@ -75,8 +78,8 @@ class panel:
                         ),
                         dbc.Row(
                             [
-                                dbc.Col(MortgageOptions.down_payment),
-                                dbc.Col(MortgageOptions.grace),
+                                dbc.Col(_MortgageOptions.down_payment),
+                                dbc.Col(_MortgageOptions.grace),
                             ],
                         ),
                         html.Div(dbc.Button(
@@ -91,16 +94,18 @@ class panel:
                             href= href,              
                         ))
                     ],
-                    body=True,
+                    # body=True,
                     style={
                         'width': '100%',
                         'height': '100%',
+                        'box-shadow': '0 0 5px #ccc',
                         'background-color': '#f5f5f5',
                         'border': '1px solid #ccc',
                         'border-radius': '5px',
                         'box-shadow': '0 0 5px #ccc',
                         'font-size': '20px',
                         'font-weight': 'bold',
+                        'padding': '20px',
                         'color': '#333',
                         'position': 'relative',
                         'z-index': '1',
@@ -111,7 +116,11 @@ class panel:
         return layout
 
     @classmethod
-    def side(cls):
+    def side(cls, index= 'Data page'):
+        _MortgageOptions= MortgageOptions
+        _MortgageOptions.index= index
+        _AdvancedOptions= AdvancedOptions
+        _AdvancedOptions.index= index
         layout = html.Div(
             [
                 register(),
@@ -119,21 +128,19 @@ class panel:
                     [
                         dbc.CardBody(
                             [
-                                MortgageOptions.amount,
-                                MortgageOptions.interest_rate(
+                                _MortgageOptions.amount,
+                                _MortgageOptions.interest_rate(
                                     type=LOAN.TYPE,
                                 ),
-                                MortgageOptions.down_payment,
-                                MortgageOptions.tenure(),
-                                MortgageOptions.grace,
-                                MortgageOptions.repayment_methods,
-
+                                _MortgageOptions.down_payment,
+                                _MortgageOptions.tenure(),
+                                _MortgageOptions.grace,
+                                _MortgageOptions.repayment_methods,
                                 dbc.Col(
                                     [
-                                        AdvancedOptions.accordion(
+                                        _AdvancedOptions.accordion(
                                             style={
-                                                'width': '100%',
-                                                # 'display': 'inline-block',
+                                                'width': '105%',
                                                 'active-bg': 'red',
                                             },
                                             content=[
@@ -144,8 +151,8 @@ class panel:
                                                 } for title, children in zip(
                                                     [LOAN.PREPAY.TYPE,
                                                      LOAN.SUBSIDY.TYPE],
-                                                    [AdvancedOptions.prepayment(
-                                                    ),   AdvancedOptions.subsidy()]
+                                                    [_AdvancedOptions.prepayment(
+                                                    ), _AdvancedOptions.subsidy()]
                                                 )
                                             ]
                                         )
@@ -155,12 +162,19 @@ class panel:
                         )
                     ],
                     body=True,
+                    style= {
+                        'width': '100%',
+                        'height': '100%',
+                        'background-color': '#f5f5f5',
+                        'border': '1px solid #ccc',
+                        'border-radius': '5px',
+                    }
                 )
             ]
         )
         return layout
 
-# py -m app.Dashboard.components.Controls.main
+# py -m app.Dashboard.pages.components.Controls.main
 if __name__ == "__main__":
     app = Dash(__name__, 
            external_stylesheets=[dbc.themes.LUMEN, dbc.icons.BOOTSTRAP], 

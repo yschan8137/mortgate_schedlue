@@ -51,9 +51,10 @@ def calculator(
 
     7. subsidy_arr(dict): The arrangement of the subsidy loan, which includes:
 
-        (1) interest(List): The interest rate(s) applied to specific period(s) of the loan.
-
-        (2) time(List)(Optional): The timepoints at which the subsidy loan interest rates change. 
+        (1) interest_arr(dict): The arrangement of the amortization_methods interest of subsidy loan which includes:  
+            i. The interest rate(s) applied to specific period(s) of the loan.
+            
+            ii. time(List)(Optional): The timepoints at which the subsidy loan interest rates change. 
 
         (3) time(int): The timepoint at which the subsidy loan is applied.
 
@@ -87,9 +88,11 @@ def calculator(
     kws_dict = {
         'subsidy_arr':
         {
-            'interest': list,
-            'time': list,
-            'time': int,
+            'interest_arr': {
+                'interest': list, 
+                'time': list
+            },
+            'start': int,
             'grace_period': int,
             'amount': int,
             'tenure': int,
@@ -215,8 +218,8 @@ def calculator(
                     'time': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)}
             )
             subsidy_interest_arr = {
-                'interest': kwargs.get('subsidy_arr', {}).get('interest', 0),
-                'time': kwargs.get('subsidy_arr', {}).get('time', [])
+                'interest': kwargs.get('subsidy_arr', {}).get('interest_arr', {}).get('interest', [0]),
+                'time': kwargs.get('subsidy_arr', {}).get('interest_arr', {}).get('time', [])
             }
             method_applied_to_subsidy = [
                 v for v in method_applied_to_subsidy_loan if v in amortization_methods.keys()]
@@ -307,7 +310,7 @@ def calculator(
     return df
 
 
-# py -m loan.main
+# py -m app.Loan.main
 kwargs = {
     'interest_arr': {'interest': [1.38], 'time': []},
     'total_amount': 10_000_000,
@@ -319,8 +322,9 @@ kwargs = {
         'amount': [2_000_000, 200_0000]
     },
     'subsidy_arr': {
-        'interest': [1.01],
-        'time': [],
+        'interest_arr': {'interest': [1.01], 'time': []},
+        # 'interest': [1.01],
+        # 'time': [],
         'start': 24,
         'amount': 2_300_000,
         'tenure': 20,

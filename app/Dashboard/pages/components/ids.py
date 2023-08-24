@@ -3,7 +3,7 @@ class LOAN:
     DOWNPAYMENT = 'downpayment rate of the loan'
     GRACE = 'the grace period of the loan'
     TENURE = 'the tenure of the loan'
-    INTEREST = 'single interest rate applied tp total tenure of the loan'
+    INTEREST = 'interest rate applied to total tenure of the loan'
     OPTIONS = 'the repayment options of the loan'
     TYPE = 'Loan'
 
@@ -26,7 +26,6 @@ class LOAN:
             ARR = 'multi arrangement of the prepayment of the subsidy'
             TYPE = 'prepayment of the subsidy'
 
-
 class ADVANCED:
     class TOGGLE:
         BUTTON = 'toggle button for multistages interest rate option'
@@ -46,6 +45,11 @@ class ADDON:
     INPUT = 'input'
     OUTPUT = 'output'
     DISABLED = 'disabled'
+    COLLAPSE= 'collapses'
+    
+    class TOGGLE:
+        SINGLE= 'toggles for single interest rate option'
+        MULTI= 'toggles for multi-stages interest rate option'
 
     class LABEL:
         TIME= 'Time'
@@ -69,3 +73,10 @@ class DATATABLE:
 
 class CONTROLS:
     BUTTON = 'controls-button'
+
+class APP:
+    LOADING= 'loading page contents'
+
+    class TAGS:
+        HOME= 'home page contents'
+        DATA= 'data page contents'
