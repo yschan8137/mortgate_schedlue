@@ -13,7 +13,7 @@ register_page(
     __name__,
     name='Home',
     top_nav=True,
-    path='/'
+    path='/',
 )
 
 layout = dbc.Container(

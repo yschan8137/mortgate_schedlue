@@ -28,4 +28,4 @@ def convert_df_to_dash(df):
 # suffix format for prepayment and subsidy to avoid id conflict.
 
 
-def suffix_for_type(x, type, index): return (x + " of the " + type if type else x) + " in  the " + index 
+def suffix_for_type(x, type): return x + " of the " + type if type else x 

@@ -6,7 +6,7 @@ import dash_bootstrap_components as dbc  # type: ignore
 from app.Dashboard.pages.components.ids import LOAN, DATATABLE
 from app.Loan import df_schema  # type: ignore
 from app.Dashboard.pages.components.toolkit import convert_df_to_dash
-from app.Dashboard.pages.components.Controls.main import panel
+from app.Dashboard.pages.components.Controls.main import panel, register
 
 app = Dash(__name__, 
        external_stylesheets=[dbc.themes.LUMEN, dbc.icons.BOOTSTRAP],
@@ -104,9 +104,9 @@ def datatable():
                         style_cell={
                             'border': '1px solid lightblue',
                         }, 
-                        style_data={
-                            'transition': {'duration': 1000, 'timing_function': 'ease-in-out'}
-                        }
+                        # style_data={
+                            # 'transition': {'duration': 1000, 'timing_function': 'ease-in-out'}
+                        # }
                     ),
                     className="mb-3"
                 ),
@@ -163,7 +163,7 @@ def datatable():
             Input(DATATABLE.PAGE.SIZE, 'value'),  # 調整列數
             Input(DATATABLE.COLUMN, 'value'),
         ],
-        prevent_initial_call=True,
+        # prevent_initial_call=True,
     )
     def update_datatable(
         df,  # kwargs,
@@ -189,14 +189,13 @@ def datatable():
 
         return df_sum[1], df_sum[0], df_dash[1],  df_dash[0], pages, merge_duplicate_headers, merge_duplicate_headers
     
-    @callback(
-        Output(DATATABLE.SUM, 'style_data'),
-        Output(DATATABLE.TABLE, 'style_data'),
-        Input(DATATABLE.SUM, 'data'),
-        prevent_initial_call=True,
-    )
-    def update_datatable_style(values):
-        return [{'transition': {'duration': 5000, 'timing_function': 'linear'}}, {'transition': {'duration': 1000, 'timing_function': 'ease-in-out'}}]
+    # @callback(
+        # Output(DATATABLE.SUM, 'style_data'),
+        # Output(DATATABLE.TABLE, 'style_data'),
+        # Input(DATATABLE.SUM, 'data'),
+    # )
+    # def update_datatable_style(values):
+        # return [{'transition': {'duration': 5000, 'timing_function': 'linear'}}, {'transition': {'duration': 1000, 'timing_function': 'ease-in-out'}}]
 
     
 
@@ -204,42 +203,50 @@ def datatable():
 
 def deployment():
     layout = dbc.Container(
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        panel.side(),
-                    ],
-                    xs=CONFIG.SPLITS.XS,
-                    sm=CONFIG.SPLITS.SM,
-                    md=CONFIG.SPLITS.MD,
-                    lg=CONFIG.SPLITS.LG,
-                    xl=CONFIG.SPLITS.XL,
-                ),
-                dbc.Col(
-                    [
-                        datatable()
-                    ],
-                    xs=12 - CONFIG.SPLITS.XS,
-                    sm=12 - CONFIG.SPLITS.SM,
-                    md=12 - CONFIG.SPLITS.MD,
-                    lg=12 - CONFIG.SPLITS.LG,
-                    xl=12 - CONFIG.SPLITS.XL,
-                )
-            ],
-            style={
-                'width': '100%',
-                'marginTop': '2%',
-                'marginBottom': '2%',
-            },
-        ),
+        [
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            panel.side(),
+                        ],
+                        xs=CONFIG.SPLITS.XS,
+                        sm=CONFIG.SPLITS.SM,
+                        md=CONFIG.SPLITS.MD,
+                        lg=CONFIG.SPLITS.LG,
+                        xl=CONFIG.SPLITS.XL,
+                    ),
+                    dbc.Col(
+                        [
+                            datatable()
+                        ],
+                        xs=12 - CONFIG.SPLITS.XS,
+                        sm=12 - CONFIG.SPLITS.SM,
+                        md=12 - CONFIG.SPLITS.MD,
+                        lg=12 - CONFIG.SPLITS.LG,
+                        xl=12 - CONFIG.SPLITS.XL,
+                    )
+                ],
+                style={
+                    'width': '100%',
+                    'marginTop': '2%',
+                    'marginBottom': '2%',
+                },
+            ),
+        ],
         fluid=True
     )
     return layout
 
 
-# py -m app.Dashboard.components.DataTable.app
+# py -m app.Dashboard.pages.components.DataTable.app
 if __name__ == "__main__":  
-    app.layout = deployment()
+    app.layout = dbc.Container(
+        [
+            register(),
+            deployment()
+        ]
+    )
+    
     app.run_server(debug= True)
     # app.run_server(port=80, host= '0.0.0.0', debug=False, use_reloader=True)

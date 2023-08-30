@@ -77,6 +77,9 @@ class CONTROLS:
 class APP:
     LOADING= 'loading page contents'
 
-    class TAGS:
-        HOME= 'home page contents'
-        DATA= 'data page contents'
+    class INDEX:
+        HOME= 'Homepage'
+        DATA= 'Data page'
+    # class TAGS:
+        # HOME= 'home page contents'
+        # DATA= 'data page contents'

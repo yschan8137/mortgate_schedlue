@@ -5,7 +5,7 @@ import dash_bootstrap_components as dbc
 
 def create_navbar():
     navbar = dbc.Nav(
-            [ 
+            children= [
                 html.A(
                     dbc.Row(
                         [

@@ -9,7 +9,7 @@ register_page(
     name='data',
     top_nav=True,
     path='/data',
-    # suppress_callback_exceptions=True,
+    suppress_callback_exceptions=True,
 )
 
 layout = dbc.Container(

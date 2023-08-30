@@ -1,6 +1,6 @@
 from dash import Dash, html, dcc, Input, Output, State, page_container
 import dash_bootstrap_components as dbc
-from app.Dashboard.pages.components.Controls.main import panel
+from app.Dashboard.pages.components.Controls.main import panel, register
 from app.Dashboard.pages.components.Controls.options import AdvancedOptions
 from app.Dashboard.pages.components.ids import APP
 from app.Dashboard.navbar import create_navbar
@@ -51,8 +51,10 @@ app.index_string = f'''
 app.layout = html.Div(  # <- Wrap App with Loading Component
     id= APP.LOADING,
     children=[
-                NAVBAR,
-                page_container
+        dcc.Location(id="url"),
+        register(),
+        NAVBAR,
+        page_container
     ],
     style={
         'width': '100%',
