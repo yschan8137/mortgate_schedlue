@@ -319,7 +319,6 @@ class MortgageOptions:
             if value[-1] == 1:
                 return {'display': 'block'}, {'display': 'none'}
             else:
-                toggle_state = [0]
                 return {'display': 'none'}, {'display': 'flex'}
 
         @callback(
