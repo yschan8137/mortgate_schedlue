@@ -3,8 +3,8 @@ from dash import Dash, html, dcc, Input, Output, State, callback, Patch
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from dataclasses import dataclass
-import numpy as np
-from pkg_resources import PathMetadata
+# import numpy as np
+import time
 
 from app.Dashboard.pages.components.ids import *
 from app.Dashboard.pages.components.Controls.options import MortgageOptions, AdvancedOptions
@@ -31,40 +31,18 @@ def register():
                 data={},
                 # storage_type= "memory"
             ),
-            dcc.Store(
-                'cache', 
-                data= [0],
-            )
+            # dcc.Store(
+                # 'cache', 
+                # data= [0],
+            # )
         ]
     )
     # register the result for data convertions.
     @callback(
-        Output(LOAN.RESULT.DATAFRAME, 'data',
-                # allow_duplicate= True
-                ),
-        Input(LOAN.RESULT.KWARGS, 'data'),
-        # prevent_initial_call= True
-    )
+        Output(LOAN.RESULT.DATAFRAME, 'data'),
+        Input(LOAN.RESULT.KWARGS, 'data'))
     def update_data_frame(kwargs):
         return calculator(**kwargs).to_dict(orient='tight')
-    
-    # register the page name for synchronizing the variables across pages.
-    @callback(
-        Output('cache', 'data'),
-        Input(LOAN.RESULT.KWARGS, 'data'),
-        State('cache', 'data'),
-        State('url', 'pathname'),
-    )
-    def update_n(
-        _, 
-        cache,
-        pathname
-        ):
-        if pathname == '/data':
-            cache.append(1)
-        else:
-            cache.append(0)
-        return cache
     
     return layout
 
@@ -142,6 +120,7 @@ class panel:
                         'z-index': '1',
                     },
                 )
+        cls.synchronize(index)
 
         return layout
 
@@ -204,8 +183,13 @@ class panel:
                 )
             ]
         )
-        
+        cls.synchronize(index)
+
+        return layout
+
     # synchronize the variables for Homepage to data page.
+    @classmethod
+    def synchronize(cls, index):
         @callback(
                 [
                     Output({"index": index, "type": suffix_for_type(LOAN.AMOUNT, cls._MortgageOptions.type)}, 'value'),
@@ -213,16 +197,15 @@ class panel:
                     Output({"index": index,"type": LOAN.TENURE}, 'value'),
                     Output({"index": index, "type": suffix_for_type(LOAN.GRACE, cls._MortgageOptions.type)}, 'value'),
                 ],
-                Input(LOAN.RESULT.KWARGS, 'data'),
-                State('cache', 'data'),
-                State('url', 'pathname'),
+                Input("url", 'pathname'),
+                State(LOAN.RESULT.KWARGS, 'data'),
+                # State('cache', 'data'),
         )
         def update_amount(
+            url,
             kwargs,
-            cache,
-            pathname
             ):
-            if not kwargs or cache[-1] == 1: 
+            if not kwargs:#cache[-1] == 1: 
                 # cache equals to 1 means the switching across pages has been done in previous steps.
                 # It is not necessary to synchronize the variables in the same page. It would cause excess updates.
                 raise PreventUpdate
@@ -233,61 +216,61 @@ class panel:
                         kwargs['grace_period'],
                         ]
             
+        # synchronization of single stage interest rate options.
         @callback(
                 Output({"index": index, "type": suffix_for_type(LOAN.INTEREST, cls._MortgageOptions.type)}, 'value'),
-                Input(LOAN.RESULT.KWARGS, 'data'),
+                Output({"index": index, "type": suffix_for_type(ADVANCED.TOGGLE.BUTTON, cls._MortgageOptions.type)}, 'value'),
+                Input('url', 'pathname'),
+                State(LOAN.RESULT.KWARGS, 'data'),
                 State({"index": index, "type": suffix_for_type(ADVANCED.TOGGLE.BUTTON, cls._MortgageOptions.type)}, 'value'),
-                State('cache', 'data'),
+
         )
         def update_interest(
+            url,
             kwargs, 
-            toggle_value, 
-            cache
+            toggle_value,
             ):
-            if not kwargs or cache[-1] == 1 or toggle_value[-1] == 1:
-                raise PreventUpdate
+            if not kwargs:
+                raise PreventUpdate()
             else:
-                return kwargs['interest_arr']['interest'][0]
+                if len(kwargs['interest_arr']['interest']) > 1:
+                    toggle_value.append(1)
+                    return kwargs['interest_arr']['interest'][0], toggle_value
+                else:
+                    toggle_value.append(0)
+                    return kwargs['interest_arr']['interest'][0], toggle_value
 
         @callback(
             [
-                Output({"index": index, "type": suffix_for_type(ADDON.MEMORY, cls._MortgageOptions.type)}, 'data', allow_duplicate= True), 
-                Output({"index": index, "type": suffix_for_type(ADVANCED.TOGGLE.BUTTON, cls._MortgageOptions.type)}, 'value'),
+                Output({"index": index, "type": suffix_for_type(ADDON.MEMORY, cls._MortgageOptions.type)}, 'data', allow_duplicate= True),
                 Output({"index": index, "type": suffix_for_type(ADDON.NEW, cls._MortgageOptions.type)}, 'children', allow_duplicate= True),
                 Output({"index": index, "type": suffix_for_type(ADDON.COLLAPSE, cls._MortgageOptions.type)}, 'is_open', allow_duplicate= True),
             ],
-            Input(LOAN.RESULT.KWARGS, 'data'),
+            Input(LOAN.RESULT.DATAFRAME, 'data'),
+            State(LOAN.RESULT.KWARGS, 'data'),
             State(LOAN.RESULT.KWARGS, 'modified_timestamp'),
-            State('cache', 'data'),
-            State({"index": index, "type": suffix_for_type(ADVANCED.TOGGLE.BUTTON, cls._MortgageOptions.type)}, 'value'),
+            State({"index": index, "type": suffix_for_type(ADDON.MEMORY, cls._MortgageOptions.type)}, 'data'),
             prevent_initial_call=True
         )
         def specifies_and_value_of_interest(
+            _,
             kwargs,
             timestamp,
-            cache,
-            toggle_value
+            _memory,
             ):
-            if (len(kwargs['interest_arr']['interest']) == 0) or cache[-1] == 1:
-                raise PreventUpdate
+            if len(kwargs['interest_arr']['interest']) == len(_memory.values()) + 1:
+                raise PreventUpdate()
             else:
                 patched_item = Patch()
                 sorted_memory= {}
                 memory= {}
-                if len(kwargs['interest_arr']['interest']) > 1:
-                    toggle_value.append(1)
-                    for t, i in zip(kwargs['interest_arr']['time'], kwargs['interest_arr']['interest'][1:]):
-                        memory[str(t)]= i
-                    for k in [str(sorted_key) for sorted_key in sorted([int(key) for key in memory.keys()])]: 
-                        sorted_memory[k]= memory[k]
-                    patched_item= [new_checklist_item(timestamp, type= cls._MortgageOptions.type, index= index, result= {k: v}) for (k, v) in sorted_memory.items()]
-                    return [sorted_memory, toggle_value, patched_item, True]
-                else:
-                    toggle_value.append(0)
-                    return [memory, toggle_value, [], False]
+                for t, i in zip(kwargs['interest_arr']['time'], kwargs['interest_arr']['interest'][1:]):
+                    memory[str(t)]= i
+                for k in [str(sorted_key) for sorted_key in sorted([int(key) for key in memory.keys()])]: 
+                    sorted_memory[k]= memory[k]
+                patched_item= [new_checklist_item(timestamp, type= cls._MortgageOptions.type, index= index, result= {k: v}) for (k, v) in sorted_memory.items()]
+                return [sorted_memory, patched_item, True]
         
-        return layout
-
 
 # py -m app.Dashboard.pages.components.Controls.main
 if __name__ == "__main__":
