@@ -1,5 +1,5 @@
 
-from dash import Dash, html, dcc, Input, Output, State, callback, Patch
+from dash import Dash, html, dcc, Input, Output, State, callback, Patch, MATCH
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from dataclasses import dataclass
@@ -29,12 +29,7 @@ def register():
             dcc.Store(
                 LOAN.RESULT.DATAFRAME,
                 data={},
-                # storage_type= "memory"
             ),
-            # dcc.Store(
-                # 'cache', 
-                # data= [0],
-            # )
         ]
     )
     # register the result for data convertions.
@@ -42,7 +37,7 @@ def register():
         Output(LOAN.RESULT.DATAFRAME, 'data'),
         Input(LOAN.RESULT.KWARGS, 'data'))
     def update_data_frame(kwargs):
-        return calculator(**kwargs).to_dict(orient='tight')
+        return calculator(**kwargs, thousand_sep= False).to_dict(orient='tight')
     
     return layout
 

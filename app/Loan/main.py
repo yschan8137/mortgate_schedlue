@@ -4,6 +4,27 @@ from app.Loan.computation.helpers.prepay import _time_, _amount_
 from app.Loan.computation.methods import _EPP_arr_, _ETP_arr_
 from app.Loan.computation.categoties import amortization as amortization_methods
 
+default_kwargs = {
+    'interest_arr': {'interest': [1.94], 'time': []},
+    'total_amount': 10_000_000,
+    'down_payment_rate': 20,
+    'tenure': 30,
+    'grace_period': 0,
+    'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL'],
+    'prepay_arr': {
+        'amount': [],
+        'time': []
+    },
+    'subsidy_arr': {
+        'interest_arr': {'interest': [0], 'time': []},
+        'start': 0,
+        'amount': 0,
+        'tenure': 0,
+        'grace_period': 0,
+        'prepay_arr': {'amount': [], 'time': []},
+        'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
+    },
+}
 
 class df_schema:
     class level_0:
@@ -30,6 +51,7 @@ def calculator(
     grace_period: int = 0,
     # ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
     method: list[str] = [*amortization_methods.keys()],
+    thousand_sep= True,
     **kwargs: dict
 ) -> pd.DataFrame:
     """
@@ -298,8 +320,9 @@ def calculator(
             df.loc['Sum', [(l0, l1) for (l0, l1) in df.columns if l1 == '剩餘貸款']] = df.loc[len(
                 df) - 2, [(l0, l1) for (l0, l1) in df.columns if l1 == '剩餘貸款']]
 
-        # Adjustment for the thousands digit.
-        df = df.applymap(lambda x: f"{round(x):,}")
+        # Adjustment for the thousands digit. Note the output would be a string.
+        if thousand_sep == True:
+            df = df.applymap(lambda x: f"{round(x):,}")
     else:
         dfs_ordinry['None'] = _df_([0]*4, index_range=[0, 1])
         df = pd.concat(
@@ -311,38 +334,7 @@ def calculator(
 
 
 # py -m app.Loan.main
-kwargs = {
-    'interest_arr': {'interest': [1.38], 'time': []},
-    'total_amount': 10_000_000,
-    'down_payment_rate': 20,
-    'tenure': 40,
-    'grace_period': 0,
-    'prepay_arr': {
-        'time': [120, 160],
-        'amount': [2_000_000, 200_0000]
-    },
-    'subsidy_arr': {
-        'interest_arr': {'interest': [1.01], 'time': []},
-        # 'interest': [1.01],
-        # 'time': [],
-        'start': 24,
-        'amount': 2_300_000,
-        'tenure': 20,
-        'grace_period': 0,
-        'prepay_arr': {'amount': [], 'time': []},
-        'method': [
-            'EQUAL_TOTAL',
-            'EQUAL_PRINCIPAL'
-        ]
-    },
-    'method': [
-        'EQUAL_TOTAL',
-        'EQUAL_PRINCIPAL'
-    ]
-}
-
-# py -m loan.main
 if __name__ == "__main__":
     print(
-        calculator(**kwargs)
+        calculator(**default_kwargs)
     )

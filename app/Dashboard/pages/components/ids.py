@@ -1,3 +1,6 @@
+from errno import EPIPE
+
+
 class LOAN:
     AMOUNT = 'the amount of the loan'
     DOWNPAYMENT = 'downpayment rate of the loan'
@@ -73,6 +76,16 @@ class DATATABLE:
 
 class CONTROLS:
     BUTTON = 'controls-button'
+
+class GRAPH:
+    LINE= 'line charts'
+    CHECKLIST= 'choose repayment for charting'
+    DROPDOWNS= 'subitems under repayment payments method for charting'
+    RESULTS= 'results of selection for charting'
+    ACCUMULATION= 'Accumulations' 
+    class REPAYMENT:
+        EPP= 'equal principle payment method for charting'
+        ETP= 'equal total payment method for charting'
 
 class APP:
     LOADING= 'loading page contents'

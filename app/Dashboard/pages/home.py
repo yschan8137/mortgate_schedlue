@@ -2,6 +2,7 @@ from dash import html, register_page, dcc,  Input, Output, State, callback_conte
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from app.Dashboard.pages.components.Controls.main import panel
+from app.Dashboard.pages.components.Graphic.app import graph
 from app.Dashboard.pages.components.ids import APP
 # from app.Dashboard.pages.components.toolkit import to_dropdown_options, suffix_for_type
 # from app.Dashboard.pages.components.ids import *
@@ -20,6 +21,9 @@ register_page(
 layout = dbc.Container(
         [
             html.Br(),
-            panel.front(href= APP.URL.DATA)
-        ]
+            panel.front(href= APP.URL.DATA),
+            graph()
+
+        ],
+        className="vstack gap-3"
     )

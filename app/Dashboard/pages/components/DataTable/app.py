@@ -1,3 +1,4 @@
+import math
 import pandas as pd  # type: ignore
 import dash
 from dash import Dash, html, Input, Output, dash_table, callback
@@ -40,10 +41,11 @@ rows_per_page = html.Div(
             className='mb-3'
         )
     ],
+    className="ms-auto",
     style={
         'display': 'inline-block',
         'verticalAlign': 'right',
-        'marginLeft': '90%'  # 把物件推到右邊去
+        'align': 'right',
     },
 )
 
@@ -53,32 +55,41 @@ def datatable():
     layout = html.Div(
         dbc.Col(
             [
-                dbc.Row(
+                dbc.Stack(
                     [
-                        dbc.Label("Columns"),
-                        dbc.Checklist(
-                            options=[
-                                {"label": v, "value": v} for v in [
-                                    df_schema.level_2.PRINCIPAL,
-                                    df_schema.level_2.INTEREST,
-                                    df_schema.level_2.RESIDUAL
-                                ]
+                        dbc.Row(
+                            [
+                                dbc.Label("Columns"),
+                                dbc.Checklist(
+                                    options=[
+                                        {"label": v, "value": v} for v in [
+                                            df_schema.level_2.PRINCIPAL,
+                                            df_schema.level_2.INTEREST,
+                                            df_schema.level_2.RESIDUAL
+                                        ]
+                                    ],
+                                    value=[
+                                        df_schema.level_2.PRINCIPAL,
+                                        df_schema.level_2.INTEREST,
+                                        df_schema.level_2.PAYMENT,  # 每期貸款為預選欄位，不可刪除
+                                        df_schema.level_0.TOTAL
+                                    ],
+                                    id=DATATABLE.COLUMN,
+                                    inline=True,
+                                ),
                             ],
-                            value=[
-                                df_schema.level_2.PRINCIPAL,
-                                df_schema.level_2.INTEREST,
-                                df_schema.level_2.PAYMENT,  # 每期貸款為預選欄位，不可刪除
-                                df_schema.level_0.TOTAL
-                            ],
-                            id=DATATABLE.COLUMN,
-                            inline=True,
+                            style={
+                                # 'display': 'inline-block',
+                                'align': 'left',
+                                }
                         ),
+                        rows_per_page,
                     ],
-                    style={
-                        'display': 'inline-block',
-                        }
+                    direction= 'horizontal',
+                    gap= 3,
+                    style= {
+                    }
                 ),
-                rows_per_page,
                 dbc.Row(
                     dash_table.DataTable(
                         id= DATATABLE.SUM,
@@ -142,8 +153,8 @@ def datatable():
                         }
                     )
                 )
-            ]
-        )
+            ],
+        ),
     )
 
     # data table
@@ -163,18 +174,17 @@ def datatable():
             Input(DATATABLE.PAGE.SIZE, 'value'),  # 調整列數
             Input(DATATABLE.COLUMN, 'value'),
         ],
-        # prevent_initial_call=True,
     )
     def update_datatable(
-        df,  # kwargs,
+        data,  # kwargs,
         page_current,
         page_size_editable,
         columns,
     ):
         merge_duplicate_headers = True
-        df = pd.DataFrame.from_dict(df, 'tight')
+        df = pd.DataFrame.from_dict(data, 'tight')
+        df = df.applymap(lambda x: f"{round(x):,}")
         if df_schema.level_0.SUBSIDY in df.columns.levels[0]: #type: ignore
-            
             df = df[[(l0, l1, l2) for (l0, l1, l2)
                      in df.columns if l2 in columns or l0 in columns]]
         else:
@@ -185,7 +195,7 @@ def datatable():
             page_size_editable if page_size_editable and page_size_editable > 0 else 1)
         df_dash = convert_df_to_dash(df[0:-1].iloc[(page_current * page_size_editable) + 1: ((page_current + 1) * page_size_editable) + 1])
         df_sum = convert_df_to_dash(df.tail(1))
-        pages = round((len(df.values) - 2) // page_size_editable, 0)
+        pages = math.ceil((len(df.values) - 2) / page_size_editable)
 
         return df_sum[1], df_sum[0], df_dash[1],  df_dash[0], pages, merge_duplicate_headers, merge_duplicate_headers
     

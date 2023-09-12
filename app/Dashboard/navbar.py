@@ -6,49 +6,43 @@ from app.Dashboard.pages.components.ids import APP
 
 def create_navbar():
     navbar = dbc.Nav(
-            children= [
-                # html.A(
-                    dbc.NavItem(
-                        dbc.NavLink(
+        children= [
+            dbc.NavItem(
+                dbc.NavLink(
+                    [
+                        dbc.Stack(
                             [
-                                dbc.Stack(
-                                    [
-                                        html.I(
-                                            className="fa-solid fa-house-chimney", 
-                                            style= {
-                                                "width": "18%",
-                                                "color": "white",
-                                                # "margin-top": "8px"
-                                            },
-                                        ),
-                                        dbc.NavbarBrand(
-                                            "Amort", 
-                                            className="ms-1",
-                                            style= {
-                                                'width': '40%',
-                                                'font-size': '22px',
-                                                'text-align': 'left',
-                                                'margin-top': '2%',
-                                            },
-                                        ),
-                                    ],
-                                    direction= 'horizontal',   
-                                )
+                                html.I(
+                                    className="fa-solid fa-house-chimney", 
+                                    style= {
+                                        "width": "18%",
+                                        "color": "white",
+                                        # "margin-top": "8px"
+                                    },
+                                ),
+                                dbc.NavbarBrand(
+                                    "Amort", 
+                                    className="ms-1",
+                                    style= {
+                                        'width': '40%',
+                                        'font-size': '22px',
+                                        'text-align': 'left',
+                                        'margin-top': '2%',
+                                    },
+                                ),
                             ],
-                            href= APP.URL.HOME,
-                            style={
-                                "color": "white",
-                                "fontWeight": "bold",
-                                "font-size": "20px",
-                                # "padding": "10px",
-                                "margin-left": "5%",
-                                # 'border': "1px solid",
-                                'width': "150px",
-                            },
-                        ),
-                        # align="center",
-                        # className="g-0",
-                    # ),
+                            direction= 'horizontal',   
+                        )
+                    ],
+                    href= APP.URL.HOME,
+                    style={
+                        "color": "white",
+                        "fontWeight": "bold",
+                        "font-size": "20px",
+                        "margin-left": "5%",
+                        'width': "150px",
+                    },
+                ),
                 ),
                 dbc.Stack(
                     [
@@ -70,11 +64,6 @@ def create_navbar():
                                     'size': '100px',
                                 }
                             ),
-                            style= {
-                                # "margin-top": "18px",
-                                # 'position': 'absolute',
-                                # "left": "70%",
-                            }
                         ),
                         dbc.NavItem(
                             dbc.NavLink(
@@ -91,11 +80,6 @@ def create_navbar():
                                 href="[YOUR MEDIUM PROFILE URL]",
                                 target="_blank"
                             ),
-                            style= {
-                                # "margin-top": "18px",
-                                # "position": 'absolute',
-                                # "left": "74%",
-                            }
                         ),
                         dbc.NavItem(
                             dbc.NavLink(
@@ -112,20 +96,14 @@ def create_navbar():
                                 href="[YOUR LINKEDIN PROFILE URL]",
                                 target="_blank",
                             ),
-                            style= {
-                                # "margin-top": "18px",
-                                # "position": 'absolute',
-                                # "left": "78%",
-                            }
                         ),
                     ],
                     direction= 'horizontal',
                     className= 'g-0',
                     style= {
                         'width': '100px',
-                        'margin-top': '15px',
-                        'position': 'absolute',
-                        'left': '75%',
+                        'margin-top': '10px',
+                        'margin-right': '9%',
                     }
                 ),
                 dbc.DropdownMenu(
@@ -145,8 +123,9 @@ def create_navbar():
                         'font-weight': 'bold',
                         "border-bottom": "1px solid #0C82DF",
                         "margin-top": "15px",
-                        "position": 'absolute',
-                        "left": "86%",
+                        # "position": 'absolute',
+                        # "left": "86%",
+                        "margin-right": "9%",
                     }
                 ),
             ],

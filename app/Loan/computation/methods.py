@@ -171,12 +171,12 @@ def _ETP_arr_(
                 t = t - (interval[0] - 1)
                 if (prepay_t[t] == 0):
                     principal_payment= (loan_amount - (_accum_[n])) * principal_ratio_at_(
-                                                                                        timing= t,
-                                                                                        interest_arr= int_arr,
-                                                                                        length= len(_interest_arr_) - (interval[0] - 1),
-                                                                                        grace_period= grace_t,
-                                                                                        prepay_time= prepay_t[t],
-                                                                    )
+                                                                            timing= t,
+                                                                            interest_arr= int_arr,
+                                                                            length= len(_interest_arr_) - (interval[0] - 1),
+                                                                            grace_period= grace_t,
+                                                                            prepay_time= prepay_t[t],
+                                                                      )
                     # ensure the _residual_ to be positive
                     if (_residual_[-1] - principal_payment) >= 0:
                         _principal_payment_.append(principal_payment)
@@ -195,7 +195,7 @@ def _ETP_arr_(
                                                                                                         )
                             )
                         else:
-                            _principal_payment_.append((loan_amount - sum(_principal_payment_[:-1])))
+                            _principal_payment_.append((loan_amount - sum(_principal_payment_[:])))
                     else:
                         _principal_payment_.append((_residual_[prepay_t[t]]) * principal_ratio_at_(
                                                                                     timing=t,

@@ -3,7 +3,7 @@ from Loan import calculator
 from dash import Dash, dcc, html, page_registry, page_container  # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 from Loan.computation.categoties import amortization
-from Dashboard.components.Controls.options import *
+from app.Dashboard.pages.components.Controls.options import *
 
 
 # py -m app.main

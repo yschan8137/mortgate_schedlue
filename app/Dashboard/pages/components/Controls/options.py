@@ -9,33 +9,14 @@ from app.Dashboard.pages.components import amortization_types
 from app.Dashboard.pages.components.Controls.widgets import refreshable_dropdown, addon
 from app.Dashboard.pages.components.ids import *
 from app.Dashboard.pages.components.toolkit import suffix_for_type
+from app.Loan import default_kwargs
 
 @dataclass
-class MortgageOptions:
+class MortgageOptions():
     type: str = LOAN.TYPE
     index: str = ""
-    kwargs_schema = {
-        'interest_arr': {'interest': [1.38], 'time': []},
-        'total_amount': 10_000_000,
-        'down_payment_rate': 20,
-        'tenure': 30,
-        'grace_period': 0,
-        'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL'],
-        'prepay_arr': {
-            'amount': [],
-            'time': []
-        },
-        'subsidy_arr': {
-            'interest_arr': {'interest': [0], 'time': []},
-            'start': 0,
-            'amount': 0,
-            'tenure': 0,
-            'grace_period': 0,
-            'prepay_arr': {'amount': [], 'time': []},
-            'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
-        },
-    }
-    
+    kwargs_schema = default_kwargs
+
     # Mortgage Amount
     @classmethod
     def amount(cls):
@@ -364,7 +345,7 @@ class AdvancedOptions(MortgageOptions):
     index: str= ""
     #  accordion
     @ classmethod
-    def accordion(cls, **kwargs):
+    def accordion(cls, **kwargs_schema):
         """
         Arguments:
             - content(list): a list of items for the specification of title and children of the accordion as follows:
@@ -378,11 +359,11 @@ class AdvancedOptions(MortgageOptions):
                 ]
             - style(dict): the style of the accordion
         """
-        titles = [c.get('title', None) for c in kwargs.get('content', [])]
+        titles = [c.get('title', None) for c in kwargs_schema.get('content', [])]
         childrens = [c.get('children', None)
-                     for c in kwargs.get('content', [])]
-        style = kwargs.get('style', None)
-        away_open = kwargs.get('away_open', True)
+                     for c in kwargs_schema.get('content', [])]
+        style = kwargs_schema.get('style', None)
+        away_open = kwargs_schema.get('away_open', True)
 
         #  prevent the width of the accordion component to be 100% of the screen
 
@@ -397,14 +378,12 @@ class AdvancedOptions(MortgageOptions):
                             id='accordion-{}'.format(title),
                             item_id=title,
                             style={
-                                'width': '100%',
                                 'align-items': 'center',
                                 'justify-content': 'center',
                                 'background-color': 'transparent',
                             }
                         ) for title, children in zip(titles, childrens)
                     ],
-                    id=f"accordion",
                     always_open=away_open,
                     start_collapsed=True,
                     flush=True,
