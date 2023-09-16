@@ -136,19 +136,24 @@ def graph():
         Input(GRAPH.ACCUMULATION, 'value'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
         Input({'index': ALL, 'type': GRAPH.DROPDOWN.ITEM}, 'n_clicks'),
+        State(GRAPH.DROPDOWN.MENU, 'label'),
         State(GRAPH.LINE, 'figure'),
     )
     def _graph(
         accum, 
         resource_data,
         _,
+        label,
         fig
         ):
         ctx= callback_context
         if isinstance(ctx.triggered_id, dict):
             chosen_figure= ctx.triggered_id['index']
         else:
-            chosen_figure= df_schema.level_2.PAYMENT
+            if label:
+                chosen_figure= label#df_schema.level_2.PAYMENT
+            else:
+                chosen_figure= df_schema.level_2.PAYMENT
         df = pd.DataFrame.from_dict(resource_data, 'tight')[1:-1]
         fig= go.Figure()
         # fig= make_subplots(
