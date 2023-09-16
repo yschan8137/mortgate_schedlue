@@ -214,35 +214,36 @@ def datatable():
 def deployment():
     layout = dbc.Container(
         [
-            dbc.Row(
-                [
-                    dbc.Col(
-                        [
-                            panel.side(),
-                        ],
-                        xs=CONFIG.SPLITS.XS,
-                        sm=CONFIG.SPLITS.SM,
-                        md=CONFIG.SPLITS.MD,
-                        lg=CONFIG.SPLITS.LG,
-                        xl=CONFIG.SPLITS.XL,
-                    ),
-                    dbc.Col(
-                        [
-                            datatable()
-                        ],
-                        xs=12 - CONFIG.SPLITS.XS,
-                        sm=12 - CONFIG.SPLITS.SM,
-                        md=12 - CONFIG.SPLITS.MD,
-                        lg=12 - CONFIG.SPLITS.LG,
-                        xl=12 - CONFIG.SPLITS.XL,
-                    )
-                ],
-                style={
-                    'width': '100%',
-                    'marginTop': '2%',
-                    'marginBottom': '2%',
-                },
-            ),
+            datatable()
+            # dbc.Row(
+                # [
+                    # dbc.Col(
+                        # [
+                            # panel.side(),
+                        # ],
+                        # xs=CONFIG.SPLITS.XS,
+                        # sm=CONFIG.SPLITS.SM,
+                        # md=CONFIG.SPLITS.MD,
+                        # lg=CONFIG.SPLITS.LG,
+                        # xl=CONFIG.SPLITS.XL,
+                    # ),
+                    # dbc.Col(
+                        # [
+                            # datatable()
+                        # ],
+                        # xs=12 - CONFIG.SPLITS.XS,
+                        # sm=12 - CONFIG.SPLITS.SM,
+                        # md=12 - CONFIG.SPLITS.MD,
+                        # lg=12 - CONFIG.SPLITS.LG,
+                        # xl=12 - CONFIG.SPLITS.XL,
+                    # )
+                # ],
+                # style={
+                    # 'width': '100%',
+                    # 'marginTop': '2%',
+                    # 'marginBottom': '2%',
+                # },
+            # ),
         ],
         fluid=True
     )

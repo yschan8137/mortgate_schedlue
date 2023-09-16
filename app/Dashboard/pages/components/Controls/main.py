@@ -49,8 +49,9 @@ class panel:
     _MortgageOptions= MortgageOptions
     _AdvancedOptions= AdvancedOptions
     @classmethod
-    def front(cls, href= None, index= APP.INDEX.HOME):
+    def front(cls, index= APP.INDEX.HOME):
         cls._MortgageOptions.index = index
+        cls._AdvancedOptions.index = index
         layout= html.Div(
                     [
                         dbc.Row(
@@ -86,24 +87,23 @@ class panel:
                                 dbc.Col(cls._MortgageOptions.grace()),
                             ],
                         ),
-                        html.Div(dbc.Button(
-                            "Enter",
-                            id= {"index": cls._MortgageOptions.index, "type": CONTROLS.BUTTON},
-                            style={
-                                'margin-top': '20px',
-                                'position': 'relative',
-                            },
-                            active= True,
-                            href= href,
-                            n_clicks= 0,           
-                        ))
+                        # html.Div(dbc.Button(
+                            # "Enter",
+                            # id= {"index": cls._MortgageOptions.index, "type": CONTROLS.BUTTON},
+                            # style={
+                                # 'margin-top': '20px',
+                                # 'position': 'relative',
+                            # },
+                            # active= True,
+                            # href= href,
+                            # n_clicks= 0,           
+                        # ))
                     ],
                     # body=True,
                     style={
                         'width': '100%',
                         'height': '100%',
                         'box-shadow': '0 0 5px #ccc',
-                        'background-color': '#f5f5f5',
                         'border': '1px solid #ccc',
                         'border-radius': '5px',
                         'box-shadow': '0 0 5px #ccc',
@@ -113,6 +113,8 @@ class panel:
                         'color': '#333',
                         'position': 'relative',
                         'z-index': '1',
+                        'background-color': '#E2E2E2',
+                        'box-shadow': '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
                     },
                 )
         cls.synchronize(index)
@@ -194,7 +196,6 @@ class panel:
                 ],
                 Input("url", 'pathname'),
                 State(LOAN.RESULT.KWARGS, 'data'),
-                # State('cache', 'data'),
         )
         def update_amount(
             url,

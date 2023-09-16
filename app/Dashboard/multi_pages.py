@@ -58,6 +58,7 @@ app.layout = html.Div(  # <- Wrap App with Loading Component
     ],
     style={
         'width': '100%',
+        'background': '#F7F7F7',
     },
     # color='primary',  # <- Color of the loading spinner
     # fullscreen=True,  # <- Loading Spinner should take up full screen
@@ -65,7 +66,7 @@ app.layout = html.Div(  # <- Wrap App with Loading Component
 
 server = app.server
 
-# py -m app.Dashboard.app
+# py -m app.Dashboard.multi_pages
 if __name__ == '__main__':
     app.run_server(
         debug=True, 

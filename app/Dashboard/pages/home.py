@@ -19,11 +19,10 @@ register_page(
 )
 
 layout = dbc.Container(
-        [
-            html.Br(),
-            panel.front(href= APP.URL.DATA),
-            graph()
-
-        ],
-        className="vstack gap-3"
-    )
+            [
+                html.Br(),
+                panel.front(),
+                graph()
+            ],
+            className="vstack gap-3"
+         )

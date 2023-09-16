@@ -82,7 +82,13 @@ class GRAPH:
     CHECKLIST= 'choose repayment for charting'
     DROPDOWNS= 'subitems under repayment payments method for charting'
     RESULTS= 'results of selection for charting'
-    ACCUMULATION= 'Accumulations' 
+    ACCUMULATION= 'Accumulative'
+    LOADING= 'Loading animations for charting'
+    
+    class DROPDOWN:
+        MENU= 'dropdown menu of charts'
+        ITEM= 'dropdown items for charting'
+        
     class REPAYMENT:
         EPP= 'equal principle payment method for charting'
         ETP= 'equal total payment method for charting'
@@ -92,8 +98,9 @@ class APP:
 
     class INDEX:
         HOME= 'Homepage'
-        DATA= 'Data page'
+        DATA= 'Spreadsheet'
+        GRAPH= 'Graph'
     
     class URL:
         HOME= '/'
-        DATA= '/data'
+        DATA= '/spreadsheet'

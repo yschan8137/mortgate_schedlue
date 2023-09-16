@@ -1,5 +1,5 @@
 from dash import html, register_page, callback
-from app.Dashboard.pages.components.DataTable import app
+from app.Dashboard.pages.components.DataTable import dataframe
 import dash_bootstrap_components as dbc
 
 from app.Dashboard.pages.components.ids import APP
@@ -16,7 +16,7 @@ register_page(
 
 layout = dbc.Container(
     [
-        app.deployment(),
+        dataframe.deployment(),
     ],
     fluid= True
 )
