@@ -370,34 +370,45 @@ def refreshable_dropdown(
     dropdown = html.Div(
         [
             dbc.Label(label),
-            html.Div([
-                html.Div(
-                    [
-                        dcc.Dropdown(
-                            id={"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type)},
-                            options=[*options],
-                            value=[*options],
-                            multi=True,
-                            # searchable=True,
-                            placeholder=placeholder,
-                            disabled=disabled,
-                            **kwargs
-                        )
-                    ],
-                ),
-                dbc.Col(
-                    [
-                        html.Button(
-                            'Refresh',
-                            id={"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.BUTTON, type)},
-                            n_clicks=0
-                        )
-                    ]
-                )
-            ],
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            dcc.Dropdown(
+                                id={"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type)},
+                                options=[*options],
+                                value=[*options],
+                                multi=True,
+                                # searchable=True,
+                                placeholder=placeholder,
+                                disabled=disabled,
+                                style= {
+                                    'font-size': '18px',
+                                    'font-color': '#0C82DF',
+                                },
+                                **kwargs
+                            ),
+                            html.Button(
+                                'Refresh',
+                                id={"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.BUTTON, type)},
+                                n_clicks=0,
+                                style= {
+                                    'background-color': '#FFFFFF',
+                                    'margin-top': '5px',
+                                    'border-radius': '5px',
+                                    'font-weight': 'bold',
+                                    'font-color': '#3F3F3F',
+                                    'font-size': '18px',
+                                }
+                            )
+                        ],
+                        className='mb-2'
+                    ),
+                ],
+                className='mb-2'
             ),
         ],
-        className='mb-3'
+        className='mb-2'
     )
 
     # Refresh the Dropdown of the Payment options

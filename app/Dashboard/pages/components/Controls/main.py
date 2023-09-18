@@ -3,8 +3,7 @@ from dash import Dash, html, dcc, Input, Output, State, callback, Patch, MATCH
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from dataclasses import dataclass
-# import numpy as np
-import time
+from datetime import date
 
 from app.Dashboard.pages.components.ids import *
 from app.Dashboard.pages.components.Controls.options import MortgageOptions, AdvancedOptions
@@ -58,18 +57,39 @@ class panel:
                             [cls._MortgageOptions.amount()],
                             align= 'center',
                             style= {
-                                # 'width': '50%',
                             }
                         ),
                         dbc.Row(
                             [
                                 dbc.Col(
                                     [
-                                        cls._MortgageOptions.tenure()
+                                        html.Div(
+                                            [
+                                                dbc.Label(
+                                                    'Start Time',
+                                                    size= 'md',
+                                                    style= {
+                                                        'display': 'inline-block',
+                                                        'margin-right': '10px',
+                                                    }
+                                                ),
+                                                dcc.DatePickerSingle(
+                                                        id= LOAN.DATE,
+                                                        placeholder= 'Select Date',
+                                                        clearable= True,
+                                                        min_date_allowed=date(1992, 1, 1),
+                                                        initial_visible_month= date.today(),
+                                                        style= {
+                                                            'display': 'inline-block',
+                                                        }
+                                                ),
+                                            ],
+                                        ),
+                                        cls._MortgageOptions.tenure(),
                                     ],
                                     style= {
-                                        "width": "80%"
-                                    }
+                                        "width": "80%",
+                                    },
                                 ),
                                 dbc.Col(
                                         [
@@ -78,35 +98,29 @@ class panel:
                                 ),
                             ],
                             align= 'start',
-                            className='pad-row'
-
+                            className='pad-row',
+                            style= {
+                                'margin-top': "10px",
+                            }
                         ),
                         dbc.Row(
                             [
                                 dbc.Col(cls._MortgageOptions.down_payment()),
                                 dbc.Col(cls._MortgageOptions.grace()),
                             ],
+                            style= {
+                                'margin-top': "10px",
+                            }
                         ),
-                        # html.Div(dbc.Button(
-                            # "Enter",
-                            # id= {"index": cls._MortgageOptions.index, "type": CONTROLS.BUTTON},
-                            # style={
-                                # 'margin-top': '20px',
-                                # 'position': 'relative',
-                            # },
-                            # active= True,
-                            # href= href,
-                            # n_clicks= 0,           
-                        # ))
+                        cls._MortgageOptions.repayment_methods(),
+                        html.Hr(),
+                        cls._advancedoptions(), 
                     ],
-                    # body=True,
                     style={
                         'width': '100%',
                         'height': '100%',
-                        'box-shadow': '0 0 5px #ccc',
                         'border': '1px solid #ccc',
                         'border-radius': '5px',
-                        'box-shadow': '0 0 5px #ccc',
                         'font-size': '20px',
                         'font-weight': 'bold',
                         'padding': '20px',
@@ -120,6 +134,36 @@ class panel:
         cls.synchronize(index)
 
         return layout
+
+    @classmethod
+    def _advancedoptions(cls):
+        return dbc.Col(
+            [
+                cls._AdvancedOptions.accordion(
+                    style={
+                        'width': '100%',
+                        'active-bg': 'red',
+                        'justify-content': 'center',
+                        'align-items': 'center',
+                    },
+                    content=[
+                        {
+                            'id': title,
+                            'title': title,
+                            'children': children
+                        } for title, children in zip(
+                            [LOAN.PREPAY.TYPE,
+                             LOAN.SUBSIDY.TYPE],
+                            [
+                                cls._AdvancedOptions.prepayment(), 
+                                cls._AdvancedOptions.subsidy()
+                            ]
+                        )
+                    ]
+                )
+            ],
+        )
+
 
     @classmethod
     def side(cls, index= APP.INDEX.DATA):
@@ -140,32 +184,34 @@ class panel:
                                 cls._MortgageOptions.tenure(),
                                 cls._MortgageOptions.grace(),
                                 cls._MortgageOptions.repayment_methods(),
-                                dbc.Col(
-                                    [
-                                        cls._AdvancedOptions.accordion(
-                                            style={
-                                                'width': '105%',
-                                                'active-bg': 'red',
-                                                'justify-content': 'center',
-                                                'align-items': 'center',
-                                            },
-                                            content=[
-                                                {
-                                                    'id': title,
-                                                    'title': title,
-                                                    'children': children
-                                                } for title, children in zip(
-                                                    [LOAN.PREPAY.TYPE,
-                                                     LOAN.SUBSIDY.TYPE],
-                                                    [
-                                                        cls._AdvancedOptions.prepayment(), 
-                                                        cls._AdvancedOptions.subsidy()
-                                                    ]
-                                                )
-                                            ]
-                                        )
-                                    ],
-                                ),
+                                html.Hr(),
+                                cls._advancedoptions(),
+                                # dbc.Col(
+                                    # [
+                                        # cls._AdvancedOptions.accordion(
+                                            # style={
+                                                # 'width': '100%',
+                                                # 'active-bg': 'red',
+                                                # 'justify-content': 'center',
+                                                # 'align-items': 'center',
+                                            # },
+                                            # content=[
+                                                # {
+                                                    # 'id': title,
+                                                    # 'title': title,
+                                                    # 'children': children
+                                                # } for title, children in zip(
+                                                    # [LOAN.PREPAY.TYPE,
+                                                    #  LOAN.SUBSIDY.TYPE],
+                                                    # [
+                                                        # cls._AdvancedOptions.prepayment(), 
+                                                        # cls._AdvancedOptions.subsidy()
+                                                    # ]
+                                                # )
+                                            # ]
+                                        # )
+                                    # ],
+                                # ),
                             ],
                         )
                     ],
@@ -184,7 +230,7 @@ class panel:
 
         return layout
 
-    # synchronize the variables for Homepage to data page.
+    # synchronize the variables among pages.
     @classmethod
     def synchronize(cls, index):
         @callback(
@@ -201,7 +247,7 @@ class panel:
             url,
             kwargs,
             ):
-            if not kwargs:#cache[-1] == 1: 
+            if not kwargs:
                 # cache equals to 1 means the switching across pages has been done in previous steps.
                 # It is not necessary to synchronize the variables in the same page. It would cause excess updates.
                 raise PreventUpdate
@@ -265,8 +311,7 @@ class panel:
                 for k in [str(sorted_key) for sorted_key in sorted([int(key) for key in memory.keys()])]: 
                     sorted_memory[k]= memory[k]
                 patched_item= [new_checklist_item(timestamp, type= cls._MortgageOptions.type, index= index, result= {k: v}) for (k, v) in sorted_memory.items()]
-                return [sorted_memory, patched_item, True]
-        
+                return [sorted_memory, patched_item, True]    
 
 # py -m app.Dashboard.pages.components.Controls.main
 if __name__ == "__main__":
@@ -274,5 +319,11 @@ if __name__ == "__main__":
            external_stylesheets=[dbc.themes.LUMEN, dbc.icons.BOOTSTRAP], 
            suppress_callback_exceptions=True
            )
-    app.layout = panel.front()
+    app.layout = dbc.Container(
+        [
+            register(),
+            panel.side(),
+
+        ]
+    )
     app.run_server(debug=True)

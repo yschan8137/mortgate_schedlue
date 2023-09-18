@@ -9,7 +9,7 @@ class LOAN:
     INTEREST = 'interest rate applied to total tenure of the loan'
     OPTIONS = 'the repayment options of the loan'
     TYPE = 'Loan'
-
+    DATE= 'repay start date'
     class RESULT:
         KWARGS = 'the results of the keyword arguments'
         DATAFRAME = 'the results of the dataframe'

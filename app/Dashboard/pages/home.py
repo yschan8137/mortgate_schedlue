@@ -20,9 +20,12 @@ register_page(
 
 layout = dbc.Container(
             [
-                html.Br(),
+                dcc.Location(id= 'url'),
                 panel.front(),
                 graph()
             ],
-            className="vstack gap-3"
+            className="vstack gap-3",
+            style= {
+                'margin-top': '5px'
+            }
          )

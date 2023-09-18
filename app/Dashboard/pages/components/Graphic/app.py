@@ -1,3 +1,5 @@
+from sre_constants import IN
+from turtle import bgcolor
 import pandas as pd
 from dash import Dash, dcc, html, callback, Output, Input, State, MATCH, ALL, no_update, callback_context
 from dash.exceptions import PreventUpdate
@@ -5,15 +7,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import dash_bootstrap_components as dbc
-from itertools import product
-import math
-
-import numpy as np
+import datetime
+from dateutil.relativedelta import relativedelta
 
 from app.Dashboard.pages.components.Controls.main import panel
-from app.Dashboard.pages.components.ids import GRAPH, LOAN
+from app.Dashboard.pages.components.ids import GRAPH, LOAN, ADVANCED, APP
+from app.Dashboard.pages.components.toolkit import suffix_for_type
 from app.Loan import *
-
 
 
 # reference: https://towardsdatascience.com/how-to-make-multi-index-index-charts-with-plotly-4d3984cd7b09#2e1b
@@ -29,62 +29,64 @@ def graph():
     layout= dbc.Container(
         [
             html.Br(),
-            dbc.Row(
+            dbc.Stack(
                 [
-                    dbc.Col(
-                        dbc.Checklist(
-                            id= GRAPH.ACCUMULATION,
-                            options= [{'label': GRAPH.ACCUMULATION, 'value': 1}],
-                        value= [],
-                        switch= True,
-                        className= 'mb-3',
-                        ),
-                        width= 4,
-                        style= {
-                            # 'position': 'absolute',
-                            'margin-left': '6%',
-                        }
-                    ),
-                    dbc.Col(
+                    # dbc.Col(
                         dbc.DropdownMenu(
                             id= GRAPH.DROPDOWN.MENU,
-                            # className= 'mb-2',
-                            color= '#BCDFFB',
+                            color= '#CECECE', # color of the label background.
                             style={
-                                'width': '100%',
+                                'width': '110px',
                                 "borderColor": "#ff0000",
-
+                                # 'border': '1px solid #ccc',
+                                'margin-left': '6%'
                             },
                             toggle_style={
                                 'width': '100px',
                                 "color": "#162126", 
                                 'font-weight': 'bold',
-                                # 'text-align': '',
+                                'box-shadow': '0 0 5px #ccc',
+                                'border': '1px solid #ccc',
+                                'border-radius': '5px',
                             },
+                            # align_end=False,
                             toggleClassName="border None text-align justify middle",
                         ),
-                        style={
-                            'position': 'absolute',
-                            'left': '77%',
-                            'bottom': '82%'
+                        # align= 'center',
+                        # width= 2,
+                        # style={
+                            # 'margin-left': '6%',
+                        # }
+                    # ),
+                    # dbc.Col(
+                        dbc.Checklist(
+                            id= GRAPH.ACCUMULATION,
+                            options= [{'label': GRAPH.ACCUMULATION, 'value': 1}],
+                        value= [],
+                        switch= True,
+                        
+                        style= {
+                            'text-align': 'left',
+                            # 'border': '1px solid black',
                         }
-                    )
+                        ),
+                        # align= 'center',
+                        # width= 4,
+                        # style= {
+                            # 'font-size': '18px',
+                            # 'font-weight': 'bold',
+                        # }
+                    # ),
                 ],
-                # justify="between",
+                direction= 'horizontal',
+                gap= 0,
+                # justify= 'start',
                 style= {
                 }
             ),
             dbc.Col(
                 dcc.Graph(
                     id= GRAPH.LINE,
-                    # animate= True,
-                    # animation_options= {
-                        # 'frame': {'redraw': False, }, 
-                        # 'transition': {
-                            # 'duration': 500, 
-                            # 'ease': 'cubic-in-out', 
-                        # },
-                    # },
                 ),
                 style= {
                 }
@@ -92,10 +94,9 @@ def graph():
 
         ],
         fluid=True,
-        className= 'bm-2',
-        # style= {
-            # "overflow-x": "scroll",
-        # }
+        style= {
+            'margin-top': '5px',
+        }
     )
 
 # options for dropdown menu
@@ -126,8 +127,7 @@ def graph():
         Input(GRAPH.LINE, 'figure'),
     )
     def update_label_for_dropdownmune(fig):
-        return [*{data['legendgroup'] for data in fig['data']}][0]
-
+        return [*{data['legendgroup'] for data in fig['data']}][-1]
 
 
 # update the results
@@ -136,6 +136,7 @@ def graph():
         Input(GRAPH.ACCUMULATION, 'value'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
         Input({'index': ALL, 'type': GRAPH.DROPDOWN.ITEM}, 'n_clicks'),
+        Input(LOAN.DATE, 'date'),
         State(GRAPH.DROPDOWN.MENU, 'label'),
         State(GRAPH.LINE, 'figure'),
     )
@@ -143,36 +144,43 @@ def graph():
         accum, 
         resource_data,
         _,
+        date,
         label,
         fig
         ):
+        if date:
+            start_date= datetime.datetime.strptime(date, '%Y-%m-%d')
+        else:
+            start_date = None
         ctx= callback_context
         if isinstance(ctx.triggered_id, dict):
             chosen_figure= ctx.triggered_id['index']
         else:
             if label:
-                chosen_figure= label#df_schema.level_2.PAYMENT
+                if accum == [1]:
+                    if label== df_schema.level_2.RESIDUAL:
+                        chosen_figure= df_schema.level_2.PAYMENT
+                    else:
+                        chosen_figure= label
+                else:
+                    chosen_figure= label
             else:
                 chosen_figure= df_schema.level_2.PAYMENT
         df = pd.DataFrame.from_dict(resource_data, 'tight')[1:-1]
         fig= go.Figure()
-        # fig= make_subplots(
-            # rows= 1,#len(init_columns), 
-            # cols= len(init_columns),#1, 
-            # start_cell="top-left", 
-            # subplot_titles= ['<b>' + title + '<b>' for title in init_columns],
-            # specs=[[{"secondary_y": True}], [{"secondary_y": True}], [{"secondary_y": True}]],
-        # )
-        for method in [df_schema.level_1.ETP, df_schema.level_1.EPP]:
+
+        for method in [*{*df.columns.get_level_values(0)}]:
             dff = df[method]
             if accum and accum == [1]:
                 dff = dff.cumsum().apply(lambda x: round(x))
-            # for r, item in zip(range(1, len(init_columns) + 1), init_columns):
-            
             filtered_dff= dff[chosen_figure].apply(lambda x: round(x, 0))
+            if start_date:
+                x_axis_value= [start_date + relativedelta(months=n) for n in filtered_dff.index]
+            else:
+                x_axis_value= filtered_dff.index
             fig.add_trace(
                 go.Scatter(
-                    x= filtered_dff.index,
+                    x= x_axis_value,
                     y= filtered_dff.values,
                     legendgroup= chosen_figure,
                     legendgrouptitle_text= chosen_figure,
@@ -181,37 +189,30 @@ def graph():
                     connectgaps= True,
                     fill= ('tonexty' if accum == [1] else None),
                     stackgroup= (method if accum == [1] else None),
+                    text= [method]* len(x_axis_value),
+                    hovertemplate =
+                        "<br><b>%{text}</b>" +
+                        ("<br><b>Date</b>: %{x: %d-%M-%Y}" if start_date else "<br><b>Time</b>: %{x}") + 
+                        "<br><b>Price</b>: %{y:,}" +
+                        "<extra></extra>",
                 ),
-                # row= 1,
-                # col= r,
             )
-            # fig.update_annotations(
-                # x= .1 + (r-1)* .265, 
-                # y=  -0.15,#(0.7295 - 0.38 * (r - 1) if len(init_columns) == 3 else 0.81 - 0.28 * (r - 1)),
-                # xanchor= 'center',
-                # yanchor= 'bottom',
-                # selector={'text': '<b>' + item + '<b>'},
-                # font= {
-                    # 'size': 18,
-                # },
-            # )
+        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGray')
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGray')
         fig.update_layout(
-            showlegend= True,
-            height= 500,#(1600 if len(init_columns) == 3 else 2200),
-            # width= (4800 if len(init_columns) == 4 else 3570),
+            showlegend= False,
+            height= 500,
             paper_bgcolor='rgba(0,0,0,0)',
-            # plot_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(255,255,255, 0.3)',
             legend= {
                 'groupclick': 'toggleitem',
-                # 'orientation': 'h',
-                # 'borderwidth': 1,
             },
             modebar= {
-                'bgcolor': 'rgba(0,0,0, 0.1)',
+                'bgcolor': 'rgba(255, 255, 255, 0.3)',
                 'activecolor':'gray',
             },
-            legend_tracegroupgap= 0.2,#(490 if len(init_columns) == 3 else 510),
             margin= {'t': 30},
+            hovermode= 'x',
 
         )
         return fig

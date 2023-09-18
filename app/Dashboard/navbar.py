@@ -133,7 +133,6 @@ def create_navbar():
                 'background-color': '#0C82DF',
             },
             fill= "True",
-            # pills= True,
             justified= True,
     )
 

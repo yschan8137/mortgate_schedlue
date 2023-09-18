@@ -2,7 +2,7 @@ import pandas as pd  # type: ignore
 from app.Loan.computation.helpers.scheduler import ensure_list_type, kwargs_detection
 from app.Loan.computation.helpers.prepay import _time_, _amount_
 from app.Loan.computation.methods import _EPP_arr_, _ETP_arr_
-from app.Loan.computation.categoties import amortization as amortization_methods
+from app.Loan.computation.categories import amortization as amortization_methods
 
 default_kwargs = {
     'interest_arr': {'interest': [1.94], 'time': []},

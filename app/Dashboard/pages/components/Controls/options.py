@@ -1,5 +1,7 @@
 # This file is the collectikwargs_schemaon of control components for the homepage
+from ast import alias
 from dataclasses import dataclass
+from turtle import bgcolor
 from dash import Dash, html, dcc, Input, Output, State, MATCH, ALL, no_update, callback_context, callback
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
@@ -222,7 +224,12 @@ class MortgageOptions():
                             dbc.Label(
                                 'Interest Rate',
                                 size='md',
+                                align='center',
                             ),
+                            width= 3,
+                            align='center',
+                            style= {
+                            }
                         ),
                         dbc.Col(
                             dbc.Checklist(
@@ -234,17 +241,23 @@ class MortgageOptions():
                                 # inline=True,
                                 switch=True,
                                 label_style={
-                                    'font-size': '14px',
+                                    'font-size': '18px',
+                                    'text-align': 'center',
                                 },
                                 style={
-                                    # 'display': 'inline-block',
                                     'margin': "px px",
-                                    'font-size': '14px',
+                                    'font-size': '18px',
+                                    'text-align': 'left',
                                 },
                             ),
                             align='center',
+                            width= 9,
+                            style= {
+                            }
                         )
                     ],
+                    justify= 'start',
+                    className= 'g-0',
                     style={
                     },
                 ),
@@ -381,7 +394,9 @@ class AdvancedOptions(MortgageOptions):
                                 'align-items': 'center',
                                 'justify-content': 'center',
                                 'background-color': 'transparent',
-                            }
+                                # 'font-size': '18px',
+                                # 'font-weight': 'bold',
+                            },
                         ) for title, children in zip(titles, childrens)
                     ],
                     always_open=away_open,
@@ -411,6 +426,7 @@ class AdvancedOptions(MortgageOptions):
                     index= cls.index,
                 )
             ],
+            className= 'mb-2',
             style= {
                 'maxWidth': '100%'
             }
@@ -470,7 +486,7 @@ class AdvancedOptions(MortgageOptions):
                 ),
                 html.Div(
                     [
-                        dbc.Label('Subsidy Start timepoint'),
+                        dbc.Label('Start timepoint'),
                         dbc.Input(
                             id=LOAN.SUBSIDY.START,
                             type='number',
@@ -479,7 +495,8 @@ class AdvancedOptions(MortgageOptions):
                             min=0,
                             max=24,
                         )
-                    ]
+                    ],
+                    className= 'mb-2',
                 ),
                 html.Div(
                     [
@@ -491,7 +508,8 @@ class AdvancedOptions(MortgageOptions):
                             value= cls.kwargs_schema['subsidy_arr']['amount'],
                             min=0,
                         ),
-                    ]
+                    ],
+                    className= 'mb-2',
                 ),
                 html.Div(
                     [
@@ -503,7 +521,8 @@ class AdvancedOptions(MortgageOptions):
                             value= cls.kwargs_schema['subsidy_arr']['tenure'],
                             min=0,
                         )
-                    ]
+                    ],
+                    className= 'mb-2',
                 ),
                 MortgageOptions.interest_rate(
                     type=type,
@@ -518,7 +537,8 @@ class AdvancedOptions(MortgageOptions):
                             value= cls.kwargs_schema['subsidy_arr']['grace_period'],
                             min=0,
                         )
-                    ]
+                    ],
+                    className= 'mb-2',
                 ),
                 refreshable_dropdown(
                     label='Subsidy Payment methods',
@@ -546,17 +566,18 @@ class AdvancedOptions(MortgageOptions):
                             ),
                             id=LOAN.SUBSIDY.PREPAY.ARR
                         ),
-                    ]
+                    ],
+                    # className= 'mb-2',
                 ),
             ],
             style={
-                'width': '105%',
+                'width': '100%',
                 'display': 'flex',
                 'flex-direction': 'column',
-                'padding': '10px',
-                'border-radius': '5px',
-                'box-shadow': '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
-                'background-color': 'white',
+                # 'padding': '10px',
+                # 'border-radius': '5px',
+                # 'box-shadow': '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
+                'background-color': 'transparent',
                 'align-items': 'left',
             },
         )

@@ -31,15 +31,17 @@ card = dbc.Card(
                         label=APP.INDEX.GRAPH, 
                         tab_id="tab-1",
                     ),
-                    dbc.Tab(dataframe.deployment(),label=APP.INDEX.DATA, tab_id="tab-2", style= {'height': '550px', "overflow-y": "scroll",}),
+                    dbc.Tab(dataframe.deployment(),label=APP.INDEX.DATA, tab_id="tab-2", style= {'height': '520px', "overflow-y": "scroll",}),
                 ],
                 id="card-tabs",
                 active_tab="tab-1",
                 className= 'mb-2'
             )
         ),
-        # dbc.CardBody(html.P(id="card-content", className="card-text")),
-    ]
+    ],
+    style= {
+        'background-color': '#F7F7F7',
+    }
 )
 
 app.layout = html.Div(  # <- Wrap App with Loading Component
@@ -49,16 +51,23 @@ app.layout = html.Div(  # <- Wrap App with Loading Component
         register(),
         dbc.Container(
         [
-            html.Br(),
+            # html.Br(),
             panel.front(),
             card
         ],
-   className="vstack gap-3"
+   className="vstack gap-2",
+   style= {
+            'margin-top': "10px", 
+   }
 )
     ],
     style={
+        'margin-top': '10px',
         'width': '100%',
-        'background': '#F7F7F7',
+        'background': '#CBD9E0',
+        'box-shadow': '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
+        'border': '1px solid #ccc',
+        'border-radius': '5px',
     },
     # color='primary',  # <- Color of the loading spinner
     # fullscreen=True,  # <- Loading Spinner should take up full screen
