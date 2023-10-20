@@ -14,6 +14,9 @@ NAVBAR = create_navbar()
 FA621 = "https://use.fontawesome.com/releases/v6.2.1/css/all.css"
 APP_TITLE = "Amort"
 
+[] divided frames by setting html. div
+[] scroll bar style
+
 app = Dash(
     __name__,
     suppress_callback_exceptions=True,
