@@ -1,13 +1,14 @@
 # period frequency constants corresponding to scikits timeseries
 # originals
-cimport cython
-
 from enum import Enum
 
 from pandas._libs.tslibs.np_datetime cimport (
     NPY_DATETIMEUNIT,
     get_conversion_factor,
+    import_pandas_datetime,
 )
+
+import_pandas_datetime()
 
 
 cdef class PeriodDtypeBase:
@@ -17,9 +18,11 @@ cdef class PeriodDtypeBase:
     """
     # cdef readonly:
     #    PeriodDtypeCode _dtype_code
+    #    int64_t _n
 
-    def __cinit__(self, PeriodDtypeCode code):
+    def __cinit__(self, PeriodDtypeCode code, int64_t n):
         self._dtype_code = code
+        self._n = n
 
     def __eq__(self, other):
         if not isinstance(other, PeriodDtypeBase):
@@ -27,7 +30,10 @@ cdef class PeriodDtypeBase:
         if not isinstance(self, PeriodDtypeBase):
             # cython semantics, this is a reversed op
             return False
-        return self._dtype_code == other._dtype_code
+        return self._dtype_code == other._dtype_code and self._n == other._n
+
+    def __hash__(self) -> int:
+        return hash((self._n, self._dtype_code))
 
     @property
     def _freq_group_code(self) -> int:
@@ -47,7 +53,10 @@ cdef class PeriodDtypeBase:
     @property
     def _freqstr(self) -> str:
         # Will be passed to to_offset in Period._maybe_convert_freq
-        return _reverse_period_code_map.get(self._dtype_code)
+        out = _reverse_period_code_map.get(self._dtype_code)
+        if self._n == 1:
+            return out
+        return str(self._n) + out
 
     cpdef int _get_to_timestamp_base(self):
         """
@@ -67,6 +76,25 @@ cdef class PeriodDtypeBase:
         elif FR_HR <= base <= FR_SEC:
             return FR_SEC
         return base
+
+    cpdef bint _is_tick_like(self):
+        return self._dtype_code >= PeriodDtypeCode.D
+
+    @property
+    def _creso(self) -> int:
+        return {
+            PeriodDtypeCode.D: NPY_DATETIMEUNIT.NPY_FR_D,
+            PeriodDtypeCode.H: NPY_DATETIMEUNIT.NPY_FR_h,
+            PeriodDtypeCode.T: NPY_DATETIMEUNIT.NPY_FR_m,
+            PeriodDtypeCode.S: NPY_DATETIMEUNIT.NPY_FR_s,
+            PeriodDtypeCode.L: NPY_DATETIMEUNIT.NPY_FR_ms,
+            PeriodDtypeCode.U: NPY_DATETIMEUNIT.NPY_FR_us,
+            PeriodDtypeCode.N: NPY_DATETIMEUNIT.NPY_FR_ns,
+        }[self._dtype_code]
+
+    @property
+    def _td64_unit(self) -> str:
+        return npy_unit_to_abbrev(self._creso)
 
 
 _period_code_map = {
@@ -280,7 +308,20 @@ class NpyDatetimeUnit(Enum):
     NPY_FR_GENERIC = NPY_DATETIMEUNIT.NPY_FR_GENERIC
 
 
-def is_supported_unit(NPY_DATETIMEUNIT reso):
+cpdef NPY_DATETIMEUNIT get_supported_reso(NPY_DATETIMEUNIT reso):
+    # If we have an unsupported reso, return the nearest supported reso.
+    if reso == NPY_DATETIMEUNIT.NPY_FR_GENERIC:
+        # TODO: or raise ValueError? trying this gives unraisable errors, but
+        #  "except? -1" breaks at compile-time for unknown reasons
+        return NPY_DATETIMEUNIT.NPY_FR_ns
+    if reso < NPY_DATETIMEUNIT.NPY_FR_s:
+        return NPY_DATETIMEUNIT.NPY_FR_s
+    elif reso > NPY_DATETIMEUNIT.NPY_FR_ns:
+        return NPY_DATETIMEUNIT.NPY_FR_ns
+    return reso
+
+
+cpdef bint is_supported_unit(NPY_DATETIMEUNIT reso):
     return (
         reso == NPY_DATETIMEUNIT.NPY_FR_ns
         or reso == NPY_DATETIMEUNIT.NPY_FR_us
@@ -325,7 +366,7 @@ cpdef str npy_unit_to_abbrev(NPY_DATETIMEUNIT unit):
         raise NotImplementedError(unit)
 
 
-cdef NPY_DATETIMEUNIT abbrev_to_npy_unit(str abbrev):
+cpdef NPY_DATETIMEUNIT abbrev_to_npy_unit(str abbrev):
     if abbrev == "Y":
         return NPY_DATETIMEUNIT.NPY_FR_Y
     elif abbrev == "M":
@@ -358,7 +399,7 @@ cdef NPY_DATETIMEUNIT abbrev_to_npy_unit(str abbrev):
         raise ValueError(f"Unrecognized unit {abbrev}")
 
 
-cdef NPY_DATETIMEUNIT freq_group_code_to_npy_unit(int freq) nogil:
+cdef NPY_DATETIMEUNIT freq_group_code_to_npy_unit(int freq) noexcept nogil:
     """
     Convert the freq to the corresponding NPY_DATETIMEUNIT to pass
     to npy_datetimestruct_to_datetime.
@@ -385,7 +426,9 @@ cdef NPY_DATETIMEUNIT freq_group_code_to_npy_unit(int freq) nogil:
 
 
 # TODO: use in _matplotlib.converter?
-cpdef int64_t periods_per_day(NPY_DATETIMEUNIT reso=NPY_DATETIMEUNIT.NPY_FR_ns) except? -1:
+cpdef int64_t periods_per_day(
+    NPY_DATETIMEUNIT reso=NPY_DATETIMEUNIT.NPY_FR_ns
+) except? -1:
     """
     How many of the given time units fit into a single day?
     """
@@ -410,3 +453,16 @@ cdef dict _reso_str_map = {
 }
 
 cdef dict _str_reso_map = {v: k for k, v in _reso_str_map.items()}
+
+cdef dict npy_unit_to_attrname = {
+    NPY_DATETIMEUNIT.NPY_FR_Y: "year",
+    NPY_DATETIMEUNIT.NPY_FR_M: "month",
+    NPY_DATETIMEUNIT.NPY_FR_D: "day",
+    NPY_DATETIMEUNIT.NPY_FR_h: "hour",
+    NPY_DATETIMEUNIT.NPY_FR_m: "minute",
+    NPY_DATETIMEUNIT.NPY_FR_s: "second",
+    NPY_DATETIMEUNIT.NPY_FR_ms: "millisecond",
+    NPY_DATETIMEUNIT.NPY_FR_us: "microsecond",
+    NPY_DATETIMEUNIT.NPY_FR_ns: "nanosecond",
+}
+cdef dict attrname_to_npy_unit = {v: k for k, v in npy_unit_to_attrname.items()}

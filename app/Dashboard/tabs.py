@@ -1,10 +1,14 @@
 from dash import Dash, html, dcc, Input, Output, callback
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
+from dash_iconify import DashIconify
 from app.Dashboard.navbar import create_navbar
-from app.Dashboard.pages.components.Controls.main import panel, register
+from app.Dashboard.pages.components.Controls.panels import panel, register
 from app.Dashboard.pages.components.Graphic.app import graph
 from app.Dashboard.pages.components.DataTable import dataframe
-from app.Dashboard.pages.components.ids import APP
+from app.Dashboard.assets import ids, specs
+
+
 NAVBAR = create_navbar()
 # To use Font Awesome Icons
 FA621 = "https://use.fontawesome.com/releases/v6.2.1/css/all.css"
@@ -19,56 +23,99 @@ app = Dash(
         FA621,  # Font Awesome Icons CSS
     ],
     title=APP_TITLE,
+    assets_external_path= 'app/Dashboard/assets',
 )
 
-card = dbc.Card(
-    [
-        dbc.CardHeader(
-            dbc.Tabs(
-                [
-                    dbc.Tab(
-                        graph(), 
-                        label=APP.INDEX.GRAPH, 
-                        tab_id="tab-1",
-                    ),
-                    dbc.Tab(dataframe.deployment(),label=APP.INDEX.DATA, tab_id="tab-2", style= {'height': '520px', "overflow-y": "scroll",}),
-                ],
-                id="card-tabs",
-                active_tab="tab-1",
-                className= 'mb-2'
-            )
-        ),
-    ],
-    style= {
-        'background-color': '#F7F7F7',
-    }
-)
+tabs = dmc.Tabs(
+            [
+                dmc.TabsList(
+                    [
+                        dmc.Tab(
+                               ids.APP.INDEX.GRAPH,
+                               icon= DashIconify(icon="bi:graph-up"),
+                               value= ids.APP.INDEX.GRAPH,
+                               ),
+                        dmc.Tab(
+                               ids.APP.INDEX.DATA,
+                               icon= DashIconify(icon="ph:table-light"),
+                               value= ids.APP.INDEX.DATA
+                        ),
+                    ]
+                ),
+                dmc.TabsPanel(graph(), value= ids.APP.INDEX.GRAPH),
+                dmc.TabsPanel(
+                    dataframe.deployment(), 
+                    value= ids.APP.INDEX.DATA,
+                ),
+            ],
+            value= ids.APP.INDEX.GRAPH,
+            id="card-tabs",
+            activateTabWithKeyboard= True,
+            style= specs.APP.TAB.STYLE
+        )
 
-app.layout = html.Div(  # <- Wrap App with Loading Component
-    id= APP.LOADING,
+app.layout = dmc.MantineProvider(  # <- Wrap App with Loading Component
+    id= ids.APP.LOADING,
     children=[
-        NAVBAR,
+        # dmc.Aside(
+            # p= 'md',
+            # width= {'base': '100%'},
+            # height= 77,
+            # fixed= True,
+            # position= {
+                # 'top': -16,
+                # 'left': 0,
+            # },
+            # children= [
+                # NAVBAR
+            # ],
+            # style= {
+                # 'background-color': 'black',
+            # },
+        # ),
         register(),
-        dbc.Container(
-        [
-            # html.Br(),
-            panel.front(),
-            card
-        ],
-   className="vstack gap-2",
-   style= {
-            'margin-top': "10px", 
-   }
-)
+        NAVBAR,
+        dmc.Group(
+            [
+                html.Div(
+                    panel.front(),
+                    style= specs.APP.PANEL.STYLE
+                ),
+                # dmc.Aside(
+                    # p="md",
+                    # width={"base": 420},
+                    # height=5000,
+                    # fixed=True,
+                    # position={
+                        # "left": 0, 
+                        # "top": 68,
+                    # },
+                    # children=[
+                                # panel.front(),
+                    # ],
+                    # 
+                    # style= {
+                        # 'background-color': 'rgba(255, 255, 255, 0)',
+                        # 'z-index': 100,
+                        # 'overflow-y': 'hidden',
+
+                    # },
+                # ),
+                html.Div(tabs),
+            ],
+            spacing= 0,
+            position= 'flex-start',
+            align= 'start',
+        )
     ],
-    style={
-        'margin-top': '10px',
-        'width': '100%',
-        'background': '#CBD9E0',
-        'box-shadow': '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
-        'border': '1px solid #ccc',
-        'border-radius': '5px',
-    },
+    # theme= {"colorScheme": ""},
+    # style={
+        # 'width': '100%',
+        # 'background': '#CBD9E0',
+        # 'box-shadow': '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
+        # 'border': '1px solid #ccc',
+        # 'border-radius': '5px',
+    # },
     # color='primary',  # <- Color of the loading spinner
     # fullscreen=True,  # <- Loading Spinner should take up full screen
 )

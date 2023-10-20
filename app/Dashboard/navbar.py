@@ -1,7 +1,7 @@
 
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from app.Dashboard.pages.components.ids import APP
+from app.Dashboard.assets.ids import APP
 
 
 def create_navbar():
@@ -131,6 +131,11 @@ def create_navbar():
             ],
             style= {
                 'background-color': '#0C82DF',
+                # 'position': 'absolute',
+                # 'margin-top': 0,
+                # 'z-index': 999,
+                'width': '110%',
+                'height': 'auto',
             },
             fill= "True",
             justified= True,

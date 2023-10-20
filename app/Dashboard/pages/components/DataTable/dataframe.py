@@ -4,10 +4,10 @@ import dash
 from dash import Dash, html, Input, Output, dash_table, callback
 import dash_bootstrap_components as dbc  # type: ignore
 
-from app.Dashboard.pages.components.ids import LOAN, DATATABLE
+from app.Dashboard.assets.ids import LOAN, DATATABLE
 from app.Loan import df_schema  # type: ignore
 from app.Dashboard.pages.components.toolkit import convert_df_to_dash
-from app.Dashboard.pages.components.Controls.main import panel, register
+from app.Dashboard.pages.components.Controls.panels import panel, register
 
 app = Dash(__name__, 
        external_stylesheets=[dbc.themes.LUMEN, dbc.icons.BOOTSTRAP],
@@ -93,19 +93,16 @@ def datatable():
                 dbc.Row(
                     dash_table.DataTable(
                         id= DATATABLE.SUM,
-                        # columns=[],
                         data=[],
                         merge_duplicate_headers=True,
                         editable=True,
                         page_current=0,
                         page_size=1,
                         page_count=0,
-                        # page_action= 'custom',
                         sort_action='custom',
                         sort_by=[],
                         style_table={
-                            'overflow': 'auto',
-                            #  'margin': '5%',
+                            "overflow": "auto",
                             'scrollX': True
                         },
                         style_header={
@@ -115,9 +112,6 @@ def datatable():
                         style_cell={
                             'border': '1px solid lightblue',
                         }, 
-                        # style_data={
-                            # 'transition': {'duration': 1000, 'timing_function': 'ease-in-out'}
-                        # }
                     ),
                     className="mb-3"
                 ),
@@ -134,11 +128,11 @@ def datatable():
                         page_action='custom',
                         sort_action='custom',
                         # sort_mode='single',
+                        # fixed_rows= {'headers': True, 'data': 1},
                         sort_by=[],
                         style_table={
-                            'overflow': 'auto',
-                            'border': 'medium'
-                            # 'margin': '5%',
+                            'overflow': 'auto', 
+                            'border': 'medium',
                         },
                         style_header={
                             'textAlign': 'center',
@@ -183,67 +177,28 @@ def datatable():
     ):
         merge_duplicate_headers = True
         df = pd.DataFrame.from_dict(data, 'tight')
-        df = df.applymap(lambda x: f"{round(x):,}")
+        dff = df.map(lambda x: f"{round(x):,}") #type: ignore
         if df_schema.level_0.SUBSIDY in df.columns.levels[0]: #type: ignore
-            df = df[[(l0, l1, l2) for (l0, l1, l2)
+            dataset = dff[[(l0, l1, l2) for (l0, l1, l2)
                      in df.columns if l2 in columns or l0 in columns]]
         else:
-            df = df[[(l1, l2) for (l1, l2) in df.columns if l2 in columns]]
+            dataset = dff[[(l1, l2) for (l1, l2) in df.columns if l2 in columns]]
         if len(columns) == 1:  # avoid merging the columns if there is only one column
             merge_duplicate_headers = False
         page_size_editable = (
             page_size_editable if page_size_editable and page_size_editable > 0 else 1)
-        df_dash = convert_df_to_dash(df[0:-1].iloc[(page_current * page_size_editable) + 1: ((page_current + 1) * page_size_editable) + 1])
-        df_sum = convert_df_to_dash(df.tail(1))
-        pages = math.ceil((len(df.values) - 2) / page_size_editable)
+        df_dash = convert_df_to_dash(dataset[0:-1].iloc[(page_current * page_size_editable) + 1: ((page_current + 1) * page_size_editable) + 1])
+        df_sum = convert_df_to_dash(dataset.tail(1))
+        pages = math.ceil((len(dataset.values) - 2) / page_size_editable)
 
         return df_sum[1], df_sum[0], df_dash[1],  df_dash[0], pages, merge_duplicate_headers, merge_duplicate_headers
     
-    # @callback(
-        # Output(DATATABLE.SUM, 'style_data'),
-        # Output(DATATABLE.TABLE, 'style_data'),
-        # Input(DATATABLE.SUM, 'data'),
-    # )
-    # def update_datatable_style(values):
-        # return [{'transition': {'duration': 5000, 'timing_function': 'linear'}}, {'transition': {'duration': 1000, 'timing_function': 'ease-in-out'}}]
-
-    
-
     return layout
 
 def deployment():
     layout = dbc.Container(
         [
             datatable()
-            # dbc.Row(
-                # [
-                    # dbc.Col(
-                        # [
-                            # panel.side(),
-                        # ],
-                        # xs=CONFIG.SPLITS.XS,
-                        # sm=CONFIG.SPLITS.SM,
-                        # md=CONFIG.SPLITS.MD,
-                        # lg=CONFIG.SPLITS.LG,
-                        # xl=CONFIG.SPLITS.XL,
-                    # ),
-                    # dbc.Col(
-                        # [
-                            # datatable()
-                        # ],
-                        # xs=12 - CONFIG.SPLITS.XS,
-                        # sm=12 - CONFIG.SPLITS.SM,
-                        # md=12 - CONFIG.SPLITS.MD,
-                        # lg=12 - CONFIG.SPLITS.LG,
-                        # xl=12 - CONFIG.SPLITS.XL,
-                    # )
-                # ],
-                # style={
-                    # 'width': '100%',
-                    # 'marginTop': '2%',
-                    # 'marginBottom': '2%',
-                # },
-            # ),
         ],
         fluid=True
     )

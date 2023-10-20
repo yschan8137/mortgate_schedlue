@@ -1,17 +1,15 @@
-from sre_constants import IN
-from turtle import bgcolor
 import pandas as pd
 from dash import Dash, dcc, html, callback, Output, Input, State, MATCH, ALL, no_update, callback_context
-from dash.exceptions import PreventUpdate
+from dash_iconify import DashIconify
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 import datetime
 from dateutil.relativedelta import relativedelta
 
-from app.Dashboard.pages.components.Controls.main import panel
-from app.Dashboard.pages.components.ids import GRAPH, LOAN, ADVANCED, APP
+from app.Dashboard.assets.ids import GRAPH, LOAN
 from app.Dashboard.pages.components.toolkit import suffix_for_type
 from app.Loan import *
 
@@ -29,75 +27,68 @@ def graph():
     layout= dbc.Container(
         [
             html.Br(),
-            dbc.Stack(
+            dmc.Group(
                 [
-                    # dbc.Col(
-                        dbc.DropdownMenu(
-                            id= GRAPH.DROPDOWN.MENU,
-                            color= '#CECECE', # color of the label background.
-                            style={
-                                'width': '110px',
-                                "borderColor": "#ff0000",
-                                # 'border': '1px solid #ccc',
-                                'margin-left': '6%'
-                            },
-                            toggle_style={
-                                'width': '100px',
-                                "color": "#162126", 
-                                'font-weight': 'bold',
-                                'box-shadow': '0 0 5px #ccc',
-                                'border': '1px solid #ccc',
-                                'border-radius': '5px',
-                            },
-                            # align_end=False,
-                            toggleClassName="border None text-align justify middle",
-                        ),
-                        # align= 'center',
-                        # width= 2,
-                        # style={
-                            # 'margin-left': '6%',
-                        # }
-                    # ),
-                    # dbc.Col(
-                        dbc.Checklist(
-                            id= GRAPH.ACCUMULATION,
-                            options= [{'label': GRAPH.ACCUMULATION, 'value': 1}],
-                        value= [],
-                        switch= True,
-                        
+                    dbc.DropdownMenu(
+                        id= GRAPH.DROPDOWN.MENU,
+                        color= '#CECECE', # color of the label background.
+                        style={
+                            # 'width': '110px',
+                            "borderColor": "#ff0000",
+                            'margin-left': '6%'
+                        },
+                        size= 'md',
+                        toggle_style={
+                            'width': '100px',
+                            "color": "#162126", 
+                            'font-weight': 'bold',
+                            'box-shadow': '0 0 5px #ccc',
+                            'border': '1px solid #ccc',
+                            'border-radius': '5px',
+                        },
+                        toggleClassName= "border None text-align justify middle",
+                    ),
+                    dmc.SegmentedControl(
+                        id=GRAPH.ACCUMULATION,
+                        value="regular",
+                        data=[
+                            {"value": "regular", "label": "Regular"},
+                            {"value": "cumulative", "label": "Cumulative"},
+                        ],
+                        # mt=5,
+                        size= 'sm',
                         style= {
-                            'text-align': 'left',
-                            # 'border': '1px solid black',
-                        }
-                        ),
-                        # align= 'center',
-                        # width= 4,
-                        # style= {
-                            # 'font-size': '18px',
-                            # 'font-weight': 'bold',
-                        # }
-                    # ),
+                            'background-color': "rgba(0, 62, 143, 0.29)",
+                            'box-shadow': '0 0 5px #ccc',
+                            'border': '1px solid #ccc',
+                            'border-radius': '5px',
+                        },
+                    ),
                 ],
-                direction= 'horizontal',
-                gap= 0,
-                # justify= 'start',
+                # direction= 'horizontal',
+                spacing= 10,
+                position= 'left',
                 style= {
                 }
             ),
             dbc.Col(
-                dcc.Graph(
-                    id= GRAPH.LINE,
-                ),
-                style= {
-                }
+                dcc.Graph(id= GRAPH.LINE),
             ),
-
         ],
         fluid=True,
         style= {
             'margin-top': '5px',
         }
     )
+
+# demo
+    # @callback(
+        # Output('demo', 'children'),
+        # Input(GRAPH.LINE, ''),
+    # )
+    # def demo(fig):
+        # print(fig)
+        # return no_update
 
 # options for dropdown menu
     @callback(
@@ -117,7 +108,7 @@ def graph():
             df_schema.level_2.INTEREST, 
             df_schema.level_2.RESIDUAL,
         ]
-        if accum and accum == [1]:
+        if accum and accum == 'cumulative':
             init_columns= [v for v in init_columns if v != df_schema.level_2.RESIDUAL]
         return [dbc.DropdownMenuItem(children= column, id= {'index': column, 'type': GRAPH.DROPDOWN.ITEM}) for column in init_columns if column != label]
 
@@ -136,7 +127,7 @@ def graph():
         Input(GRAPH.ACCUMULATION, 'value'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
         Input({'index': ALL, 'type': GRAPH.DROPDOWN.ITEM}, 'n_clicks'),
-        Input(LOAN.DATE, 'date'),
+        Input(LOAN.DATE, 'value'),
         State(GRAPH.DROPDOWN.MENU, 'label'),
         State(GRAPH.LINE, 'figure'),
     )
@@ -148,16 +139,16 @@ def graph():
         label,
         fig
         ):
-        if date:
+        try:
             start_date= datetime.datetime.strptime(date, '%Y-%m-%d')
-        else:
+        except:
             start_date = None
         ctx= callback_context
         if isinstance(ctx.triggered_id, dict):
             chosen_figure= ctx.triggered_id['index']
         else:
             if label:
-                if accum == [1]:
+                if accum == 'cumulative':
                     if label== df_schema.level_2.RESIDUAL:
                         chosen_figure= df_schema.level_2.PAYMENT
                     else:
@@ -171,7 +162,7 @@ def graph():
 
         for method in [*{*df.columns.get_level_values(0)}]:
             dff = df[method]
-            if accum and accum == [1]:
+            if accum == 'cumulative':
                 dff = dff.cumsum().apply(lambda x: round(x))
             filtered_dff= dff[chosen_figure].apply(lambda x: round(x, 0))
             if start_date:
@@ -187,13 +178,13 @@ def graph():
                     name= method,                   
                     mode= 'lines',
                     connectgaps= True,
-                    fill= ('tonexty' if accum == [1] else None),
-                    stackgroup= (method if accum == [1] else None),
+                    fill= ('tonexty' if accum == 'cumulative' else None),
+                    stackgroup= (method if accum == 'cumulative' else None),
                     text= [method]* len(x_axis_value),
                     hovertemplate =
                         "<br><b>%{text}</b>" +
                         ("<br><b>Date</b>: %{x: %d-%M-%Y}" if start_date else "<br><b>Time</b>: %{x}") + 
-                        "<br><b>Price</b>: %{y:,}" +
+                        "<br><b>Amount</b>: %{y:,}" +
                         "<extra></extra>",
                 ),
             )
