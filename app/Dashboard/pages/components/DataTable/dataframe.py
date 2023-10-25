@@ -8,6 +8,8 @@ from app.Dashboard.assets.ids import LOAN, DATATABLE
 from app.Loan import df_schema  # type: ignore
 from app.Dashboard.pages.components.toolkit import convert_df_to_dash
 from app.Dashboard.pages.components.Controls.panels import panel, register
+from app.Dashboard.assets import specs
+
 
 app = Dash(__name__, 
        external_stylesheets=[dbc.themes.LUMEN, dbc.icons.BOOTSTRAP],
@@ -15,8 +17,6 @@ app = Dash(__name__,
        ) 
 
 class CONFIG:
-    PAGE_SIZE = 24
-
     class SPLITS:
         XS = 6
         SM = 5
@@ -31,7 +31,7 @@ rows_per_page = html.Div(
         dbc.Input(
             type='number',
             id=DATATABLE.PAGE.SIZE,
-            value=CONFIG.PAGE_SIZE,
+            value= specs.DATAFRAME.ROWS.SIZE,
             min=1,
             max=481,
             step=1,
@@ -42,11 +42,7 @@ rows_per_page = html.Div(
         )
     ],
     className="ms-auto",
-    style={
-        'display': 'inline-block',
-        'verticalAlign': 'right',
-        'align': 'right',
-    },
+    style= specs.DATAFRAME.ROWS.STYLE,
 )
 
 
@@ -78,17 +74,13 @@ def datatable():
                                     inline=True,
                                 ),
                             ],
-                            style={
-                                # 'display': 'inline-block',
-                                'align': 'left',
-                                }
+                            style= specs.DATAFRAME.COLUMN_CHECKBOX.STYLE,
                         ),
                         rows_per_page,
                     ],
                     direction= 'horizontal',
                     gap= 3,
-                    style= {
-                    }
+                    style= {}
                 ),
                 dbc.Row(
                     dash_table.DataTable(
@@ -101,17 +93,9 @@ def datatable():
                         page_count=0,
                         sort_action='custom',
                         sort_by=[],
-                        style_table={
-                            "overflow": "auto",
-                            'scrollX': True
-                        },
-                        style_header={
-                            'textAlign': 'center',
-                            'border': '1px solid black'
-                        },
-                        style_cell={
-                            'border': '1px solid lightblue',
-                        }, 
+                        style_table= specs.DATAFRAME.SUM.STYLE.TABLE,
+                        style_header= specs.DATAFRAME.SUM.STYLE.HEADER,
+                        style_cell= specs.DATAFRAME.SUM.STYLE.CELL,
                     ),
                     className="mb-3"
                 ),
@@ -123,32 +107,22 @@ def datatable():
                         merge_duplicate_headers=True,
                         editable=True,
                         page_current=0,
-                        page_size=CONFIG.PAGE_SIZE,
+                        page_size= specs.DATAFRAME.ROWS.SIZE,
                         page_count=0,
                         page_action='custom',
                         sort_action='custom',
                         # sort_mode='single',
                         # fixed_rows= {'headers': True, 'data': 1},
                         sort_by=[],
-                        style_table={
-                            'overflow': 'auto', 
-                            'border': 'medium',
-                        },
-                        style_header={
-                            'textAlign': 'center',
-                            'border': '1px solid black'
-                        },
-                        style_cell={
-                            'border': '1px solid pink',
-                        },
-                        loading_state= {
-                            'is_loading': True,
-                            'prop_nane': 'data', 
-                        }
+                        style_table= specs.DATAFRAME.CONTENT.STYLES.TABLE,
+                        style_header= specs.DATAFRAME.CONTENT.STYLES.HEADER,
+                        style_cell= specs.DATAFRAME.CONTENT.STYLES.CELL,
                     )
                 )
             ],
         ),
+        style= specs.DATAFRAME.CONTENT.STYLE,
+        className= 'custom-scrollbar',
     )
 
     # data table

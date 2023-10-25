@@ -1,15 +1,17 @@
 
-.styled-scrollbars {
-    /* Foreground, Background */
-    scrollbar-color: #999 #333;
-  }
-  .styled-scrollbars::-webkit-scrollbar {
-    width: 10px; /* Mostly for vertical scrollbars */
-    height: 10px; /* Mostly for horizontal scrollbars */
-  }
-  .styled-scrollbars::-webkit-scrollbar-thumb { /* Foreground */
-    background: #999;
-  }
-  .styled-scrollbars::-webkit-scrollbar-track { /* Background */
-    background: #333;
-  }
+.custom-scrollbar {
+  --scrollbar-foreground: #999
+  --scrollbar-background: #333
+  /* Foreground, Background */
+  scrollbar-color: var(--scrollbar-foreground) var(--scrollbar-background);
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px; /* Mostly for vertical scrollbars */
+  height: 10px; /* Mostly for horizontal scrollbars */
+}
+.custom-scrollbar::-webkit-scrollbar-thumb { /* Foreground */
+  background: var(--scrollbar-foreground);
+}
+.custom-scrollbar::-webkit-scrollbar-track { /* Background */
+  background: var(--scrollbar-background);
+}

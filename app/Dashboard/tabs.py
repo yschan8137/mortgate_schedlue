@@ -14,11 +14,12 @@ NAVBAR = create_navbar()
 FA621 = "https://use.fontawesome.com/releases/v6.2.1/css/all.css"
 APP_TITLE = "Amort"
 
-[] divided frames by setting html. div
-[] scroll bar style
+# [] divided frames by setting html. div
+# [] scroll bar style
 
 app = Dash(
     __name__,
+    # assets_folder= 'app/Dashboard/assets', #redirects to assets folder
     suppress_callback_exceptions=True,
     external_stylesheets=[
         dbc.themes.LUMEN,  # Dash Themes CSS
@@ -26,8 +27,10 @@ app = Dash(
         FA621,  # Font Awesome Icons CSS
     ],
     title=APP_TITLE,
-    assets_external_path= 'app/Dashboard/assets',
+    # assets_external_path= 'app/Dashboard/assets',
+    
 )
+
 
 tabs = dmc.Tabs(
             [
@@ -41,7 +44,7 @@ tabs = dmc.Tabs(
                         dmc.Tab(
                                ids.APP.INDEX.DATA,
                                icon= DashIconify(icon="ph:table-light"),
-                               value= ids.APP.INDEX.DATA
+                               value= ids.APP.INDEX.DATA,
                         ),
                     ]
                 ),
@@ -54,80 +57,39 @@ tabs = dmc.Tabs(
             value= ids.APP.INDEX.GRAPH,
             id="card-tabs",
             activateTabWithKeyboard= True,
-            style= specs.APP.TAB.STYLE
+            style= specs.APP.TAB.STYLE,
+            className= 'custom-scrollbar'
         )
+
 
 app.layout = dmc.MantineProvider(  # <- Wrap App with Loading Component
     id= ids.APP.LOADING,
     children=[
-        # dmc.Aside(
-            # p= 'md',
-            # width= {'base': '100%'},
-            # height= 77,
-            # fixed= True,
-            # position= {
-                # 'top': -16,
-                # 'left': 0,
-            # },
-            # children= [
-                # NAVBAR
-            # ],
-            # style= {
-                # 'background-color': 'black',
-            # },
-        # ),
         register(),
         NAVBAR,
         dmc.Group(
             [
                 html.Div(
-                    panel.front(),
-                    style= specs.APP.PANEL.STYLE
+                    children= [
+                        panel.front(),
+                        html.Br(),
+                        panel._advancedoptions(),
+                    ],
+                    className= 'custom-scrollbar',
+                    style= specs.APP.PANEL.STYLE,
                 ),
-                # dmc.Aside(
-                    # p="md",
-                    # width={"base": 420},
-                    # height=5000,
-                    # fixed=True,
-                    # position={
-                        # "left": 0, 
-                        # "top": 68,
-                    # },
-                    # children=[
-                                # panel.front(),
-                    # ],
-                    # 
-                    # style= {
-                        # 'background-color': 'rgba(255, 255, 255, 0)',
-                        # 'z-index': 100,
-                        # 'overflow-y': 'hidden',
-
-                    # },
-                # ),
-                html.Div(tabs),
+                html.Div(
+                    tabs,
+                ),
             ],
             spacing= 0,
             position= 'flex-start',
             align= 'start',
         )
     ],
-    # theme= {"colorScheme": ""},
-    # style={
-        # 'width': '100%',
-        # 'background': '#CBD9E0',
-        # 'box-shadow': '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
-        # 'border': '1px solid #ccc',
-        # 'border-radius': '5px',
-    # },
-    # color='primary',  # <- Color of the loading spinner
-    # fullscreen=True,  # <- Loading Spinner should take up full screen
+    withGlobalStyles= True,
 )
 
-# @callback(
-    # Output("card-content", "children"), [Input("card-tabs", "active_tab")]
-# )
-# def tab_content(active_tab):
-    # return "This is tab {}".format(active_tab)
 
 # py -m app.Dashboard.tabs
 if __name__ == "__main__":

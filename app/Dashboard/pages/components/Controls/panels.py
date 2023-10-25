@@ -49,6 +49,7 @@ class panel:
     """
     _MortgageOptions= MortgageOptions
     _AdvancedOptions= AdvancedOptions
+    
     @classmethod
     def front(cls, index= ids.APP.INDEX.HOME):
         cls._MortgageOptions.index = index
@@ -60,41 +61,26 @@ class panel:
                         cls._MortgageOptions.interest_rate(type=ids.LOAN.TYPE),
                         cls._MortgageOptions.down_payment(),
                         cls._MortgageOptions.grace(),
-                        dmc.DatePicker(
-                            id= ids.LOAN.DATE,
-                            placeholder= 'Select Date',
-                            label= 'Start Time',
-                            description="The start time of the repayment",
-                            minDate= date(1992, 1, 1),
-                            clearable= True,
-                            size= 'md',
-                            initialLevel= 'date',
-                            style= {
-                                'width': cls._MortgageOptions.width
-                            },                            
-                        ),
+                        # dmc.DatePicker(
+                        #     id= ids.LOAN.DATE,
+                        #     placeholder= 'Select Date',
+                        #     label= 'Start Time',
+                        #     description="The start time of the repayment",
+                        #     minDate= date(1992, 1, 1),
+                        #     clearable= True,
+                        #     size= 'md',
+                        #     initialLevel= 'date',
+                        #     style= {
+                        #         'width': cls._MortgageOptions.width
+                        #     },                            
+                        # ),
                         cls._MortgageOptions.repayment_methods(),
-                        # cls._advancedoptions(),
                     ],
                     mb= 5,
                     ml= 0,
-                    align="left",
+                    align="center",
                     spacing= 0,
-                    style={
-                        'width': 'auto',#330,
-                        'height': 'auto',
-                        'border': '1px solid #ccc',
-                        'border-radius': '5px',
-                        'font-size': '20px',
-                        'font-weight': 'bold',
-                        'padding': '20px',
-                        'color': '#333',
-                        'position': 'absolute',
-                        'margin-top': 0,
-                        'z-index': '1',
-                        'background-color': '#E2E2E2',
-                        'box-shadow': '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
-                    },
+                    style= specs.PANEL.FRONT.STYLE
                 )
         # cls.synchronize(index)
 
@@ -105,7 +91,7 @@ class panel:
         return dmc.Stack(
             [
                 cls._AdvancedOptions.accordion(
-                    style= specs.CONTROLS.ADVANCEDOPTIONS.ACCORDION.STYLE,
+                    style= specs.COMPONENTS.ADVANCEDOPTIONS.ACCORDION.STYLE,
                     content=[
                         {
                             'id': title,
@@ -145,22 +131,9 @@ class panel:
             mr= 20,
             align="left",
             spacing= 0,
-            style={
-                # 'width': 'auto',
-                'height': 'auto',
-                'border': '1px solid #ccc',
-                'border-radius': '5px',
-                'font-size': '20px',
-                'font-weight': 'bold',
-                'padding': '20px',
-                'color': '#333',
-                # 'position': 'absolute',
-                # 'margin-top': 0,
-                'background-color': '#E2E2E2',
-                'box-shadow': '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
-            },
+            style= specs.PANEL.ADVANCEDOPTIONS.STYLE,
+            
         )
-
         return layout
 
     # synchronize the variables among pages.
@@ -246,19 +219,18 @@ class panel:
                 patched_item= [new_checklist_item(timestamp, type= cls._MortgageOptions.type, index= index, result= {k: v}) for (k, v) in sorted_memory.items()]
                 return [sorted_memory, patched_item, True]    
 
-# py -m ids.app.Dashboard.pages.components.Controls.panels
+# py -m app.Dashboard.pages.components.COMPONENTS.panels
 if __name__ == "__main__":
     app = Dash(__name__, 
            external_stylesheets=[dbc.themes.LUMEN, dbc.icons.BOOTSTRAP], 
            suppress_callback_exceptions=True
            )
-    app.layout = dbc.Container(
+    app.layout = html.Div(
         [
             register(),
             panel._MortgageOptions.amount(),
             panel._MortgageOptions.tenure(),
             panel._advancedoptions(),
-
-        ]
+        ],
     )
     app.run_server(debug=True)

@@ -65,7 +65,7 @@ def addon(
                                 disabled=disabled,
                                 size= 'md',
                                 style= {
-                                    'width': 90,
+                                    'width': 80,
                                     # 'color': '#4C9F85'
                                 },
                                 clearable= True,
@@ -96,7 +96,7 @@ def addon(
                                 disabled= disabled,
                                 size= 'md',
                                 style= {
-                                    'width': 56,
+                                    'width': 55,
                                 },
                             ),
                             dmc.Button(
@@ -107,13 +107,12 @@ def addon(
                                 disabled= disabled,
                                 size= 'md',
                                 style= {
-                                    'width': 56,
+                                    'width': 55,
                                 },
                             )
                         ]
                     )
                 ],
-                
                 spacing= 0,
                 style= {
                     'display': 'flex',

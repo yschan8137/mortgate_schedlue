@@ -81,15 +81,6 @@ def graph():
         }
     )
 
-# demo
-    # @callback(
-        # Output('demo', 'children'),
-        # Input(GRAPH.LINE, ''),
-    # )
-    # def demo(fig):
-        # print(fig)
-        # return no_update
-
 # options for dropdown menu
     @callback(
         Output(GRAPH.DROPDOWN.MENU, 'children'),
@@ -139,6 +130,7 @@ def graph():
         label,
         fig
         ):
+        print(f'date on line 133 in Graph.app is {date}')
         try:
             start_date= datetime.datetime.strptime(date, '%Y-%m-%d')
         except:

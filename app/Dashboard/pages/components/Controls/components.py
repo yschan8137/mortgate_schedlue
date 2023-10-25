@@ -19,7 +19,7 @@ class MortgageOptions():
     type: str = ids.LOAN.TYPE
     index: str = ""
     kwargs_schema = default_kwargs
-    width= specs.CONTROLS.MORTGAGEOPTIONS.WIDTH
+    width= specs.COMPONENTS.MORTGAGEOPTIONS.WIDTH
 
     # Mortgage Amount
     @classmethod
@@ -98,8 +98,8 @@ class MortgageOptions():
             [
                 dmc.Text(
                     'Tenure',
-                    size= specs.CONTROLS.MORTGAGEOPTIONS.TENURE.TEXT.SIZE,
-                    weight= specs.CONTROLS.MORTGAGEOPTIONS.TENURE.TEXT.WEIGHT,
+                    size= specs.COMPONENTS.MORTGAGEOPTIONS.TENURE.TEXT.SIZE,
+                    weight= specs.COMPONENTS.MORTGAGEOPTIONS.TENURE.TEXT.WEIGHT,
                 ),
                 dmc.Slider(
                     id= {"index": cls.index, "type": ids.LOAN.TENURE},
@@ -110,7 +110,7 @@ class MortgageOptions():
                     marks=[
                         {'value': v,  'label': str(v)} for v in [min, 10, 20, 30, max]
                     ],
-                    size= specs.CONTROLS.MORTGAGEOPTIONS.TENURE.SLIDER.SIZE,
+                    size= specs.COMPONENTS.MORTGAGEOPTIONS.TENURE.SLIDER.SIZE,
                     style= {
                         'width': cls.width,
                     },
@@ -212,8 +212,8 @@ class MortgageOptions():
             [
                 dmc.Text(
                     'Interest Rate',
-                    size= specs.CONTROLS.MORTGAGEOPTIONS.INTEREST.TEXT.SIZE,
-                    weight= specs.CONTROLS.MORTGAGEOPTIONS.INTEREST.TEXT.WEIGHT,
+                    size= specs.COMPONENTS.MORTGAGEOPTIONS.INTEREST.TEXT.SIZE,
+                    weight= specs.COMPONENTS.MORTGAGEOPTIONS.INTEREST.TEXT.WEIGHT,
                 ),
                 dbc.Col(
                     dmc.SegmentedControl(
@@ -226,8 +226,7 @@ class MortgageOptions():
                         color= 'purple',
                         radius= 4,
                         size= 'sm',
-                        
-                        style= specs.CONTROLS.MORTGAGEOPTIONS.INTEREST.SEGMENT.STYLE | {'width': cls.width}
+                        style= specs.COMPONENTS.MORTGAGEOPTIONS.INTEREST.SEGMENT.STYLE | {'width': cls.width}
                     ),
                 ),
                 html.Div(
@@ -237,7 +236,7 @@ class MortgageOptions():
                            style={"width": cls.width},
                            value= (cls.kwargs_schema['interest_arr']['interest'][0] if type == ids.LOAN.TYPE else cls.kwargs_schema['subsidy_arr']['interest_arr']['interest'][0]),
                            rightSection=DashIconify(icon="carbon:percentage"),
-                           size= specs.CONTROLS.MORTGAGEOPTIONS.INTEREST.SINGLE_STAGE.SIZE,
+                           size= specs.COMPONENTS.MORTGAGEOPTIONS.INTEREST.SINGLE_STAGE.SIZE,
                            step= 0.01,
                            min=0,
                            max=100,
@@ -245,7 +244,7 @@ class MortgageOptions():
                            type= 'float',
                            required= True,
                         ),
-                        style= specs.CONTROLS.MORTGAGEOPTIONS.INTEREST.SINGLE_STAGE.STYLE,
+                        style= specs.COMPONENTS.MORTGAGEOPTIONS.INTEREST.SINGLE_STAGE.STYLE,
                         id= {"index": cls.index, "type": suffix_for_type(ids.ADDON.TOGGLE.SINGLE, type)},
                 ),
                 html.Div(
@@ -255,9 +254,9 @@ class MortgageOptions():
                             pattern_matching=True,
                             placeholder=placeholder,
                             index= cls.index,
-                        )
+                        ),
                     ],
-                    style= specs.CONTROLS.MORTGAGEOPTIONS.INTEREST.MULTI_STAGES.STYLE,
+                    style= specs.COMPONENTS.MORTGAGEOPTIONS.INTEREST.MULTI_STAGES.STYLE,
 
                     id={"index": cls.index, "type": suffix_for_type(ids.ADDON.TOGGLE.MULTI, type)},
                 ),
@@ -275,7 +274,7 @@ class MortgageOptions():
         ):
             message = ''
             if interest_stages_type == 'multiple':
-                return {'display': 'block'}, {'display': 'none'}
+                return {'display': 'flex'}, {'display': 'none'}
             else:
                 return {'display': 'none'}, {'display': 'flex'}
 
@@ -385,7 +384,7 @@ class AdvancedOptions(MortgageOptions):
             [
                 dbc.Label(
                     'Prepay Arrangement',
-                    size=specs.CONTROLS.ADVANCEDOPTIONS.PREPAY.LABEL.SIZE,
+                    size=specs.COMPONENTS.ADVANCEDOPTIONS.PREPAY.LABEL.SIZE,
                 ),
                 addon(
                     type=type,
@@ -395,7 +394,7 @@ class AdvancedOptions(MortgageOptions):
                     index= cls.index,
                 )
             ],
-            style= specs.CONTROLS.ADVANCEDOPTIONS.PREPAY.STYLE,
+            style= specs.COMPONENTS.ADVANCEDOPTIONS.PREPAY.STYLE,
         )
 
         @callback(
@@ -450,8 +449,8 @@ class AdvancedOptions(MortgageOptions):
                     dmc.Button(
                         "Reset", 
                         id='Reset',
-                        variant= specs.CONTROLS.ADVANCEDOPTIONS.SUBSIDY.VARIANT,
-                        gradient= specs.CONTROLS.ADVANCEDOPTIONS.SUBSIDY.GRADIENT,
+                        variant= specs.COMPONENTS.ADVANCEDOPTIONS.SUBSIDY.VARIANT,
+                        gradient= specs.COMPONENTS.ADVANCEDOPTIONS.SUBSIDY.GRADIENT,
                         n_clicks= 0,
                 )
                 ),
@@ -534,10 +533,9 @@ class AdvancedOptions(MortgageOptions):
                             id=ids.LOAN.SUBSIDY.PREPAY.ARR
                         ),
                     ],
-                    # className= 'mb-2',
                 ),
             ],
-            style= specs.CONTROLS.ADVANCEDOPTIONS.STYLE
+            style= specs.COMPONENTS.ADVANCEDOPTIONS.STYLE
         )
 
         @callback(
@@ -681,7 +679,7 @@ class AdvancedOptions(MortgageOptions):
 
         return layout
 
-# py -m app.Dashboard.pages.components.Controls.options
+# py -m app.Dashboard.pages.components.COMPONENTS.options
 if __name__ == "__main__":
     app = Dash(__name__, 
            external_stylesheets=[dbc.themes.BOOTSTRAP], 

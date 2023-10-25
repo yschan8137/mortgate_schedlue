@@ -1,4 +1,12 @@
 {
     "python.analysis.typeCheckingMode": "basic",
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "editor.fontSize": 16,
+    "debug.console.fontSize": 16,
+    "scm.inputFontSize": 16,
+    "terminal.integrated.fontSize": 16,
+    "chat.editor.fontSize": 16,
+    "markdown.preview.fontSize": 16,
+    "editor.accessibilityPageSize": 20,
+    "editor.bracketPairColorization.independentColorPoolPerBracketType": true
 }

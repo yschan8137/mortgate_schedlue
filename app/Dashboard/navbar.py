@@ -1,7 +1,8 @@
 
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from app.Dashboard.assets.ids import APP
+import dash_mantine_components as dmc
+from app.Dashboard.assets import ids, specs
 
 
 def create_navbar():
@@ -14,129 +15,108 @@ def create_navbar():
                             [
                                 html.I(
                                     className="fa-solid fa-house-chimney", 
-                                    style= {
-                                        "width": "18%",
-                                        "color": "white",
-                                        # "margin-top": "8px"
-                                    },
+                                    style= specs.APP.NAV.BRAND.LOGO.STYLE,
                                 ),
                                 dbc.NavbarBrand(
                                     "Amort", 
                                     className="ms-1",
-                                    style= {
-                                        'width': '40%',
-                                        'font-size': '22px',
-                                        'text-align': 'left',
-                                        'margin-top': '2%',
-                                    },
+                                    style= specs.APP.NAV.BRAND.NAME.STYLE
                                 ),
                             ],
                             direction= 'horizontal',   
                         )
                     ],
-                    href= APP.URL.HOME,
-                    style={
-                        "color": "white",
-                        "fontWeight": "bold",
-                        "font-size": "20px",
-                        "margin-left": "5%",
-                        'width': "150px",
-                    },
+                    href= ids.APP.URL.HOME,
+                    style= specs.APP.NAV.BRAND.STYLE
                 ),
-                ),
-                dbc.Stack(
-                    [
-                        dbc.NavItem(
-                            dbc.NavLink(
-                                [
-                                    html.I(className="fa-brands fa-github",
-                                           style= {
-                                                 "color": "white",
-                                                 'font-size': '20px',
-                                                 }
-                                           ), 
-                                    " " 
-                                ],
-                                href="[YOUR GITHUB PROFILE URL]",
-                                target="_blank",
-                                style= {
-                                    "color": "white",
-                                    'size': '100px',
-                                }
-                            ),
+            ),
+            dbc.Stack(
+                [
+                    dbc.NavItem(
+                        dbc.NavLink(
+                            [
+                                html.I(className="fa-brands fa-github",
+                                       style= specs.APP.NAV.LINKS.GITHUB.LOGO.STYLE
+                                ), 
+                            ],
+                            href= specs.APP.NAV.LINKS.GITHUB.LINK,
+                            target="_blank",
+                            style= specs.APP.NAV.LINKS.GITHUB.STYLE
                         ),
-                        dbc.NavItem(
-                            dbc.NavLink(
-                                [
-                                    html.I(
-                                        className="fa-brands fa-medium",
-                                        style= {
-                                            'color': 'white',
-                                            'font-size': '20px',
-                                        }
-                                        ),  # Font Awesome Icon
-                                    " "  # Text beside icon
-                                ],
-                                href="[YOUR MEDIUM PROFILE URL]",
-                                target="_blank"
-                            ),
+                    ),
+                    dbc.NavItem(
+                        dbc.NavLink(
+                            [
+                                html.I(
+                                    className="fa-brands fa-medium",
+                                    style= specs.APP.NAV.LINKS.MEDIUM.LOGO.STYLE
+                                    ),  # Font Awesome Icon
+                                " "  # Text beside icon
+                            ],
+                            href=specs.APP.NAV.LINKS.MEDIUM.LINK,
+                            target="_blank",
+                            style= specs.APP.NAV.LINKS.MEDIUM.STYLE,
                         ),
-                        dbc.NavItem(
-                            dbc.NavLink(
-                                [
-                                    html.I(
-                                        className="fa-brands fa-linkedin",
-                                        style= {
-                                            'color': 'white',
-                                            'font-size': '20px',
-                                        }
-                                        ),  # Font Awesome Icon
-                                    " "  # Text beside icon
-                                ],
-                                href="[YOUR LINKEDIN PROFILE URL]",
-                                target="_blank",
-                            ),
+                    ),
+                    dbc.NavItem(
+                        dbc.NavLink(
+                            [
+                                html.I(
+                                    className="fa-brands fa-linkedin",
+                                    style= specs.APP.NAV.LINKS.LINKEDIN.LOGO.STYLE                                   
+                                    ),  # Font Awesome Icon
+                                " "  # Text beside icon
+                            ],
+                            href= specs.APP.NAV.LINKS.LINKEDIN.LINK,
+                            target="_blank",
+                            style= specs.APP.NAV.LINKS.LINKEDIN.STYLE,
                         ),
-                    ],
-                    direction= 'horizontal',
-                    className= 'g-0',
-                    style= {
-                        'width': '100px',
-                        'margin-top': '10px',
-                        'margin-right': '9%',
-                    }
-                ),
-                dbc.DropdownMenu(
-                    label="Menu",
-                    align_end= True,
-                    # nav= True,
-                    color= "primary",
-                    children=[  # Add as many menu items as you need
-                        dbc.DropdownMenuItem("Home", href= APP.URL.HOME),
-                        dbc.DropdownMenuItem(divider=True),
-                        dbc.DropdownMenuItem("Page 2", href='/page2'),
-                        dbc.DropdownMenuItem("Data", href= APP.URL.DATA),
-                    ],
-                    style= {
-                        'color': 'white',
-                        'font-size': '18px',
-                        'font-weight': 'bold',
-                        "border-bottom": "1px solid #0C82DF",
-                        "margin-top": "15px",
-                        # "position": 'absolute',
-                        # "left": "86%",
-                        "margin-right": "9%",
-                    }
-                ),
-            ],
-            style= {
-                'background-color': '#0C82DF',
-                # 'position': 'absolute',
-                # 'margin-top': 0,
-                # 'z-index': 999,
-                'width': '110%',
-                'height': 'auto',
-            },
+                    ),
+                ],
+                direction= 'horizontal',
+                className= 'g-0',
+                style= specs.APP.NAV.LINKS.STYLE,
+            ),
+            dmc.Menu(
+                [
+                    dmc.MenuTarget(
+                        dmc.Button(
+                            'Menu', 
+                            size= 'sm', 
+                            variant= 'gradient',
+                            gradient= {"from": "grape", "to": "pink", "deg": 35},
+                        )
+                    ),
+                    dmc.MenuDropdown(
+                        [
+                            dmc.MenuItem('Home', href= ids.APP.URL.HOME),
+                            dmc.MenuDivider(),
+                            dmc.MenuLabel('More'),
+                            dmc.MenuItem('Page 2', href= '/page2'),
+                            dmc.MenuItem('Data', href= ids.APP.URL.DATA),
+                        ],
+                    ),
+                    
+                ],
+                transition= 'pop-top-right',
+                transitionDuration= 100,
+                style= specs.APP.NAV.DROPDOWN.STYLE,
+            ),
+            # dbc.DropdownMenu(
+            #     label="Menu",
+            #     align_end= True,
+            #     # nav= True,
+            #     color= specs.APP.NAV.DROPDOWN.COLOR,
+            #     children=[  # Add as many menu items as you need
+            #         dbc.DropdownMenuItem("Home", href= ids.APP.URL.HOME),
+            #         dbc.DropdownMenuItem(divider=True),
+            #         dbc.DropdownMenuItem("Page 2", href='/page2'),
+            #         dbc.DropdownMenuItem("Data", href= ids.APP.URL.DATA),
+            #     ],
+            #     style= specs.APP.NAV.DROPDOWN.STYLE,
+            # ),
+        ],
+            style= specs.APP.NAV.STYLE,
             fill= "True",
             justified= True,
     )
