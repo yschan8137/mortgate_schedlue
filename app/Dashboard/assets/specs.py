@@ -76,14 +76,13 @@ class APP:
             
     class TAB:
         STYLE= {
-            'width': '100%',
+            'width': 1100,
             'height': '92vh',
-            'overflowY': 'auto',
+            # 'overflowY': 'auto',
             'position': 'absolute',
             'margin-top': 10,
             'margin-left': 50,
             'background-color': 'rgba(255, 255, 255, 0)',
-            'width': '60%',
             'overflow-y': 'auto',
         }
         
@@ -201,7 +200,8 @@ class DATAFRAME:
             
             TABLE= {
                 "overflow": "auto",
-                'scrollX': True
+                'scrollX': True,
+                'width': '100vh',
             }
             CELL= {
                 'border': '1px solid lightblue',
@@ -218,6 +218,7 @@ class DATAFRAME:
             TABLE= {
                  'overflow': 'auto', 
                  'border': 'medium',
+                 'width': '100vh',
              }
             CELL= {
                  'border': '1px solid pink',

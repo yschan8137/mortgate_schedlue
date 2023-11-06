@@ -3,13 +3,15 @@ from app.Loan.computation.helpers.scheduler import ensure_list_type, kwargs_dete
 from app.Loan.computation.helpers.prepay import _time_, _amount_
 from app.Loan.computation.methods import _EPP_arr_, _ETP_arr_
 from app.Loan.computation.categories import amortization as amortization_methods
-
+from dateutil.relativedelta import relativedelta
+import datetime
 default_kwargs = {
     'interest_arr': {'interest': [1.94], 'time': []},
     'total_amount': 10_000_000,
     'down_payment_rate': 20,
     'tenure': 30,
     'grace_period': 0,
+    'start_date': None,
     'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL'],
     'prepay_arr': {
         'amount': [],
@@ -26,11 +28,21 @@ default_kwargs = {
     },
 }
 
+example_for_subsidy_arr= {
+    'interest_arr': {'interest': [1, 1.33], 'time': [10]},
+    'start': 2,
+    'amount': 15000_000,
+    'tenure': 20,
+    'grace_period': 0,
+    'prepay_arr': {'amount': [], 'time': []},
+    'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
+}
+
 class df_schema:
     class level_0:
         ORIGINAL = '原始貸款'
         SUBSIDY = '房貸補貼'
-        TOTAL = '償還總額'
+        TOTAL = '總計'
 
     class level_1:
         ETP = '本息攤還法'  # Equal Total Payment
@@ -38,8 +50,8 @@ class df_schema:
 
     class level_2:
         PRINCIPAL = '攤還本金'  # Principal
-        INTEREST = '利息'  # Interest
-        PAYMENT = '還本利和'  # Payment
+        INTEREST = '應付利息'  # Interest
+        PAYMENT = '償還總額'  # Payment
         RESIDUAL = '剩餘貸款'  # Residual
 
 
@@ -52,6 +64,7 @@ def calculator(
     # ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL']
     method: list[str] = [*amortization_methods.keys()],
     thousand_sep= True,
+    start_date= None,
     **kwargs: dict
 ) -> pd.DataFrame:
     """
@@ -78,7 +91,7 @@ def calculator(
             
             ii. time(List)(Optional): The timepoints at which the subsidy loan interest rates change. 
 
-        (3) time(int): The timepoint at which the subsidy loan is applied.
+        (3) start(int): The timepoint at which the subsidy loan is applied.
 
         (4) grace_period(int): The grace period of the subsidy loan.
 
@@ -156,17 +169,19 @@ def calculator(
     def _df_(objs,
              name=None,
              index_range=[0, tenure * 12 + 1],
-             **kwargs):
+             date= start_date,
+             **kwargs,
+             ):
         suffix = kwargs.get('suffix', "")
         suffix = ("_" + suffix if len(suffix) > 0 else suffix)
         df = pd.DataFrame(
             {
                 f'攤還本金{suffix}': objs[0],
-                f'利息{suffix}': objs[1],
-                f'還本利和{suffix}': objs[2],
+                f'應付利息{suffix}': objs[1],
+                f'償還總額{suffix}': objs[2],
                 f'剩餘貸款{suffix}': objs[3]
             },
-            index=[v for v in range(index_range[0], index_range[1])]
+            index=([v for v in range(index_range[0], index_range[1])] if not date else [datetime.datetime.strptime(date, '%Y-%m-%d').date() + relativedelta(months=n) for n in range(index_range[0], index_range[1])])
         )
         if name:
             df.columns = pd.MultiIndex.from_product([[name], df.columns])
@@ -187,7 +202,6 @@ def calculator(
                 'amount': prepay_amount,
             }
         )
-
         df_etp = _df_(res_etp)
         dfs_ordinry[amortization_methods['EQUAL_TOTAL']] = df_etp
     if 'EQUAL_PRINCIPAL' in method_applied:
@@ -259,19 +273,17 @@ def calculator(
             dfs_subsidy = {}
             if 'EQUAL_TOTAL' in method_applied_to_subsidy:
                 res_ETP_subsidy = _ETP_arr_(**kwargs_subsidy)
-                df_etp_subsidy = _df_(res_ETP_subsidy, index_range=[
-                                      subsidy_time, subsidy_time + subsidy_tenure * 12 + 1])
+                df_etp_subsidy = _df_(
+                    res_ETP_subsidy, index_range=[subsidy_time, subsidy_time + subsidy_tenure * 12 + 1])
                 dfs_subsidy[amortization_methods['EQUAL_TOTAL']
                             ] = df_etp_subsidy
             if 'EQUAL_PRINCIPAL' in method_applied_to_subsidy:
                 res_EPP_subsidy = _EPP_arr_(**kwargs_subsidy)
-                df_epp_subsidy = _df_(res_EPP_subsidy, index_range=[
-                                      subsidy_time, subsidy_time + subsidy_tenure * 12 + 1])
+                df_epp_subsidy = _df_(res_EPP_subsidy, index_range=[subsidy_time, subsidy_time + subsidy_tenure * 12 + 1])
                 dfs_subsidy[amortization_methods['EQUAL_PRINCIPAL']
                             ] = df_epp_subsidy
 
-            multi_index_subsidy = pd.MultiIndex.from_product(
-                iterables=[[df_schema.level_0.SUBSIDY], amortization_methods.values()])
+            multi_index_subsidy = pd.MultiIndex.from_product(iterables=[[df_schema.level_0.SUBSIDY], amortization_methods.values()])
 
             # if dfs_subsidy != {}:
             df_subsidy = pd.concat(
@@ -279,7 +291,6 @@ def calculator(
                 keys=multi_index_subsidy,  # type: ignore
                 axis=1
             )
-
             # Add the level_0 header if subsidy_arr is given.
             df.columns = pd.MultiIndex.from_tuples(
                 [('原始貸款', k, v) for (k, v) in df.columns]
@@ -301,28 +312,22 @@ def calculator(
 
             # 欄位加總
             for id in idx:
-                df.loc[:, (df_schema.level_0.TOTAL, id[0][1] + "(" + df_schema.level_0.ORIGINAL + ")", id[1][1] + "(" +
-                           df_schema.level_0.SUBSIDY + ")")] = df.loc[:, id].apply(lambda x: round(x)).sum(axis=1, numeric_only=True)  # type: ignore
+                df.loc[:, (df_schema.level_0.TOTAL, id[0][1] + "(" + df_schema.level_0.ORIGINAL + ")", id[1][1] + "(" + df_schema.level_0.SUBSIDY + ")")] = df.loc[:, id].apply(lambda x: round(x)).sum(axis=1, numeric_only=True)
 
             # 計算各期清償總和
-            df.loc['Sum'] = df[1:].sum().groupby(axis=0, level=[0, 1, 2]  # type: ignore
-                                                 ).transform('sum')
-            df.loc['Sum', [(l0, l1, l2) for (l0, l1, l2) in df.columns if l2 == '剩餘貸款']] = df.loc[len(
-                df) - 2, [(l0, l1, l2) for (l0, l1, l2) in df.columns if l2 == '剩餘貸款']].apply(lambda x: round(x))
+            df.loc['Sum'] = df[1:].sum().groupby(axis=0, level=[0, 1, 2]).transform('sum') # type: ignore
+            df.loc['Sum', [(l0, l1, l2) for (l0, l1, l2) in df.columns if l2 == '剩餘貸款']]= df[[(l0, l1, l2) for (l0, l1, l2) in df.columns if l2 == '剩餘貸款']].iloc[-2]
 
             # 租金補貼貸款會重覆計算，須扣除
-            df.loc['Sum', [(l0, l1, l2) for (
-                l0, l1, l2) in df.columns if l0 == df_schema.level_0.TOTAL]] -= subsidy_amount
+            df[[(l0, l1, l2) for (l0, l1, l2) in df.columns if l0 == df_schema.level_0.TOTAL]].loc['Sum'] -= subsidy_amount
 
         else:
-            df.loc['Sum'] = df[1:].sum().groupby(
-                axis=0, level=[0, 1]).transform('sum')  # type: ignore
-            df.loc['Sum', [(l0, l1) for (l0, l1) in df.columns if l1 == '剩餘貸款']] = df.loc[len(
-                df) - 2, [(l0, l1) for (l0, l1) in df.columns if l1 == '剩餘貸款']]
+            df.loc['Sum'] = df[1:].sum().groupby(axis=0, level=[0, 1]).transform('sum')  # type: ignore
+            df.loc['Sum', [(l0, l1) for (l0, l1) in df.columns if l1 == '剩餘貸款']] = df[[(l0, l1) for (l0, l1) in df.columns if l1 == '剩餘貸款']].iloc[len(df) - 2]
 
         # Adjustment for the thousands digit. Note the output would be a string.
         if thousand_sep == True:
-            df = df.applymap(lambda x: f"{round(x):,}")
+            df = df.map(lambda x: f"{round(x):,}") # type: ignore
     else:
         dfs_ordinry['None'] = _df_([0]*4, index_range=[0, 1])
         df = pd.concat(
@@ -335,6 +340,10 @@ def calculator(
 
 # py -m app.Loan.main
 if __name__ == "__main__":
+    default_kwargs['subsidy_arr']= example_for_subsidy_arr
+    # default_kwargs['start_date']= '2021-01-01'
     print(
-        calculator(**default_kwargs)
+        calculator(
+            **default_kwargs
+        )
     )

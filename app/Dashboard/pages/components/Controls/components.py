@@ -1,17 +1,18 @@
 # This file is the collectikwargs_schemaon of control components for the homepage
-from ast import alias
+import pandas as pd
 from dataclasses import dataclass
-from turtle import bgcolor
 from dash import Dash, html, dcc, Input, Output, State, MATCH, ALL, no_update, callback_context, callback
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
+import datetime
 
 from app.Dashboard.pages.components import amortization_types
 from app.Dashboard.pages.components.Controls.widgets import refreshable_dropdown, addon
 from app.Dashboard.assets import ids, specs
 from app.Dashboard.pages.components.toolkit import suffix_for_type
+from app.Dashboard.pages.components.toolkit import convert_df_to_dash
 from app.Loan import default_kwargs
 
 @dataclass
@@ -70,6 +71,7 @@ class MortgageOptions():
                             size= 'md',
                             step= 10,
                             min= 0,
+                            max= 100,
                             type= 'number',
                             required= True,
                          ),
@@ -155,8 +157,7 @@ class MortgageOptions():
                        type= 'number',
                     ),
                     ]
-                )
-            
+                )   
         @callback(
             Output(ids.LOAN.RESULT.KWARGS, 'data', allow_duplicate=True),  # type: ignore
             Input({"index": cls.index, "type": suffix_for_type(ids.LOAN.GRACE, cls.type)}, 'value'),
@@ -171,6 +172,42 @@ class MortgageOptions():
             return memory
         
         return layout
+
+    # Date picker
+    @classmethod
+    def start_date(cls):
+        layout=  html.Div(
+            [
+                dmc.DatePicker(
+                    id= {"index": cls.index, "type": ids.LOAN.DATE},
+                    placeholder= 'Select Date',
+                    label= 'Start Time',
+                    description="The start time of the repayment",
+                    minDate= datetime.date(1992, 1, 1),
+                    clearable= True,
+                    size= 'md',
+                    initialLevel= 'date',
+                    dropdownPosition= 'start-bottom',
+                    style= {
+                        'width': cls.width
+                    },                            
+                )
+            ]
+        )
+        @callback(
+            Output(ids.LOAN.RESULT.KWARGS, 'data', allow_duplicate=True),  # type: ignore
+            Input({"index": cls.index, "type": ids.LOAN.DATE}, 'value'),
+            State(ids.LOAN.RESULT.KWARGS, 'data'),
+            prevent_initial_call=True
+        )
+        def _start_date(start_date, memory):
+            if not start_date:
+                memory['start_date'] = None
+            else:
+                memory['start_date'] = start_date
+            return memory
+        return layout
+        
 
     # Payment Methods
     @classmethod
@@ -193,8 +230,8 @@ class MortgageOptions():
             prevent_initial_call=True
         )
         def _payment_methods(repayment_methods, memory):
-            if not repayment_methods:
-                memory['method'] = []
+            if repayment_methods== memory['method']:
+                raise PreventUpdate
             else:
                 memory['method'] = repayment_methods
             return memory
@@ -288,13 +325,13 @@ class MortgageOptions():
 
         @callback(
             Output(ids.LOAN.RESULT.KWARGS, 'data', allow_duplicate=True),  # type: ignore
+            Input({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.TOGGLE.BUTTON, type)}, 'value'),
             Input({"index": cls.index, "type": suffix_for_type(ids.LOAN.INTEREST, type)}, 'value'),
             Input({"index": cls.index, "type": suffix_for_type(ids.ADDON.MEMORY, type)}, 'data'),
-            Input({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.TOGGLE.BUTTON, type)}, 'value'),
             State(ids.LOAN.RESULT.KWARGS, 'data'),
             prevent_initial_call=True
         )
-        def _interest_rate(interest, arr, interest_stages_type, memory):
+        def _interest_rate(interest_stages_type, interest, arr, memory):
             if not interest or ([*arr.keys()][-1] == ids.ADDON.LABEL.TIME if len(arr) > 0 else False):
                 raise PreventUpdate
             elif type == ids.LOAN.TYPE:
@@ -360,9 +397,7 @@ class AdvancedOptions(MortgageOptions):
                                 dmc.AccordionPanel(children)
                             ],
                             value= title,
-                            # title=title,
                             id='accordion-{}'.format(title),
-                            # item_id=title,
                             style={
                                 'align-items': 'center',
                                 'justify-content': 'left',
@@ -388,7 +423,6 @@ class AdvancedOptions(MortgageOptions):
                 ),
                 addon(
                     type=type,
-                    # dropdown_label='Time',
                     pattern_matching=True,
                     placeholder='Input Prepay Arrangement',
                     index= cls.index,
@@ -508,9 +542,9 @@ class AdvancedOptions(MortgageOptions):
                 ),
                 refreshable_dropdown(
                     label='Subsidy Payment methods',
-                    type=ids.LOAN.SUBSIDY.TYPE,
-                    options=amortization_types,
-                    index= cls.index,),
+                    type= ids.LOAN.SUBSIDY.TYPE,
+                    options= amortization_types,
+                    index= cls.index),
                 html.Div(
                     [
                         dbc.Checklist(
@@ -612,8 +646,8 @@ class AdvancedOptions(MortgageOptions):
             arr,
             memory
         ):
-            # It is needed that all the sufficient parameters are given.
-            if start and loan_amount and tenure and interest > 0 and (interest_stages_type if interest_stages_type else interest > 0):
+            # It is neccessary that all the sufficient parameters are given.
+            if start and loan_amount and tenure and interest and (interest > 0) and (interest_stages_type if interest_stages_type else interest > 0):
                 if (start > 0 and start <= 24) and loan_amount > 0:
                     memory['subsidy_arr'] = {
                         'amount': loan_amount,
@@ -648,8 +682,6 @@ class AdvancedOptions(MortgageOptions):
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.SUBSIDY.PREPAY.TYPE)}, 'data', allow_duplicate=True),
                 Output({'index': cls.index, 'type': suffix_for_type(ids.ADDON.DROPDOWN.LIST, type)}, 'data', allow_duplicate=True),
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.DROPDOWN.LIST, ids.LOAN.SUBSIDY.PREPAY.TYPE)}, 'data', allow_duplicate=True),
-                Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.DROPDOWN.MENU, type)}, 'label', allow_duplicate= True),
-                Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.DROPDOWN.MENU, ids.LOAN.SUBSIDY.PREPAY.TYPE)}, 'label', allow_duplicate= True),
             ],
             Input('Reset', 'n_clicks'),
             Input({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.DROPDOWN.OPTIONS, type)}, 'value'),
@@ -673,7 +705,7 @@ class AdvancedOptions(MortgageOptions):
                         'amount': [],
                     },
                 }
-                return [memory] + [0, 0, 0, 0, repayment_options, 0, {}, {}, [], [], ids.ADDON.LABEL.TIME, ids.ADDON.LABEL.TIME]
+                return [memory] + [0, 0, 0, 0, repayment_options, 0, {}, {}, [], []] 
             else:
                 return no_update
 

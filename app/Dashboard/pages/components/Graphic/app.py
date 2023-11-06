@@ -1,13 +1,13 @@
 import pandas as pd
-from dash import Dash, dcc, html, callback, Output, Input, State, MATCH, ALL, no_update, callback_context
+from dash import Dash, dcc, html, callback, Output, Input, State, MATCH, ALL, callback_context, no_update
+from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
-import datetime
-from dateutil.relativedelta import relativedelta
+from dash_iconify import DashIconify
 
 from app.Dashboard.assets.ids import GRAPH, LOAN
 from app.Dashboard.pages.components.toolkit import suffix_for_type
@@ -29,24 +29,28 @@ def graph():
             html.Br(),
             dmc.Group(
                 [
-                    dbc.DropdownMenu(
-                        id= GRAPH.DROPDOWN.MENU,
-                        color= '#CECECE', # color of the label background.
-                        style={
-                            # 'width': '110px',
-                            "borderColor": "#ff0000",
-                            'margin-left': '6%'
-                        },
-                        size= 'md',
-                        toggle_style={
-                            'width': '100px',
-                            "color": "#162126", 
-                            'font-weight': 'bold',
-                            'box-shadow': '0 0 5px #ccc',
-                            'border': '1px solid #ccc',
-                            'border-radius': '5px',
-                        },
-                        toggleClassName= "border None text-align justify middle",
+                    dmc.Menu(
+                        [
+                            dmc.MenuTarget(
+                                dmc.Button(
+                                    id= 'menu-target',
+                                    children= df_schema.level_2.PAYMENT,
+                                    variant="gradient",
+                                    gradient={"from": "indigo", "to": "cyan"},
+                                    style= {
+                                        'width': '110px',
+                                    },
+                                    loading= {'loading_type': 'overlay'},
+                                    loaderPosition= 'center',
+                                    loaderProps= {"variant": "dots", "color": "white", "size": "sm"},
+                                ),
+                            ),
+                            dmc.MenuDropdown(
+                                [],
+                                id= 'menu-dropdown',
+                            ),
+                        ],
+                        id= GRAPH.DROPDOWN.MENU,  
                     ),
                     dmc.SegmentedControl(
                         id=GRAPH.ACCUMULATION,
@@ -55,7 +59,6 @@ def graph():
                             {"value": "regular", "label": "Regular"},
                             {"value": "cumulative", "label": "Cumulative"},
                         ],
-                        # mt=5,
                         size= 'sm',
                         style= {
                             'background-color': "rgba(0, 62, 143, 0.29)",
@@ -65,14 +68,15 @@ def graph():
                         },
                     ),
                 ],
-                # direction= 'horizontal',
                 spacing= 10,
                 position= 'left',
                 style= {
                 }
             ),
             dbc.Col(
-                dcc.Graph(id= GRAPH.LINE),
+                dcc.Graph(
+                    id= GRAPH.LINE,
+                ),
             ),
         ],
         fluid=True,
@@ -83,122 +87,150 @@ def graph():
 
 # options for dropdown menu
     @callback(
-        Output(GRAPH.DROPDOWN.MENU, 'children'),
+        Output('menu-dropdown', 'children'),
+        Output('menu-dropdown', 'style'),
         Input(GRAPH.ACCUMULATION, 'value'),
+        Input('menu-target', 'children'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
-        Input(GRAPH.DROPDOWN.MENU, 'label')
     )
     def update_toggle_items(
         accum, 
+        label,
         resource_data,
-        label
         ):
-        init_columns= [
-            df_schema.level_2.PAYMENT, 
-            df_schema.level_2.PRINCIPAL, 
-            df_schema.level_2.INTEREST, 
-            df_schema.level_2.RESIDUAL,
-        ]
-        if accum and accum == 'cumulative':
-            init_columns= [v for v in init_columns if v != df_schema.level_2.RESIDUAL]
-        return [dbc.DropdownMenuItem(children= column, id= {'index': column, 'type': GRAPH.DROPDOWN.ITEM}) for column in init_columns if column != label]
+        level_0 = {c[0] for c in resource_data['columns']}
+        if df_schema.level_0.TOTAL in level_0:
+            return [], {'display': 'none'}
+        else:
+            columns_for_original_mortgate= [
+                df_schema.level_2.PAYMENT, 
+                df_schema.level_2.PRINCIPAL, 
+                df_schema.level_2.INTEREST, 
+                df_schema.level_2.RESIDUAL,
+            ]
+            if accum and accum == 'cumulative':
+                columns_for_original_mortgate= [v for v in columns_for_original_mortgate if v != df_schema.level_2.RESIDUAL]
+            dropdown= [
+                    dmc.MenuItem(
+                        column, 
+                        id= {
+                            'index': column, 
+                            'type': GRAPH.DROPDOWN.ITEM
+                        },
+                    ) for column in columns_for_original_mortgate if column != label
+                ] # avoid duplicate label
+            return dropdown, {'display': 'block'}           
 
 # update label of the dropdown menu
-    @callback(
-        Output(GRAPH.DROPDOWN.MENU, 'label'),
-        Input(GRAPH.LINE, 'figure'),
-    )
-    def update_label_for_dropdownmune(fig):
-        return [*{data['legendgroup'] for data in fig['data']}][-1]
-
+    # @callback(
+    #     Output('menu-target', 'children'),
+    #     Output('menu-target', 'rightIcon'),
+    #     Output('menu-target', 'loading'),
+    #     Input(GRAPH.LINE, 'figure'),
+    # )
+    # def update_label_for_dropdownmune(fig):
+    #     if fig['data']:
+    #         text = [*{data['legendgroup'] for data in fig['data']}][-1]
+    #         if text == df_schema.level_0.TOTAL:
+    #             return text, [], False
+    #         else:
+    #             return text, DashIconify(icon="raphael:arrowdown"), False
+    #     else:
+    #         raise PreventUpdate
 
 # update the results
     @callback(
         Output(GRAPH.LINE, 'figure'),
+        Output('menu-target', 'children'),
+        Output('menu-target', 'rightIcon'),
+        Output('menu-target', 'loading'),
+        Output('menu-target', 'gradient'),
         Input(GRAPH.ACCUMULATION, 'value'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
         Input({'index': ALL, 'type': GRAPH.DROPDOWN.ITEM}, 'n_clicks'),
-        Input(LOAN.DATE, 'value'),
-        State(GRAPH.DROPDOWN.MENU, 'label'),
-        State(GRAPH.LINE, 'figure'),
+        State('menu-target', 'children'),
     )
     def _graph(
         accum, 
         resource_data,
         _,
-        date,
         label,
-        fig
         ):
-        print(f'date on line 133 in Graph.app is {date}')
-        try:
-            start_date= datetime.datetime.strptime(date, '%Y-%m-%d')
-        except:
-            start_date = None
         ctx= callback_context
+        fig= go.Figure(
+            layout= dict(
+                modebar= {
+                    'bgcolor': 'rgba(255, 255, 255, 0.3)',
+                    'activecolor':'gray',
+                    'orientation': 'v',
+                },
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(255,255,255, 0.3)',
+                legend= {
+                    'groupclick': 'toggleitem',
+                },
+                margin= {'t': 30},
+            )
+        )
+        df = pd.DataFrame.from_dict(resource_data, 'tight')[1:-1]
         if isinstance(ctx.triggered_id, dict):
             chosen_figure= ctx.triggered_id['index']
         else:
-            if label:
+            #if df_schema.level_0.TOTAL in [*df.columns.levels[0]]: # type: ignore
+             #   chosen_figure = df_schema.level_0.TOTAL
+            #else:
+            #    if accum == 'cumulative':
+            #        if label== df_schema.level_2.RESIDUAL:
+            #            chosen_figure= df_schema.level_2.PAYMENT
+            #        else:
+            #            chosen_figure= label
+            #    else:
+            #        chosen_figure= (label if label != df_schema.level_0.TOTAL else df_schema.level_2.PAYMENT)
+            if df_schema.level_0.TOTAL not in [*df.columns.levels[0]]: #type: ignore
                 if accum == 'cumulative':
                     if label== df_schema.level_2.RESIDUAL:
                         chosen_figure= df_schema.level_2.PAYMENT
                     else:
                         chosen_figure= label
                 else:
-                    chosen_figure= label
+                    chosen_figure= (label if label != df_schema.level_0.TOTAL else df_schema.level_2.PAYMENT)
             else:
-                chosen_figure= df_schema.level_2.PAYMENT
-        df = pd.DataFrame.from_dict(resource_data, 'tight')[1:-1]
-        fig= go.Figure()
-
-        for method in [*{*df.columns.get_level_values(0)}]:
-            dff = df[method]
-            if accum == 'cumulative':
-                dff = dff.cumsum().apply(lambda x: round(x))
-            filtered_dff= dff[chosen_figure].apply(lambda x: round(x, 0))
-            if start_date:
-                x_axis_value= [start_date + relativedelta(months=n) for n in filtered_dff.index]
-            else:
-                x_axis_value= filtered_dff.index
-            fig.add_trace(
-                go.Scatter(
-                    x= x_axis_value,
-                    y= filtered_dff.values,
-                    legendgroup= chosen_figure,
-                    legendgrouptitle_text= chosen_figure,
-                    name= method,                   
-                    mode= 'lines',
-                    connectgaps= True,
-                    fill= ('tonexty' if accum == 'cumulative' else None),
-                    stackgroup= (method if accum == 'cumulative' else None),
-                    text= [method]* len(x_axis_value),
-                    hovertemplate =
-                        "<br><b>%{text}</b>" +
-                        ("<br><b>Date</b>: %{x: %d-%M-%Y}" if start_date else "<br><b>Time</b>: %{x}") + 
-                        "<br><b>Amount</b>: %{y:,}" +
-                        "<extra></extra>",
-                ),
-            )
+                chosen_figure = df_schema.level_0.TOTAL
+        for col in df.columns:
+            if chosen_figure in col:
+                dff= df[col].apply(lambda x: round(x, 0))
+                method= (" + ".join([co for co in col if co != chosen_figure]) if len(col) > 2 else col[0])
+                if accum == 'cumulative':
+                    dff = dff.cumsum().apply(lambda x: round(x))
+                x_axis_value= dff.index
+                fig.add_trace(
+                    go.Scatter(
+                        x= x_axis_value,
+                        y= dff.values,
+                        legendgroup= chosen_figure,
+                        legendgrouptitle_text= chosen_figure,
+                        name= method,                   
+                        mode= 'lines',
+                        connectgaps= True,
+                        stackgroup= (col[0] if accum == 'cumulative' else None),
+                        text= [method]* len(x_axis_value),
+                        hovertemplate =
+                            "<br><b>%{text}</b>" +
+                            "<br><b>Time</b>: %{x}" + 
+                            "<br><b>Amount</b>: %{y:,}" +
+                            "<extra></extra>",
+                    ),
+                )
         fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGray')
-        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGray')
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGray', type= 'log', tickformat= ',.0f', rangemode= 'tozero')
         fig.update_layout(
+            autosize= False,
+            width= 1050,
+            height= 600,
             showlegend= False,
-            height= 500,
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(255,255,255, 0.3)',
-            legend= {
-                'groupclick': 'toggleitem',
-            },
-            modebar= {
-                'bgcolor': 'rgba(255, 255, 255, 0.3)',
-                'activecolor':'gray',
-            },
-            margin= {'t': 30},
             hovermode= 'x',
-
         )
-        return fig
+        return fig, chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL else {"from": "indigo", "to": "cyan"})
     return layout
 
 

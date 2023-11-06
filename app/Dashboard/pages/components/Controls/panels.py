@@ -1,11 +1,10 @@
-
-from dash import Dash, html, dcc, Input, Output, State, callback, Patch
+from dash import Dash, html, dcc, Input, Output, State, callback, Patch, callback_context
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 from dataclasses import dataclass
-from datetime import date
+
 
 from app.Dashboard.assets import ids, specs
 from app.Dashboard.pages.components.Controls.components import MortgageOptions, AdvancedOptions
@@ -61,19 +60,7 @@ class panel:
                         cls._MortgageOptions.interest_rate(type=ids.LOAN.TYPE),
                         cls._MortgageOptions.down_payment(),
                         cls._MortgageOptions.grace(),
-                        # dmc.DatePicker(
-                        #     id= ids.LOAN.DATE,
-                        #     placeholder= 'Select Date',
-                        #     label= 'Start Time',
-                        #     description="The start time of the repayment",
-                        #     minDate= date(1992, 1, 1),
-                        #     clearable= True,
-                        #     size= 'md',
-                        #     initialLevel= 'date',
-                        #     style= {
-                        #         'width': cls._MortgageOptions.width
-                        #     },                            
-                        # ),
+                        cls._MortgageOptions.start_date(),
                         cls._MortgageOptions.repayment_methods(),
                     ],
                     mb= 5,

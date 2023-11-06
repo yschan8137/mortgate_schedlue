@@ -3,6 +3,8 @@ import pandas as pd  # type: ignore
 import dash
 from dash import Dash, html, Input, Output, dash_table, callback
 import dash_bootstrap_components as dbc  # type: ignore
+import datetime
+from dateutil.relativedelta import relativedelta
 
 from app.Dashboard.assets.ids import LOAN, DATATABLE
 from app.Loan import df_schema  # type: ignore
@@ -111,8 +113,6 @@ def datatable():
                         page_count=0,
                         page_action='custom',
                         sort_action='custom',
-                        # sort_mode='single',
-                        # fixed_rows= {'headers': True, 'data': 1},
                         sort_by=[],
                         style_table= specs.DATAFRAME.CONTENT.STYLES.TABLE,
                         style_header= specs.DATAFRAME.CONTENT.STYLES.HEADER,
@@ -141,6 +141,7 @@ def datatable():
             Input(DATATABLE.TABLE, 'page_current'),
             Input(DATATABLE.PAGE.SIZE, 'value'),  # 調整列數
             Input(DATATABLE.COLUMN, 'value'),
+            # Input(LOAN.DATE, 'value'),
         ],
     )
     def update_datatable(
@@ -148,13 +149,13 @@ def datatable():
         page_current,
         page_size_editable,
         columns,
-    ):
+        # date,
+        ):
         merge_duplicate_headers = True
         df = pd.DataFrame.from_dict(data, 'tight')
         dff = df.map(lambda x: f"{round(x):,}") #type: ignore
         if df_schema.level_0.SUBSIDY in df.columns.levels[0]: #type: ignore
-            dataset = dff[[(l0, l1, l2) for (l0, l1, l2)
-                     in df.columns if l2 in columns or l0 in columns]]
+            dataset = dff[[(l0, l1, l2) for (l0, l1, l2) in df.columns if l2 in columns or l0 in columns]]
         else:
             dataset = dff[[(l1, l2) for (l1, l2) in df.columns if l2 in columns]]
         if len(columns) == 1:  # avoid merging the columns if there is only one column
@@ -165,7 +166,7 @@ def datatable():
         df_sum = convert_df_to_dash(dataset.tail(1))
         pages = math.ceil((len(dataset.values) - 2) / page_size_editable)
 
-        return df_sum[1], df_sum[0], df_dash[1],  df_dash[0], pages, merge_duplicate_headers, merge_duplicate_headers
+        return df_sum[1], df_sum[0], df_dash[1], df_dash[0], pages, merge_duplicate_headers, merge_duplicate_headers
     
     return layout
 

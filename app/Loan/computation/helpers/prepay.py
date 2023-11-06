@@ -35,8 +35,8 @@ def _time_(
 def _amount_(
     tenure: int,
     # prepay_time: list,
-    subsidy_time: Optional[int],
-    subsidy_amount: Optional[int],
+    subsidy_time,
+    subsidy_amount,
     **kwargs
 ) -> list:
     """
@@ -68,9 +68,8 @@ def _amount_(
             'accumulator': accumulate_or_not
         }
     )
-
-    prepay_amount = [(prepay if t in kwargs.get('prepay_arr', {}).get('time', [0]) else 0)
-                     + (subsidy_amount if t == subsidy_time else 0) for (t, prepay) in enumerate(prepay_amount)]
+    
+    prepay_amount = [(prepay if t in kwargs.get('prepay_arr', {}).get('time', [0]) else 0) + int(subsidy_amount if t == subsidy_time else 0) for (t, prepay) in enumerate(prepay_amount)]
     # prepay_amount = scheduler(
     # tenure=tenure,
     # prepay_arr={

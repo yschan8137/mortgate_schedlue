@@ -24,10 +24,10 @@ def addon(
         type: str,
         # dropdown_list: list,
         placeholder: str,
-        dropdown_label: str= 'Time',
         pattern_matching=False,
         disabled: bool = False,
-        index= ""
+        index= "",
+        dropdown_label= None,
 ):
     """
     The addon function is used to generate a dict for the combined input of payment arrangement.
@@ -56,7 +56,6 @@ def addon(
             dcc.Store(id={"index": index, "type": suffix_for_type(ADDON.DISABLED, type)}, data=disabled),
             # That's the outcome what we want.
             dcc.Store(id={"index": index, "type": suffix_for_type(ADDON.MEMORY, type)}, data={}),
-            # dcc.Store(id={"index": index, "type": suffix_for_type(ADDON.DROPDOWN.ITEMS, type)}, data={}),
             dmc.Group(
                 children= [
                     dmc.Select(
@@ -387,7 +386,10 @@ def refreshable_dropdown(
         Input({"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.BUTTON, type)}, 'n_clicks'),
     )
     def refresh_options(_: int):
-        return [*options]
+        if _> 0:
+            return [*options]
+        else:
+            raise PreventUpdate
     return dropdown
 
 
