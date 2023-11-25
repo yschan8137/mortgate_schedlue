@@ -1,9 +1,9 @@
-from dash import Dash, html, dcc, Input, Output, callback
+from dash import Dash, html
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 from app.Dashboard.navbar import create_navbar
-from app.Dashboard.pages.components.Controls.panels import panel, register
+from app.Dashboard.pages.components.Controls.panels import panel
 from app.Dashboard.pages.components.Graphic.app import graph
 from app.Dashboard.pages.components.DataTable import dataframe
 from app.Dashboard.assets import ids, specs
@@ -65,7 +65,7 @@ tabs = dmc.Tabs(
 app.layout = dmc.MantineProvider(  # <- Wrap App with Loading Component
     id= ids.APP.LOADING,
     children=[
-        register(),
+        panel.register(),
         NAVBAR,
         dmc.Group(
             [
@@ -95,5 +95,5 @@ app.layout = dmc.MantineProvider(  # <- Wrap App with Loading Component
 if __name__ == "__main__":
     app.run_server(
     debug=True, 
-    threaded=True
+    # threaded=True,
 )

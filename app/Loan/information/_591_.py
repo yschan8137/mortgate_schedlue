@@ -1,15 +1,18 @@
 import pandas as pd
 import requests
+from typing import Union
 
 
-#查詢貸款利率
+
 def query(
     loan_period: int,
     total_amount: int, 
-    first_purchase: bool = 1, 
+    first_purchase: Union[bool, int] = True, 
     down_payment_rate: float = 0.2,
     ):
     rs = requests.session()
+    if isinstance(first_purchase, bool):
+        first_purchase = int(first_purchase)
     src = f'https://mortgage.591.com.tw/search/?first_purchase={first_purchase}&price={total_amount}&purchase={int(down_payment_rate * total_amount)}&mortgage_ratio={int(down_payment_rate * 100)}&mortgage_time={loan_period}&target_user=0&bank_id=&order_field=&firstRow=0'
     rs.headers.update(
       {
@@ -28,3 +31,8 @@ def query(
                 ],
                 )
     return df
+
+# py -m app.Loan.information._591_
+if __name__ == '__main__':
+    df = query(loan_period = 20, total_amount = 10000000, first_purchase = True, down_payment_rate = 0.2)
+    print(df)

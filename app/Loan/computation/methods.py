@@ -1,4 +1,4 @@
-import numpy as np # type: ignore
+import numpy as np
 from app.Loan.computation.helpers.adjustments import ETR, Offsets
 from app.Loan.computation.helpers.scheduler import ensure_list_type, scheduler
 import itertools
@@ -10,7 +10,7 @@ def _EPP_arr_(
     interest_arr: dict,
     grace_period: int = 0,
     **kwargs
-) -> list:
+) -> tuple[list, list, list, list]:
     if isinstance(prepay_time := kwargs.get('prepay_arr', {}).get('time', 0), int):
         raise TypeError('The data type of the time in prepay_arr must be a list, which coveted from the _time_ function in the prepay module')
     if isinstance(prepay_amount := kwargs.get('prepay_arr', {}).get('amount', 0), int):
@@ -19,6 +19,7 @@ def _EPP_arr_(
     _residual_ = []
     _interest_ = []
     _total_ = []
+    
     _interest_arr_ = scheduler(
         tenure=tenure,
         interest_arr={
@@ -44,7 +45,7 @@ def _EPP_arr_(
                 ) \
                     + Offsets(
                         grace_period=grace_period,
-                        prepay_time= prepay_time[t-1]  # type: ignore
+                        prepay_time= prepay_time[t-1]
                     )
             )
             if t > grace_period * 12 else 0
@@ -70,7 +71,7 @@ def _EPP_arr_(
             _residual_.append(loan_amount)
         _total_.append(_payments_[-1] + _interest_[-1])
 
-    return _payments_, _interest_, _total_, _residual_  # type: ignore
+    return _payments_, _interest_, _total_, _residual_
 
 
 # 本息平均攤還法(Equal Total Payment)
@@ -80,7 +81,7 @@ def _ETP_arr_(
     interest_arr: dict,
     grace_period: int= 0,
     **kwargs
-    ) -> list:
+    ) -> tuple[list, list, list, list]:
     # default value  
     _principal_payment_ = []
     _residual_ = []
@@ -214,7 +215,7 @@ def _ETP_arr_(
             _interest_.append(0)
             _accum_.append(0)
             _total_.append(0)
-    return _principal_payment_, _interest_, _total_, _residual_  # type: ignore
+    return _principal_payment_, _interest_, _total_, _residual_
 
 # py -m loan.computation.methods
 if __name__ == '__main__':

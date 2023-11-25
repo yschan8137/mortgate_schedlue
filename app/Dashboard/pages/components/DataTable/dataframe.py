@@ -1,15 +1,14 @@
 import math
-import pandas as pd  # type: ignore
+import pandas as pd
 import dash
 from dash import Dash, html, Input, Output, dash_table, callback
-import dash_bootstrap_components as dbc  # type: ignore
-import datetime
-from dateutil.relativedelta import relativedelta
+import dash_bootstrap_components as dbc
+import time
 
 from app.Dashboard.assets.ids import LOAN, DATATABLE
-from app.Loan import df_schema  # type: ignore
+from app.Loan import df_schema
 from app.Dashboard.pages.components.toolkit import convert_df_to_dash
-from app.Dashboard.pages.components.Controls.panels import panel, register
+from app.Dashboard.pages.components.Controls.panels import panel
 from app.Dashboard.assets import specs
 
 
@@ -141,33 +140,41 @@ def datatable():
             Input(DATATABLE.TABLE, 'page_current'),
             Input(DATATABLE.PAGE.SIZE, 'value'),  # 調整列數
             Input(DATATABLE.COLUMN, 'value'),
-            # Input(LOAN.DATE, 'value'),
         ],
     )
     def update_datatable(
-        data,  # kwargs,
+        data,
         page_current,
         page_size_editable,
         columns,
-        # date,
         ):
-        merge_duplicate_headers = True
-        df = pd.DataFrame.from_dict(data, 'tight')
-        dff = df.map(lambda x: f"{round(x):,}") #type: ignore
-        if df_schema.level_0.SUBSIDY in df.columns.levels[0]: #type: ignore
-            dataset = dff[[(l0, l1, l2) for (l0, l1, l2) in df.columns if l2 in columns or l0 in columns]]
+        if df_schema.level_0.SUBSIDY in [col[0] for col in data['columns']]:
+            data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[2] in columns or col[0] in columns], data['data'])]
+            data['columns'] = [col for col in data['columns'] if col[2] in columns or col[0] in columns]
         else:
-            dataset = dff[[(l1, l2) for (l1, l2) in df.columns if l2 in columns]]
+            data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[1] in columns], data['data'])]
+            data['columns'] = [col for col in data['columns'] if col[1] in columns]
+
         if len(columns) == 1:  # avoid merging the columns if there is only one column
             merge_duplicate_headers = False
+        else:
+            merge_duplicate_headers = True
         page_size_editable = (
             page_size_editable if page_size_editable and page_size_editable > 0 else 1)
-        df_dash = convert_df_to_dash(dataset[0:-1].iloc[(page_current * page_size_editable) + 1: ((page_current + 1) * page_size_editable) + 1])
-        df_sum = convert_df_to_dash(dataset.tail(1))
-        pages = math.ceil((len(dataset.values) - 2) / page_size_editable)
-
+        pages = math.ceil((len(data['data']) - 2) / page_size_editable)
+        df_dash= convert_df_to_dash(
+            {k: (v if k not in ['data', 'index'] 
+                   else (v[(page_current * page_size_editable) + 1: ((page_current + 1) * page_size_editable) + 1] if len(v) >= ((page_current + 1) * page_size_editable) + 1 else v)
+                )    
+                for (k, v) in data.items()
+            }
+        )
+        df_sum = convert_df_to_dash(
+            {k: (v if k not in ['data', 'index'] 
+                   else [v[-1]]) for (k, v) in data.items()
+            }
+        )
         return df_sum[1], df_sum[0], df_dash[1], df_dash[0], pages, merge_duplicate_headers, merge_duplicate_headers
-    
     return layout
 
 def deployment():
@@ -184,7 +191,7 @@ def deployment():
 if __name__ == "__main__":  
     app.layout = dbc.Container(
         [
-            register(),
+            panel.register(),
             deployment()
         ]
     )

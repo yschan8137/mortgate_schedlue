@@ -62,3 +62,8 @@ def concessional_loan(url: str = 'https://www.gov.tw/News_Content.aspx?n=37&s=56
 
   res = asyncio.run(task(url))
   return res
+
+# py -m app.Loan.information.moi
+if __name__ == '__main__':
+  res = concessional_loan()
+  print(res)

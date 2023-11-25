@@ -4,10 +4,11 @@ from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
+from itertools import accumulate
+
 
 from app.Dashboard.assets.ids import GRAPH, LOAN
 from app.Dashboard.pages.components.toolkit import suffix_for_type
@@ -96,9 +97,9 @@ def graph():
     def update_toggle_items(
         accum, 
         label,
-        resource_data,
+        data,
         ):
-        level_0 = {c[0] for c in resource_data['columns']}
+        level_0 = {c[0] for c in data['columns']}
         if df_schema.level_0.TOTAL in level_0:
             return [], {'display': 'none'}
         else:
@@ -121,23 +122,6 @@ def graph():
                 ] # avoid duplicate label
             return dropdown, {'display': 'block'}           
 
-# update label of the dropdown menu
-    # @callback(
-    #     Output('menu-target', 'children'),
-    #     Output('menu-target', 'rightIcon'),
-    #     Output('menu-target', 'loading'),
-    #     Input(GRAPH.LINE, 'figure'),
-    # )
-    # def update_label_for_dropdownmune(fig):
-    #     if fig['data']:
-    #         text = [*{data['legendgroup'] for data in fig['data']}][-1]
-    #         if text == df_schema.level_0.TOTAL:
-    #             return text, [], False
-    #         else:
-    #             return text, DashIconify(icon="raphael:arrowdown"), False
-    #     else:
-    #         raise PreventUpdate
-
 # update the results
     @callback(
         Output(GRAPH.LINE, 'figure'),
@@ -152,7 +136,7 @@ def graph():
     )
     def _graph(
         accum, 
-        resource_data,
+        data,
         _,
         label,
         ):
@@ -172,21 +156,10 @@ def graph():
                 margin= {'t': 30},
             )
         )
-        df = pd.DataFrame.from_dict(resource_data, 'tight')[1:-1]
         if isinstance(ctx.triggered_id, dict):
             chosen_figure= ctx.triggered_id['index']
         else:
-            #if df_schema.level_0.TOTAL in [*df.columns.levels[0]]: # type: ignore
-             #   chosen_figure = df_schema.level_0.TOTAL
-            #else:
-            #    if accum == 'cumulative':
-            #        if label== df_schema.level_2.RESIDUAL:
-            #            chosen_figure= df_schema.level_2.PAYMENT
-            #        else:
-            #            chosen_figure= label
-            #    else:
-            #        chosen_figure= (label if label != df_schema.level_0.TOTAL else df_schema.level_2.PAYMENT)
-            if df_schema.level_0.TOTAL not in [*df.columns.levels[0]]: #type: ignore
+            if df_schema.level_0.TOTAL not in [col[0] for col in data['columns']]: #type: ignore
                 if accum == 'cumulative':
                     if label== df_schema.level_2.RESIDUAL:
                         chosen_figure= df_schema.level_2.PAYMENT
@@ -196,31 +169,32 @@ def graph():
                     chosen_figure= (label if label != df_schema.level_0.TOTAL else df_schema.level_2.PAYMENT)
             else:
                 chosen_figure = df_schema.level_0.TOTAL
-        for col in df.columns:
-            if chosen_figure in col:
-                dff= df[col].apply(lambda x: round(x, 0))
-                method= (" + ".join([co for co in col if co != chosen_figure]) if len(col) > 2 else col[0])
-                if accum == 'cumulative':
-                    dff = dff.cumsum().apply(lambda x: round(x))
-                x_axis_value= dff.index
-                fig.add_trace(
-                    go.Scatter(
-                        x= x_axis_value,
-                        y= dff.values,
-                        legendgroup= chosen_figure,
-                        legendgrouptitle_text= chosen_figure,
-                        name= method,                   
-                        mode= 'lines',
-                        connectgaps= True,
-                        stackgroup= (col[0] if accum == 'cumulative' else None),
-                        text= [method]* len(x_axis_value),
-                        hovertemplate =
-                            "<br><b>%{text}</b>" +
-                            "<br><b>Time</b>: %{x}" + 
-                            "<br><b>Amount</b>: %{y:,}" +
-                            "<extra></extra>",
-                    ),
-                )
+        ns, cols = zip(*[(n, col) for n, col in enumerate(data['columns']) if chosen_figure in col])
+        for n, col in zip(ns, cols):
+            dff= [data[n] for data in data['data'][1:-1]]
+            method= (" + ".join([co for co in col if co != chosen_figure]) if len(col) > 2 else col[0])
+            if accum == 'cumulative':
+                dff= [*accumulate(dff)] 
+            dff= [*map(lambda x: f"{round(x):,}", dff)]
+            x_axis_value= data['index']
+            fig.add_trace(
+                go.Scatter(
+                    x= x_axis_value,
+                    y= dff,
+                    legendgroup= chosen_figure,
+                    legendgrouptitle_text= chosen_figure,
+                    name= method,                   
+                    mode= 'lines',
+                    connectgaps= True,
+                    stackgroup= (col[0] if accum == 'cumulative' else None),
+                    text= [method]* len(x_axis_value),
+                    hovertemplate =
+                        "<br><b>%{text}</b>" +
+                        "<br><b>Time</b>: %{x}" + 
+                        "<br><b>Amount</b>: %{y:,}" +
+                        "<extra></extra>",
+                ),
+            )
         fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGray')
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGray', type= 'log', tickformat= ',.0f', rangemode= 'tozero')
         fig.update_layout(

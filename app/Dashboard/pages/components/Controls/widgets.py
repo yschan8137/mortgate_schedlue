@@ -2,7 +2,7 @@
 from dash import Dash
 from distutils.log import debug
 from re import A, S
-from dash import dcc, html, Input, Output, State, callback_context, MATCH, ALL, Patch, callback  # type: ignore
+from dash import dcc, html, Input, Output, State, callback_context, MATCH, ALL, ALLSMALLER, Patch, callback
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
@@ -22,12 +22,10 @@ import json
 def addon(
         # Type need to be indicated within ['prepay', 'subsidy'] to distinguish the different dropdowns.
         type: str,
-        # dropdown_list: list,
-        placeholder: str,
-        pattern_matching=False,
+        # placeholder: str,
         disabled: bool = False,
         index= "",
-        dropdown_label= None,
+        input_type= 'float', # ['float', 'number']
 ):
     """
     The addon function is used to generate a dict for the combined input of payment arrangement.
@@ -77,11 +75,11 @@ def addon(
                            },
                        value= 0,
                        size= 'md',
-                       step= 0.01,
+                       step= (0.01 if input_type == 'float' else 1),
                        min= 0,
-                       max= 100,
-                       precision= 2,
-                       type= 'float',
+                       max= (100 if input_type == 'float' else None),
+                       precision= (2 if input_type == 'float' else 0),
+                       type= ('float' if input_type == 'float' else 'number'),
                     ),
                     dmc.ButtonGroup(
                         [
@@ -125,15 +123,20 @@ def addon(
                     dbc.Card(
                         children= [dbc.CardBody(id= {"index": index, "type": suffix_for_type(ADDON.NEW, type)})],
                         style= {
+                            'width': 285,
                             'height': '150px',
                             'overflow': 'scroll',
-                        }
+                            'radius': '10px',
+                            'borderRadius': '10px',
+                        },
+                        className= 'custom-scrollbar',
                     )
                 ],
                 is_open=False,
                 style= {
                     'width': '100%',
-                }
+                },
+                
             ),
         ],
     )
@@ -157,7 +160,6 @@ def addon(
         Input({"index": MATCH, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
         Input({"index": MATCH, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)}, 'value'),
         Input({"index": MATCH, "type": suffix_for_type(ADDON.DROPDOWN.LIST, type)}, 'data'),
-        prevent_initial_call=True
     )
     def update_Select_list(
         memory,
@@ -176,28 +178,22 @@ def addon(
         [
             Output({"index": MATCH, "type": suffix_for_type(ADDON.NEW, type)}, 'children', allow_duplicate= True),
             Output({"index": MATCH, "type": suffix_for_type(ADDON.INPUT, type)}, 'value', allow_duplicate= True),
-            # Output({"index": MATCH, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)}, 'label', allow_duplicate= True),
             Output({"index": MATCH, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)}, 'value', allow_duplicate= True),
             Output({"index": MATCH, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data', allow_duplicate= True),
-            # Output({"index": MATCH, "type": suffix_for_type(ADDON.COLLAPSE, type)}, 'is_open', allow_duplicate= True),
         ],
         Input({"index": MATCH, "type": suffix_for_type(ADDON.ADD, type)}, 'n_clicks'),
         [
-            # State({"index": MATCH, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)}, 'label'),
             State({"index": MATCH, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)}, 'value'),
             State({"index": MATCH, "type": suffix_for_type(ADDON.INPUT, type)}, 'value'),
             State({"index": MATCH, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
-            # State({"index": MATCH, "type": suffix_for_type(ADDON.COLLAPSE, type)}, 'is_open'),
         ],
         prevent_initial_call=True
     )
     def add_items(
         _,
         selected_time,
-        # current_label,
         current_input,
         memory,
-        # is_open,
     ):
         patched_item = Patch()
         if selected_time and current_input:
@@ -205,37 +201,36 @@ def addon(
             sorted_memory= {}
             for k in [str(sorted_key) for sorted_key in sorted([int(key) for key in memory.keys()])]: 
                 sorted_memory[k]= memory[k]
-            patched_item= [new_checklist_item(_, type= type, index= index, result= {k: v}) for (k, v) in sorted_memory.items()]
-            return patched_item, 0, 0, memory, #is_open
+            patched_item= [new_checklist_item(_, type= type, result= {k: v}) for (k, v) in sorted_memory.items()]
+            return patched_item, 0, 0, memory
         else:
             raise PreventUpdate
         
     # mark the done items
     @callback(
-        Output({"index": MATCH, "type": suffix_for_type(ADDON.OUTPUT, type)}, "style", allow_duplicate= True),
-        Input({"index": MATCH, "type": "done"}, "value"),
-        prevent_initial_call=True
+        Output({"index": MATCH, "type": suffix_for_type('done', type)}, "styles"),
+        Input({"index": MATCH, "type": suffix_for_type('done', type)}, "checked"),
     )
-    def mark_done(done):
-        if not done:
-            style = {"display": "inline-block",
-                     "margin": "5px", "margin-right": "5px"}
-        else:
-            style = {
-                "display": "inline-block",
-                "margin": "5px",
-                "text-decoration": "line-through",
-                "color": "#888",
-                "margin-right": "5px",
+    def mark_done(state):
+        if state:
+            styles = {
+                'label': {
+                    'fontSize': 18,
+                    'text-decoration': 'line-through',
+                    'text-decoration-color': '#888',
+                    'color': '#888',
+                },
             }
-        return style
+            return styles#[styles if do else {'label': {'fontSize': 18}} for do in state]
+        else:
+            raise PreventUpdate
 
 ##5 callback for delete button
     @callback(
         Output({"index": index, "type": suffix_for_type(ADDON.NEW, type)}, 'children', allow_duplicate= True),
         Output({"index": index, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
         Input({"index": index, "type": suffix_for_type(ADDON.DELETE, type)}, 'n_clicks'),
-        State({'index': ALL, 'type': 'done'}, 'value'),
+        State({'index': ALL, 'type': suffix_for_type('done', type)}, 'checked'),
         State({"index": index, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
         prevent_initial_call=True
     )
@@ -243,7 +238,6 @@ def addon(
         _, 
         state, 
         memory, 
-        # is_open
         ):
         patched_item = Patch()
         values_to_remove = []
@@ -255,16 +249,16 @@ def addon(
                 del patched_item[i]
                 # remove corresponding items from the memory.
                 del memory[list(memory.keys())[i]]
-            return patched_item, memory, #is_open
+            return patched_item, memory
         else:
             raise PreventUpdate
+        
 ##6 collapse
     @callback(
         Output({"index": index, "type": suffix_for_type(ADDON.COLLAPSE, type)}, 'is_open'),
         Input({"index": index, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
-        State({"index": index, "type": suffix_for_type(ADDON.COLLAPSE, type)}, 'is_open')
     )
-    def update_collapse(data, is_open):
+    def update_collapse(data):
         if len(data) == 0:
             return False
         else:
@@ -274,64 +268,34 @@ def addon(
     return layout
 
 
-def new_checklist_item(triggered_index, type, index, result):
+def new_checklist_item(triggered_index, type, result):
     return html.Div(
         [
-            dcc.Checklist(
-                options=[
-                    {"label": "", "value": "done"}
-                ],
-                id={
-                    "index": triggered_index,
-                    "type": "done"
+            dmc.Checkbox(
+                id={"index": triggered_index, "type": suffix_for_type('done', type)}, 
+                label= "Apply {} from the {}{}".format(
+                     [*result.values()][-1], 
+                     [*result][-1], 
+                     ('st' if c == "1" else ('nd' if c == "2" else ('rd' if c == "3" else 'th'))
+                     ) 
+                     if len(c := [*result.keys()][-1]) == 1 
+                     else ('st' if c[-1] == '1' else ('nd' if c[-1] == '2' else ('rd' if c[-1] == '3' else 'th')))
+                ),
+                style= {
+                    'display': 'inline-block',
                 },
-                style={"display": "inline-block",
-                       "margin-right": "5px"},
-            ),
-            html.Div(
-                [
-                    html.Li('Apply', style={
-                            'display': 'inline-block',
-                            "margin-right": "5px",
-                            }
-                            ),
-                    html.Li([*result.values()][-1],
-                            style={
-                                'display': 'inline-block',
-                                "margin-right": "5px",
-                    }
-                    ),
-                    html.Li('from the', style={
-                            'display': 'inline-block',
-                            "margin-right": "5px",
-                            }
-                    ),
-                    html.Li([*result][-1],
-                            style={
-                                'display': 'inline-block',
-                                "margin-right": "1px",
-                            }
-                    ),
-                    html.Li(('st' if c == "1" 
-                                  else ('nd' if c == "2" else ('rd' if c == "3" else 'th'))) if len(c := [*result.keys()][-1]) == 1 else ('st' if c[-1] == '1' else ('nd' if c[-1] == '2' else ('rd' if c[-1] == '3' else 'th'))), 
-                            style={
-                            'display': 'inline-block',
-                            "margin-right": "5px",
-                            },
-                    ),
-                ],
-                id={
-                    "index": triggered_index,
-                    "type": suffix_for_type(ADDON.OUTPUT, type)
+                styles= {
+                    'label': {
+                        'fontSize': 18,
+                    },
                 },
-                style={
-                    "display": "inline-block",
-                    "margin": "5px",
-                    'margin-right': '5px',
-                    "maxWidth": "400px"
-                },
+                size= 'sm',
+                # mb=10
             ),
         ],
+        style={
+            'display': 'inline-block',
+        }
     )
 
 
@@ -341,6 +305,7 @@ def refreshable_dropdown(
         # ['prepay', 'subsidy'] Consider the case of duplicate ids.
         type: str = 'prepay',
         placeholder: str = 'Choose methods of the payment',
+        value: list = [*amortization_types],
         options: dict = amortization_types,
         disabled: bool = False,
         index= "",
@@ -360,7 +325,7 @@ def refreshable_dropdown(
                         label="Repayment methods",
                         id={"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type)},
                         placeholder="Select method for repayment",
-                        value= [*options],
+                        value= value,
                         data=[*options],
                         size= 'sm',
                         style={
@@ -395,23 +360,38 @@ def refreshable_dropdown(
 
 # py -m app.Dashboard.pages.components.Controls.widgets
 if __name__ == "__main__":
-    app = Dash(__name__, 
-           external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP], 
-           suppress_callback_exceptions=True
-           )
-
+    from .components import MortgageOptions
+    from .panels import panel  
+    app = Dash(
+        __name__, 
+        external_stylesheets=[
+            dbc.themes.LUMEN, 
+            dbc.icons.BOOTSTRAP
+        ], 
+        suppress_callback_exceptions=True,
+        # assets_external_path= 'app/Dashboard/assets',
+        )
+    c= MortgageOptions()
+    c.index= 'test'
+    c.type= 'prepay'
     app.layout = html.Div(
         [
+            panel.register(),
             refreshable_dropdown(
                 label='Test for refreshable dropdown'),
             html.Hr(),
             html.H6('Test for addon'),
+            c.tenure(),
             addon(
-                type='test',
-                # dropdown_list=[1, 2],
-                # dropdown_label="Time",
-                placeholder="Input the timepoint",
+                type= 'prepay',
+                index= 'test',
             )
         ]
     )
+    @callback(
+            Output({'index': 'test', 'type': suffix_for_type(ADDON.DROPDOWN.LIST, 'prepay')}, 'data'), 
+            Input(LOAN.RESULT.KWARGS, 'data'),
+    )
+    def update_arrangement(memory):
+        return [[1, memory['tenure'] - 1]]
     app.run_server(debug=True)
