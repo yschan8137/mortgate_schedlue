@@ -186,22 +186,29 @@ def scheduler(
     return res
 
 
-# py -m loan.computation.helpers.scheduler
-payment = scheduler(
-    tenure=10,
-    interest_arr={
-        'interest': [1.38, 1],
-        'time': [12]
-    },
-    loan=500_000,
-    prepay_arr={
-        'amount': [200_000, 200_000],
-        'time': [5, 60],
-        'accumulator': True
-    }
-)
+# py -m app.Loan.computation.helpers.scheduler
 if __name__ == "__main__":
-    import pandas as pd  # type: ignore
-    print(
-        [(t, v) for t, v in enumerate(payment)]
+    import time
+    t0= time.time()
+    payment = scheduler(
+        tenure=10,
+        interest_arr={
+            'interest': [1.38, 1],
+            'time': [12]
+        },
+        loan=500_000,
+        prepay_arr={
+            'amount': [200_000, 200_000],
+            'time': [5, 60],
+            'accumulator': True
+        }
     )
+    print(
+        payment,
+        '\n',
+        'time: ', time.time() - t0, 's'
+    )
+    # import pandas as pd  # type: ignore
+    # print(
+        # [(t, v) for t, v in enumerate(payment)]
+    # )

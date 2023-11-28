@@ -157,23 +157,24 @@ def calculator(
     subsidy_time = kwargs.get('subsidy_arr', {}).get('start', 0)
     subsidy_amount = kwargs.get('subsidy_arr', {}).get('amount', 0)
 
-    prepay_time = _time_(
-        subsidy_time=subsidy_time,
-        tenure=tenure,
-        prepay_arr={
-            'time': kwargs.get('prepay_arr', {}).get('time', 0)}
-    )
+    prepay_time = _time_#(
+    prepay_time.subsidy_time= subsidy_time
+    prepay_time.prepay_time= kwargs.get('prepay_arr', {}).get('time', [0])
+        # subsidy_time=subsidy_time,
+        # tenure=tenure,
+        # prepay_arr={
+            # 'time': kwargs.get('prepay_arr', {}).get('time', 0)}
+    # )
 
     prepay_amount = _amount_(
-        tenure=tenure,
+        # tenure=tenure,
         subsidy_time=subsidy_time,
-        subsidy_amount=subsidy_amount,  # type: ignore
+        subsidy_amount= subsidy_amount,  # type: ignore
         prepay_arr={
             'time': kwargs.get('prepay_arr', {}).get('time', 0),
             'amount': ensure_list_type(kwargs.get('prepay_arr', {}).get('amount', 0))
         }
     )
-
     def _df_(data,
              index_range=[0, tenure * 12 + 1],
              name=None,
@@ -226,14 +227,16 @@ def calculator(
             subsidy_subsidy_amount = kwargs.get(
                 'subsidy_arr', {}).get('subsidy', {}).get('amount', 0)
             
-            subsidy_prepay_time = _time_(
-                subsidy_time=subsidy_subsidy_time,
-                tenure=tenure,
-                prepay_arr={'time': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)})
+            subsidy_prepay_time = _time_#(
+            subsidy_prepay_time.subsidy_time= subsidy_subsidy_time
+            subsidy_prepay_time.prepay_time= kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', [0])
+                # subsidy_time=subsidy_subsidy_time,
+                # tenure=tenure,
+                # prepay_arr={'time': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)})
 
             subsidy_prepay_amount = _amount_(
                 subsidy_time=subsidy_subsidy_time,
-                tenure=tenure,
+                # tenure=tenure,
                 subsidy_amount=subsidy_subsidy_amount,  # type: ignore
                 prepay_arr={
                     'amount': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('amount', 0),
@@ -362,14 +365,16 @@ def async_calculator( # slower at most of the time.
         loan_amount = round(total_amount * (1 - (down_payment_rate / 100)))
         subsidy_time = kwargs.get('subsidy_arr', {}).get('start', 0)
         subsidy_amount = kwargs.get('subsidy_arr', {}).get('amount', 0)
-        prepay_time = _time_(
-            subsidy_time=subsidy_time,
-            tenure=tenure,
-            prepay_arr={
-                'time': kwargs.get('prepay_arr', {}).get('time', 0)}
-        )
+        prepay_time = _time_#(
+        prepay_time.subsidy_time= subsidy_time
+        prepay_time.prepay_time= ensure_list_type(kwargs.get('prepay_arr', {}).get('time', [0]))
+            # subsidy_time=subsidy_time,
+            # tenure=tenure,
+            # prepay_arr={
+                # 'time': kwargs.get('prepay_arr', {}).get('time', 0)}
+        # )
         prepay_amount = _amount_(
-            tenure=tenure,
+            # tenure=tenure,
             subsidy_time=subsidy_time,
             subsidy_amount=subsidy_amount,  # type: ignore
             prepay_arr={
@@ -441,13 +446,16 @@ def async_calculator( # slower at most of the time.
                 'subsidy_arr', {}).get('subsidy', {}).get('time', 0)
             subsidy_subsidy_amount = kwargs.get(
                 'subsidy_arr', {}).get('subsidy', {}).get('amount', 0)
-            subsidy_prepay_time = _time_(
-                subsidy_time=subsidy_subsidy_time,
-                tenure=tenure,
-                prepay_arr={'time': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)})
+            subsidy_prepay_time = _time_#(
+            subsidy_prepay_time.subsidy_time= subsidy_subsidy_time
+            subsidy_prepay_time.prepay_time= ensure_list_type(kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', [0]))
+                # subsidy_time=subsidy_subsidy_time,
+                # tenure=tenure,
+                # prepay_arr={'time': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)})
+            
             subsidy_prepay_amount = _amount_(
                 subsidy_time=subsidy_subsidy_time,
-                tenure=tenure,
+                # tenure=tenure,
                 subsidy_amount=subsidy_subsidy_amount,  # type: ignore
                 prepay_arr={
                     'amount': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('amount', 0),
@@ -548,8 +556,8 @@ if __name__ == "__main__":
     import time
     default_kwargs['subsidy_arr']= example_for_subsidy_arr
     # default_kwargs['method'] = []
-    # default_kwargs['start_date']= '2021-01-01'
-    # default_kwargs['result_type']= 'df'
+    default_kwargs['start_date']= '2021-01-01'
+    default_kwargs['result_type']= 'df'
     t0 = time.time()
     result = calculator(**default_kwargs)
     print(
@@ -557,12 +565,12 @@ if __name__ == "__main__":
     )
     sync_operating_time= time.time()-t0
 
-    # t_0_async= time.time()
-    # result_async = async_calculator(**default_kwargs)
-    # print(
-        # result_async
-    # )
+    t_0_async= time.time()
+    result_async = async_calculator(**default_kwargs)
+    print(
+        result_async
+    )
     print('TIME COMPARISON: ', 
           '\n', 'Sync:', sync_operating_time, 
-        #   '\n', 'Async:', time.time()-t_0_async
+          '\n', 'Async:', time.time()-t_0_async
           )

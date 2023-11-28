@@ -77,8 +77,10 @@ def ETR(
       )
 
 
-# py -m loan.computation.helpers.adjustments
+# py -m app.Loan.computation.helpers.adjustments
 if __name__ == '__main__':
+  import time
+  t0= time.time()
   print(
     ETR(
       t= 12,
@@ -88,5 +90,7 @@ if __name__ == '__main__':
       }, 
       length= 361, 
       grace_period= 5, 
-      )
+      ),
+      '\n',
+      'time: ', time.time() - t0, 's'
   )
