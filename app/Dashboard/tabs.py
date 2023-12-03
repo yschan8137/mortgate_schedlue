@@ -5,7 +5,7 @@ from dash_iconify import DashIconify
 from app.Dashboard.navbar import create_navbar
 from app.Dashboard.pages.components.Controls.panels import panel
 from app.Dashboard.pages.components.Graphic.app import graph
-from app.Dashboard.pages.components.DataTable import dataframe
+from app.Dashboard.pages.components.DataTable import table as dataframe
 from app.Dashboard.assets import ids, specs
 
 
@@ -22,6 +22,7 @@ app = Dash(
     # assets_folder= 'app/Dashboard/assets', #redirects to assets folder
     suppress_callback_exceptions=True,
     external_stylesheets=[
+        "https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;900&display=swap",
         dbc.themes.LUMEN,  # Dash Themes CSS
         dbc.icons.BOOTSTRAP,
         FA621,  # Font Awesome Icons CSS
@@ -50,7 +51,7 @@ tabs = dmc.Tabs(
                 ),
                 dmc.TabsPanel(graph(), value= ids.APP.INDEX.GRAPH),
                 dmc.TabsPanel(
-                    dataframe.deployment(), 
+                    dataframe.table(), 
                     value= ids.APP.INDEX.DATA,
                 ),
             ],
@@ -64,6 +65,15 @@ tabs = dmc.Tabs(
 
 app.layout = dmc.MantineProvider(  # <- Wrap App with Loading Component
     id= ids.APP.LOADING,
+    theme= {
+        "fontFamily": "'Inter', sans-serif",
+        "primaryColor": "indigo",
+        "components": {
+            "Button": {"styles": {"root": {"fontWeight": 400}}},
+            "Alert": {"styles": {"title": {"fontWeight": 500}}},
+            "AvatarGroup": {"styles": {"truncated": {"fontWeight": 500}}},
+        },
+    },
     children=[
         panel.register(),
         NAVBAR,

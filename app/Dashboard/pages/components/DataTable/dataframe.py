@@ -1,9 +1,10 @@
 import math
-import pandas as pd
 import dash
 from dash import Dash, html, Input, Output, dash_table, callback
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 import time
+from itertools import groupby
 
 from app.Dashboard.assets.ids import LOAN, DATATABLE
 from app.Loan import df_schema
@@ -56,7 +57,7 @@ def datatable():
                     [
                         dbc.Row(
                             [
-                                dbc.Label("Columns"),
+                                dmc.Title("Columns", order= 3),
                                 dbc.Checklist(
                                     options=[
                                         {"label": v, "value": v} for v in [
@@ -68,8 +69,8 @@ def datatable():
                                     value=[
                                         df_schema.level_2.PRINCIPAL,
                                         df_schema.level_2.INTEREST,
-                                        df_schema.level_2.PAYMENT,  # 每期貸款為預選欄位，不可刪除
-                                        df_schema.level_0.TOTAL
+                                        # df_schema.level_2.PAYMENT,  # 每期貸款為預選欄位，不可刪除
+                                        # df_schema.level_0.TOTAL
                                     ],
                                     id=DATATABLE.COLUMN,
                                     inline=True,
@@ -186,15 +187,57 @@ def deployment():
     )
     return layout
 
+# use dmc to create data table
+def create_table(df, **kwargs):
+    style= kwargs.get('style', {})
+    style['textAlign']= 'center'
+    Index_name= kwargs.get('index', {}).get('name', 'Index')
+    indexes, columns, values = df['index'], df['columns'], df['data']
+    header = [html.Tr([html.Th(value, rowSpan= (len(columns[0]) if value == Index_name else 1), colSpan= len([*col]), loading_state= {}, style= style) for value, col in (groupby([Index_name] + [v[i] for v in columns]) if i== 0 else groupby([v[i] for v in columns])) ]) for i in range(len(columns[0]))]
+    rows = [
+        html.Tr(
+            [html.Td(index, style= {'textAlign': 'center'})] + [html.Td(cell, style= style) for cell in row]) for index, row in zip(indexes, values)
+    ]
+    table = [html.Thead(header), html.Tbody(rows)]
+    return table
 
-# py -m app.Dashboard.pages.components.DataTable.app
-if __name__ == "__main__":  
-    app.layout = dbc.Container(
-        [
-            panel.register(),
-            deployment()
-        ]
+
+
+
+# py -m app.Dashboard.pages.components.DataTable.dataframe
+if __name__ == "__main__":
+    from app.Loan import calculator, default_kwargs
+    default_kwargs['subsidy_arr'] = {
+        'interest_arr': {'interest': [1, 1.33], 'time': [10]},
+        'start': 2,
+        'amount': 15_000,
+        'tenure': 20,
+        'grace_period': 0,
+        'prepay_arr': {'amount': [], 'time': []},
+        'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL'],
+
+    }
+    df= calculator(**default_kwargs)
+    # columns, data = df['columns'], df['data']
+    app.layout= dmc.Table(
+        create_table(df),
+        striped= True,
+        highlightOnHover=True,
+        withBorder=True,
+        withColumnBorders=True,
+        verticalSpacing="xs",
+        horizontalSpacing=10,
+        # style= {
+            # 'height': '100vh',
+        # }
     )
+    # app.layout = dbc.Container(
+        # [
+            # panel.register(),
+            # deployment()
+        # ]
+    # )
+    # print(create_table(df))
     
     app.run_server(debug= True)
     # app.run_server(port=80, host= '0.0.0.0', debug=False, use_reloader=True)

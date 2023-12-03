@@ -534,7 +534,7 @@ def async_calculator( # slower at most of the time.
         else:
             df= {
                  'index': ([v for v in range(0, 1)] if not start_date else [datetime.datetime.strptime(start_date, '%Y-%m-%d').date() + relativedelta(months=n) for n in range(0, 1)]),
-                 'columns': [('', '攤還本金'), ('', '應付利息'), ('', '償還總額'), ('', '剩餘貸款')],
+                 'columns': ['攤還本金', '應付利息', '償還總額', '剩餘貸款'],
                  'data': [[0]* 4],
                  'index_names': [None],
                  'column_names': [None]*1,
@@ -556,7 +556,7 @@ if __name__ == "__main__":
     import time
     default_kwargs['subsidy_arr']= example_for_subsidy_arr
     # default_kwargs['method'] = []
-    default_kwargs['start_date']= '2021-01-01'
+    # default_kwargs['start_date']= '2021-01-01'
     default_kwargs['result_type']= 'df'
     t0 = time.time()
     result = calculator(**default_kwargs)

@@ -31,13 +31,14 @@ from typing import Optional
 #     )
 #     return prepay_time
 
+
 class _time_:
     subsidy_time: Optional[int]= None
     prepay_time: list
     def __new__(cls, value):
         time_combo = sorted(
             ensure_list_type(
-                (cls.prepay_time if len(cls.prepay_time) > 0 else [0]))
+                (prepay_time if len(prepay_time:= cls.prepay_time) > 0 else [0]))
             + (ensure_list_type(cls.subsidy_time) if cls.subsidy_time else [])
         )
         return max(k if k <= value else 0 for k in time_combo)
@@ -96,8 +97,8 @@ if __name__ == "__main__":
         subsidy_time= 0,#13,
         subsidy_amount=0,#1000,
         prepay_arr={
-            'amount': [0], #[1000, 1000, 1000, 1000, 1000],
-            'time': [0], #[1, 6, 7, 8, 13],
+            'amount': [1.1, 3.1, 5.1], #[1000, 1000, 1000, 1000, 1000],
+            'time': [2, 4, 6], #[1, 6, 7, 8, 13],
             # 'accumulator': True
         },
 
@@ -108,6 +109,6 @@ if __name__ == "__main__":
     print(
         prepay_time(15),
           '\n',
-        #   res_amount,
-        #   '\n',
+          res_amount,
+          '\n',
           'time: ', time.time() - t0, 's')

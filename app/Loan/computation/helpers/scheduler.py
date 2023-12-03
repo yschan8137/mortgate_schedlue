@@ -31,7 +31,7 @@ def kwargs_detection(
             'accumulator': bool
         }
     },
-        **kwargs) -> None:
+    **kwargs) -> None:
     """
     Serving a purpose for examing the keyword arguments fitting the given argument structure.   
     """
@@ -71,13 +71,13 @@ def kwargs_detection(
 
 
 def scheduler(
-    tenure: int,
-    loan: int = 0,
-    convert_to_month_base: bool = True,
-    **kwargs: dict
-) -> list:
+        tenure: int,
+        loan: int = 0,
+        convert_to_month_base: bool = True,
+        **kwargs: dict
+    ) -> list:
     """
-    The scheduler of the applied interest (feasible for single and multistage loan interest rate), loan and loan prepayment.
+    The scheduler of the applied interest (available for single and multistage loan interest rate), loan and loan prepayment.
 
     Arguments:
 
@@ -124,22 +124,20 @@ def scheduler(
         kws_spec={
             'tenure': int,
             'interest_arr': {'interest': list,
-                             'time': list},
+                             'time': list
+            },
             'prepay_arr': {'amount': list,
                            'time': list,
-                           'accumulator': bool}
+                           'accumulator': bool
+            }
         },
         **kwargs)
 
     tenure = tenure * 12
-    interest = list(map(
-        lambda x: x/100, ensure_list_type(kwargs.get('interest_arr', {}).get('interest', 0))))
-    interest_arr = [
-        0] + sorted(ensure_list_type(kwargs.get('interest_arr', {}).get('time', [])))
-    prepay = [0] + \
-        ensure_list_type(kwargs.get('prepay_arr', {}).get('amount', []))
-    prepay_arr = [
-        0] + sorted(ensure_list_type(kwargs.get('prepay_arr', {}).get('time', [])))
+    interest = list(map(lambda x: x/100, ensure_list_type(kwargs.get('interest_arr', {}).get('interest', 0))))
+    interest_arr = [0] + sorted(ensure_list_type(kwargs.get('interest_arr', {}).get('time', [])))
+    prepay = [0] + ensure_list_type(kwargs.get('prepay_arr', {}).get('amount', []))
+    prepay_arr = [0] + sorted(ensure_list_type(kwargs.get('prepay_arr', {}).get('time', [])))
     prepay_accumulator = kwargs.get('prepay_arr', {}).get('accumulator', False)
 
     if prepay_accumulator == True:
@@ -156,9 +154,10 @@ def scheduler(
             raise ValueError(
                 '\r' + f'The adjustments of the interest rate is {len(interest)}, exceed the given time points, which is {len(interest_arr)}' + '\n')
 
+
     def _arr_(
         period: int = tenure,
-        amount_arr=None,
+        amount_arr= [],
         time_arr=[0]
     ):
         res = []
@@ -172,43 +171,57 @@ def scheduler(
                     res.append(v)
         return res
 
-    res = map(
-        lambda loan, interest, prepay: (
-            loan - (prepay if loan > 0 else (loan - 1 if prepay ==
-                                             0 and interest > 0 else - prepay))
-        ) * (interest if interest > 0 else 1),
+    res = map(lambda loan, interest, prepay: 
+        (loan - (prepay if loan > 0 else (loan - 1 if prepay == 0 and interest > 0 else - prepay))) * (interest if interest > 0 else 1),
         _arr_(amount_arr=loan),
-        map(lambda x: (x/12 if convert_to_month_base == True else x),
-            _arr_(amount_arr=interest, time_arr=interest_arr)),
+        map(lambda x: (x/12 if convert_to_month_base == True else x), _arr_(amount_arr=interest, time_arr=interest_arr)),
         _arr_(amount_arr=prepay, time_arr=prepay_arr)
     )
     res = list(map(lambda x: x if x > 0 else 0, res))
     return res
 
+class _scheduler_:
+    time_arr: list
+    interest_arr: list
+    end: int 
+
+    def __new__(cls, value):
+        cls.res_items= {k: v/12 for (k, v) in zip([0, 1] + cls.time_arr, [0] + cls.interest_arr)}
+        cls.__index__= max(k if k <= value else 0 for k in [0, 1] + cls.time_arr)
+        cls.__end__ = min(k if k > value else cls.end for k  in [0, 1] + cls.time_arr)
+        return cls.res_items[cls.__index__]
+    
+    @classmethod
+    def interval_grouping(cls):
+        return [[cls(k), [cls.__index__, cls.__end__]] for k in [0, 1] + cls.time_arr]
+
 
 # py -m app.Loan.computation.helpers.scheduler
 if __name__ == "__main__":
-    import time
-    t0= time.time()
-    payment = scheduler(
-        tenure=10,
-        interest_arr={
-            'interest': [1.38, 1],
-            'time': [12]
-        },
-        loan=500_000,
-        prepay_arr={
-            'amount': [200_000, 200_000],
-            'time': [5, 60],
-            'accumulator': True
-        }
-    )
-    print(
-        payment,
-        '\n',
-        'time: ', time.time() - t0, 's'
-    )
-    # import pandas as pd  # type: ignore
-    # print(
-        # [(t, v) for t, v in enumerate(payment)]
+    # import time
+    # t0= time.time()
+    # payment = scheduler(
+        # tenure=30,
+        # interest_arr={
+            # 'interest': [1.38, 1],
+            # 'time': [12]
+        # },
+        # loan=500_000,
+        # prepay_arr={
+            # 'amount': [200_000, 200_000],
+            # 'time': [5, 60],
+            # 'accumulator': True
+        # }
     # )
+    # print(
+        # payment,
+        # '\n',
+        # 'time: ', time.time() - t0, 's'
+    # )
+    sc= _scheduler_
+    sc.time_arr= [4]#[6, 7, 8]
+    sc.interest_arr= [0.05, 1]#[1, 1.3, 1.5, 1.7]
+    sc.end= 361
+    print(sc.interval_grouping())
+    # print(sc(5))
+

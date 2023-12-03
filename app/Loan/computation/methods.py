@@ -1,8 +1,22 @@
 import numpy as np
 from app.Loan.computation.helpers.adjustments import ETR, Offsets
-from app.Loan.computation.helpers.scheduler import ensure_list_type, scheduler
+from app.Loan.computation.helpers.scheduler import ensure_list_type
 from app.Loan.computation.helpers.prepay import _time_
 import itertools
+
+class _scheduler_:
+    time_arr: list
+    interest_arr: list
+    end: int
+    def __new__(cls, value):
+        cls.res_items= {k: (v/100)/12 for (k, v) in zip([0, 1] + cls.time_arr, [0] + cls.interest_arr)}
+        cls.__index__= max(k if k <= value else 0 for k in [0, 1] + cls.time_arr)
+        cls.__end__ = min(k if k > value else cls.end for k  in [0, 1] + cls.time_arr)
+        return cls.res_items[cls.__index__]
+    
+    @classmethod
+    def interval_grouping(cls):
+        return [[cls(k), [cls.__index__, cls.__end__]] for k in [0, 1] + cls.time_arr]
 
 # 本金平均攤還法(Equal Principal Payment)
 def _EPP_arr_(
@@ -20,15 +34,19 @@ def _EPP_arr_(
     _residual_ = []
     _interest_ = []
     _total_ = []
-    
-    _interest_arr_ = scheduler(
-        tenure=tenure,
-        interest_arr={
-            'interest': ensure_list_type(interest_arr.get('interest', 0)),
-            'time': ensure_list_type(interest_arr.get('time', []))
-        }
-    )
+    # 
+    # _interest_arr_ = _scheduler_(
+    #     tenure=tenure,
+    #     interest_arr={
+    #         'interest': ensure_list_type(interest_arr.get('interest', 0)),
+    #         'time': ensure_list_type(interest_arr.get('time', []))
+    #     }
+    # )
 
+    _interest_arr_= _scheduler_
+    _interest_arr_.time_arr= ensure_list_type(interest_arr.get('time', []))
+    _interest_arr_.interest_arr= ensure_list_type(interest_arr.get('interest', [0]))
+    _interest_arr_.end= tenure * 12 + 1
     prepay_t= kwargs.get('prepay_arr', {}).get('time', [])
 
     def payments(
@@ -55,7 +73,8 @@ def _EPP_arr_(
             if t > grace_period * 12 else 0
         )
     
-    for t in range(len(_interest_arr_)):
+    # for t in range(len(_interest_arr_)):
+    for t in range(_interest_arr_.end):
         if t > 0:
             # if prepay_amount[t] < _residual_[-1]:
             if prepay_amount.get(t, 0) < _residual_[-1]:
@@ -70,7 +89,8 @@ def _EPP_arr_(
                 _payments_.append(
                     _residual_[t-1]
                 )
-            _interest_.append(_residual_[-1] * _interest_arr_[t])
+            # _interest_.append(_residual_[-1] * _interest_arr_[t])
+            _interest_.append(_residual_[t-1] * _interest_arr_(t))
             _residual_.append(loan_amount - sum(_payments_))
         else:
             _payments_.append(0)
@@ -97,14 +117,20 @@ def _ETP_arr_(
     _total_ = []
 
     # The arrangement of interest rate applied to each period.
-    _interest_arr_= scheduler(
-                        tenure=tenure,
-                        interest_arr={
-                            'interest': ensure_list_type(interest_arr.get('interest', 0)),
-                            'time': ensure_list_type(interest_arr.get('time', []))
-                        }
-                    )
+    # __interest_arr_= scheduler(
+    #                     tenure=tenure,
+    #                     interest_arr={
+    #                         'interest': ensure_list_type(interest_arr.get('interest', 0)),
+    #                         'time': ensure_list_type(interest_arr.get('time', []))
+    #                     }
+    #                 )
+    
     # the dynamic arrangement of principal ratio of whole tenure.
+    _interest_arr_= _scheduler_
+    _interest_arr_.time_arr= ensure_list_type(interest_arr.get('time', []))
+    _interest_arr_.interest_arr= ensure_list_type(interest_arr.get('interest', [0]))
+    _interest_arr_.end= tenure * 12 + 1
+
     def principal_ratio_at_(
             timing,
             interest_arr,
@@ -161,11 +187,13 @@ def _ETP_arr_(
          return groups
         return group_by_consecutive_elements(accumulative_summation(t))
     
-    for (n, (interest, interval)) in enumerate(applied_interval(_interest_arr_)):   
+    # for (n, (interest, interval)) in enumerate(applied_interval(__interest_arr_)):
+    for (n, (interest, interval)) in enumerate(_interest_arr_.interval_grouping()):
         if n > 0:
             d = (interval[1] - interval[0] + 1) # Note that the end of the interval, namely interval[1], is not included in the calculation of the number of periods.
             _accum_.append(sum(_principal_payment_[:-1])) # To address the situation that the interest rate is changed in the middle of the tenure, the accumulated repayment is recorded in order to calculate the present value of the residual. 
-            int_arr = [interest] * (len(_interest_arr_) - (interval[0] - 1))
+            # int_arr = [interest] * (len(_interest_arr_) - (interval[0] - 1))
+            int_arr = [interest] * (tenure * 12 + 1 - (interval[0] - 1))
             grace_t= (round(((grace_period * 12) - interval[0] + 1)/12) if (grace_period * 12) - interval[0] > 0 else 0)
 
             # if isinstance(prepay_time := kwargs.get('prepay_arr', {}).get('time', 0), int):
@@ -185,7 +213,8 @@ def _ETP_arr_(
                     principal_payment= (loan_amount - (_accum_[n])) * principal_ratio_at_(
                                                                             timing= t,
                                                                             interest_arr= int_arr,
-                                                                            length= len(_interest_arr_) - (interval[0] - 1),
+                                                                            # length= len(_interest_arr_) - (interval[0] - 1),
+                                                                            length= _interest_arr_.end - (interval[0] - 1),
                                                                             grace_period= grace_t,
                                                                             # prepay_time= prepay_t[t],
                                                                             prepay_time= prepay_t(t),
@@ -207,7 +236,8 @@ def _ETP_arr_(
                             _principal_payment_.append(prepay_a.get(t, 0) + (_residual_[prepay_t(t-1)] - (_accum_[n])) * principal_ratio_at_(
                                                                                                             timing=t,
                                                                                                             interest_arr= int_arr,
-                                                                                                            length= len(_interest_arr_) - (interval[0] - 1),
+                                                                                                            # length= len(_interest_arr_) - (interval[0] - 1),
+                                                                                                            length= _interest_arr_.end - (interval[0] - 1),
                                                                                                             grace_period= grace_t,
                                                                                                             # prepay_time= prepay_t[t-1]
                                                                                                             prepay_time= prepay_t(t-1)
@@ -220,7 +250,8 @@ def _ETP_arr_(
                         _principal_payment_.append((_residual_[prepay_t(t)]) * principal_ratio_at_(
                                                                                     timing=t,
                                                                                     interest_arr= int_arr,
-                                                                                    length= len(_interest_arr_) - (interval[0] - 1),
+                                                                                    # length= len(_interest_arr_) - (interval[0] - 1),
+                                                                                    length= _interest_arr_.end - (interval[0] - 1),
                                                                                     grace_period= grace_t,
                                                                                     # prepay_time= prepay_t[t] - (interval[0] - 1)
                                                                                     prepay_time= prepay_t(t) - (interval[0] - 1)
@@ -244,10 +275,10 @@ if __name__ == '__main__':
     t0= time.time()
     kwargs= {
         'tenure': 30,
-        'loan_amount': 800,
+        'loan_amount': 800_000_000,
         'interest_arr': {
-            'interest': [0.05],
-            'time': []
+            'interest': [0.05, 1],
+            'time': [4]
         },
         'grace_period': 0,
         'prepay_arr': {
@@ -256,13 +287,6 @@ if __name__ == '__main__':
         },
     }
 
-    # prepay_time = _time_(
-    #     subsidy_time= kwargs.get('subsidy_arr', {}).get('time', 0),
-    #     # tenure= kwargs.get('tenure', 0),
-    #     prepay_arr={
-    #         'time': kwargs.get('prepay_arr', {}).get('time', []),
-    #     }
-    # )
     prepay_t= _time_
     prepay_t.subsidy_time = kwargs.get('subsidy_arr', {}).get('time', 0)
     prepay_t.prepay_time = kwargs.get('prepay_arr', {}).get('time', [0])
@@ -275,14 +299,15 @@ if __name__ == '__main__':
             'amount': ensure_list_type(kwargs.get('prepay_arr', {}).get('amount', []))
         }
     )
-    kwargs['prepay_arr']['time'] = kwargs.get('prepay_arr', {}).get('time', [0])
+    
+    kwargs['prepay_arr']['time'] = prepay_t
     kwargs['prepay_arr']['amount'] = prepay_amount
 
     print(
-        prepay_t,
-        '\n',
-        prepay_amount,
-        '\n',
+        # prepay_t,
+        # '\n',
+        # prepay_amount,
+        # '\n',
         _EPP_arr_(**kwargs),
         '\n',
         'time_on_EPP: ', time.time() - t0, 's',
