@@ -1,4 +1,4 @@
-from dash import Dash, html, dcc, Input, Output, State, callback, Patch, callback_context, clientside_callback
+from dash import Dash, html, dcc, Input, Output, State, callback, Patch, callback_context, clientside_callback, Patch
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
@@ -45,11 +45,14 @@ class panel():
             Input(ids.LOAN.RESULT.KWARGS, 'data'))
         def update_data_frame(kwargs):
             # It is neccessary that all the sufficient parameters are given.
+            patched_memory= Patch()
             if (subsidy_start:= kwargs['subsidy_arr']['start'] > 0) and subsidy_start <= 24 and (kwargs['subsidy_arr']['amount'] > 0) and (kwargs['subsidy_arr']['tenure'] > 0) and (subsidy_interest:= kwargs['subsidy_arr']['interest_arr']['interest']) and (len([c for c in subsidy_interest if c]) > 0):
-                return calculator(**kwargs, thousand_sep= False)#.to_dict(orient='tight')
+                patched_memory['data'] = calculator(**kwargs, thousand_sep= False)
+                return patched_memory
             else:
                 new_kwargs = {k: v for (k, v) in kwargs.items() if k != 'subsidy_arr'}
-                return calculator(**new_kwargs, thousand_sep= False)#.to_dict(orient='tight')
+                patched_memory['data'] = calculator(**new_kwargs, thousand_sep= False)
+                return patched_memory
     
         @callback(
                 Output(ids.LOAN.RESULT.KWARGS, 'data'),
@@ -75,7 +78,7 @@ class panel():
                     Input(ids.LOAN.SUBSIDY.TENURE, 'value'),
                 ],
                 Input('Reset', 'n_clicks'),
-                State(ids.LOAN.RESULT.KWARGS, 'data'),
+                # State(ids.LOAN.RESULT.KWARGS, 'data'),
         )
         def update_kwargs(
             total_amount,
@@ -96,60 +99,61 @@ class panel():
             subsidy_start,
             subsidy_tenure,
             reset,
-            memory,
+            # memory,
             ):
+            patched_memory= Patch()
             if isinstance(triggered_id := callback_context.triggered_id, dict):
                 if triggered_id['type'] == suffix_for_type(ids.LOAN.AMOUNT, ids.LOAN.TYPE):
-                    memory['total_amount'] = (total_amount if total_amount else 0)
+                    patched_memory['total_amount'] = (total_amount if total_amount else 0)
                 elif triggered_id['type'] == ids.LOAN.DOWNPAYMENT:
-                    memory['down_payment_rate'] = (downpayment_rate if downpayment_rate else 0)
+                    patched_memory['down_payment_rate'] = (downpayment_rate if downpayment_rate else 0)
                 elif triggered_id['type'] == ids.LOAN.TENURE:
-                    memory['tenure'] = (tenure if tenure else 0)
+                    patched_memory['tenure'] = (tenure if tenure else 0)
                 elif triggered_id['type'] == suffix_for_type(ids.LOAN.GRACE, ids.LOAN.TYPE):
-                    memory['grace_period'] = (grace_period if grace_period else 0)
+                    patched_memory['grace_period'] = (grace_period if grace_period else 0)
                 elif triggered_id['type'] == ids.LOAN.DATE:
                     if not start_date:
-                        memory['start_date'] = None
+                        patched_memory['start_date'] = None
                     else:
-                        memory['start_date'] = start_date
+                        patched_memory['start_date'] = start_date
                 elif triggered_id['type'] == suffix_for_type(ids.ADVANCED.DROPDOWN.OPTIONS, ids.LOAN.TYPE):
-                    memory['method'] = repayment_methods
+                    patched_memory['method'] = repayment_methods
                 elif triggered_id['type'] == suffix_for_type(ids.LOAN.INTEREST, ids.LOAN.TYPE):
-                        memory['interest_arr']['interest']= [interest]
-                        memory['interest_arr']['time']= []
+                        patched_memory['interest_arr']['interest']= [interest]
+                        patched_memory['interest_arr']['time']= []
                 elif triggered_id['type'] == suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.TYPE):
-                        memory['interest_arr']['interest']= [memory['interest_arr']['interest'][0], *arr.values()]
-                        memory['interest_arr']['time']= [int(v) for v in arr.keys()]
+                        patched_memory['interest_arr']['interest']= [memory['interest_arr']['interest'][0], *arr.values()]
+                        patched_memory['interest_arr']['time']= [int(v) for v in arr.keys()]
                 elif triggered_id['type'] == suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.PREPAY.TYPE):
                     memory['prepay_arr'] = {
                             'amount': [*prepay_arr.values()],
                             'time': [int(v) for v in prepay_arr.keys()]
                         }
                 elif triggered_id['type'] == suffix_for_type(ids.LOAN.AMOUNT, ids.LOAN.SUBSIDY.TYPE):
-                    memory['subsidy_arr']['amount'] = (subsidy_amount if subsidy_amount else 0)
+                    patched_memory['subsidy_arr']['amount'] = (subsidy_amount if subsidy_amount else 0)
                 elif triggered_id['type'] == suffix_for_type(ids.LOAN.GRACE, ids.LOAN.SUBSIDY.TYPE):
                     triggered_id['type'] = (subsidy_grace_period if subsidy_grace_period else 0)
                 elif triggered_id['type'] == suffix_for_type(ids.ADVANCED.DROPDOWN.OPTIONS, ids.LOAN.SUBSIDY.TYPE):
-                    memory['subsidy_arr']['method'] = subsidy_repayment_methods
+                    patched_memory['subsidy_arr']['method'] = subsidy_repayment_methods
                 elif triggered_id['type'] == suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.SUBSIDY.PREPAY.TYPE):
-                    memory['subsidy_arr']['prepay_arr'] = {
+                    patched_memory['subsidy_arr']['prepay_arr'] = {
                             'amount': [*subsidy_prepay_arr.values()],
                             'time': [int(v) for v in subsidy_prepay_arr.keys()]
                         }
                 elif triggered_id['type'] == suffix_for_type(ids.LOAN.INTEREST, ids.LOAN.SUBSIDY.TYPE):
-                        memory['subsidy_arr']['interest_arr']['interest']= [subsidy_interest]
-                        memory['subsidy_arr']['interest_arr']['time']= []
+                        patched_memory['subsidy_arr']['interest_arr']['interest']= [subsidy_interest]
+                        patched_memory['subsidy_arr']['interest_arr']['time']= []
                 elif triggered_id['type'] == suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.SUBSIDY.TYPE):
-                    memory['subsidy_arr']['interest_arr']['interest']= [memory['subsidy_arr']['interest_arr']['interest'][0], *subsidy_arr.values()]
-                    memory['subsidy_arr']['interest_arr']['time']= [int(v) for v in subsidy_arr.keys()]
+                    patched_memory['subsidy_arr']['interest_arr']['interest']= [memory['subsidy_arr']['interest_arr']['interest'][0], *subsidy_arr.values()]
+                    patched_memory['subsidy_arr']['interest_arr']['time']= [int(v) for v in subsidy_arr.keys()]
             else:
                 if callback_context.triggered_id == ids.LOAN.SUBSIDY.START:
-                    memory['subsidy_arr']['start'] = subsidy_start
+                    patched_memory['subsidy_arr']['start'] = subsidy_start
                 elif callback_context.triggered_id == ids.LOAN.SUBSIDY.TENURE:
-                    memory['subsidy_arr']['tenure'] = (subsidy_tenure if subsidy_tenure else 0)
+                    patched_memory['subsidy_arr']['tenure'] = (subsidy_tenure if subsidy_tenure else 0)
                 # reset the variables of the subsidy loan.
                 elif triggered_id == 'Reset':
-                    memory['subsidy_arr'] = {
+                    patched_memory['subsidy_arr'] = {
                           'amount': 0,
                           'start': 0,
                           'tenure': 0,
@@ -166,7 +170,7 @@ class panel():
                     }
                 else:
                     pass           
-            return memory
+            return patched_memory
         
         
         @callback(

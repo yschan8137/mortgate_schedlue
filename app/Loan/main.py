@@ -1,4 +1,6 @@
 import pandas as pd
+import sys
+sys.path.append('./')
 from app.Loan.computation.helpers.scheduler import ensure_list_type, kwargs_detection
 from app.Loan.computation.helpers.prepay import _time_, _amount_
 from app.Loan.computation.methods import _EPP_arr_, _ETP_arr_
@@ -550,7 +552,7 @@ def async_calculator( # slower at most of the time.
     return res
 
 
-# py -m unittest app.Loan.main
+# python app/Loan/main.py
 # py -m app.Loan.main
 if __name__ == "__main__":
     import time

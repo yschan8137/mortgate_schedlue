@@ -1,6 +1,6 @@
 import math
 import dash
-from dash import Dash, html, Input, Output, dash_table, callback
+from dash import Dash, html, Input, Output, dash_table, callback, Patch
 import dash_mantine_components as dmc
 import time
 from itertools import groupby
@@ -24,7 +24,6 @@ def create_table(df, **kwargs):
     style['textAlign']= 'center'
     Index_name= kwargs.get('index', {}).get('name', 'Index')
     indexes, columns, values = df['index'], df['columns'], df['data']
-    print('columns', columns)
     header = [html.Tr(
         [
             html.Th(value, rowSpan= (len(columns[0]) if value == Index_name else 1), colSpan= len([*col]), loading_state= {}, style= style) 
@@ -142,10 +141,9 @@ def table():
     # data table
     @callback(
         [
-            Output(DATATABLE.SUM, 'children'),
             Output(DATATABLE.TABLE, 'children'),
+            Output(DATATABLE.SUM, 'children'),
             Output('page_current', 'total'),
-            # Output(DATATABLE.TABLE, 'page_count'),
         ],
         [
             Input(LOAN.RESULT.DATAFRAME, 'data'),
@@ -160,27 +158,31 @@ def table():
         page_size_editable,
         columns,
         ):
+        data= data['data']
+        patched_table= Patch()
+        patched_sum_table= Patch()
+        patched_pages= Patch()
         if df_schema.level_0.SUBSIDY in [col[0] for col in data['columns']]:
             data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[2] in columns or col[0] in columns], data['data'])]
             data['columns'] = [col for col in data['columns'] if col[2] in columns or col[0] in columns]
         else:
             data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[1] in columns], data['data'])]
             data['columns'] = [col for col in data['columns'] if col[1] in columns]
-        pages = math.ceil((len(data['data']) - 2) / page_size_editable)
+        patched_pages = math.ceil((len(data['data']) - 2) / page_size_editable)
         page_size_editable = (
             page_size_editable if page_size_editable and page_size_editable > 0 else 1)
-        table= create_table({k: (v if k not in ['data', 'index'] 
+        patched_table= create_table({k: (v if k not in ['data', 'index'] 
                    else (v[((page_current - 1) * page_size_editable) + 1: (page_current * page_size_editable) + 1] if len(v) >= (page_current * page_size_editable) + 1 else v)
                 ) for k, v in data.items()})
-        table_sum= create_table(
+        patched_sum_table= create_table(
             {k: (v if k not in ['data', 'index'] 
                    else [v[-1]]) for (k, v) in data.items()
             }
         )
-        return table_sum, table, pages
+        return patched_table, patched_sum_table, patched_pages
     return layout
 
-
+# python app/Dashboard/pages/components/DataTable/table.py
 # py -m app.Dashboard.pages.components.DataTable.table
 if __name__ == "__main__":
     from app.Loan import calculator, default_kwargs
@@ -214,4 +216,4 @@ if __name__ == "__main__":
         ]
     )
     
-    app.run_server(debug= True)
+    app.run_server(debug= True, threaded= True)

@@ -2,6 +2,9 @@ from dash import Dash, html
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
+import sys
+sys.path.append('./')
+
 from app.Dashboard.navbar import create_navbar
 from app.Dashboard.pages.components.Controls.panels import panel
 from app.Dashboard.pages.components.Graphic.app import graph
@@ -13,6 +16,7 @@ NAVBAR = create_navbar()
 # To use Font Awesome Icons
 FA621 = "https://use.fontawesome.com/releases/v6.2.1/css/all.css"
 APP_TITLE = "Amort"
+
 
 # [] divided frames by setting html. div
 # [] scroll bar style
@@ -100,10 +104,9 @@ app.layout = dmc.MantineProvider(  # <- Wrap App with Loading Component
     withGlobalStyles= True,
 )
 
-
+# python app/Dashboard/tabs.py
 # py -m app.Dashboard.tabs
 if __name__ == "__main__":
     app.run_server(
     debug=True, 
-    # threaded=True,
 )

@@ -149,6 +149,7 @@ def datatable():
         page_size_editable,
         columns,
         ):
+        data = data['data']
         if df_schema.level_0.SUBSIDY in [col[0] for col in data['columns']]:
             data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[2] in columns or col[0] in columns], data['data'])]
             data['columns'] = [col for col in data['columns'] if col[2] in columns or col[0] in columns]
