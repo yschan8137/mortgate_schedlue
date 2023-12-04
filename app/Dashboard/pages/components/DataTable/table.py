@@ -1,6 +1,6 @@
 import math
 import dash
-from dash import Dash, html, Input, Output, dash_table, callback, Patch
+from dash import Dash, html, Input, Output, dash_table, callback, Patch, clientside_callback
 import dash_mantine_components as dmc
 import time
 from itertools import groupby
@@ -139,47 +139,79 @@ def table():
 
 
     # data table
-    @callback(
-        [
-            Output(DATATABLE.TABLE, 'children'),
-            Output(DATATABLE.SUM, 'children'),
-            Output('page_current', 'total'),
-        ],
-        [
-            Input(LOAN.RESULT.DATAFRAME, 'data'),
-            Input('page_current', 'page'),
-            Input(DATATABLE.PAGE.SIZE, 'value'),  # 調整列數
-            Input(DATATABLE.COLUMN, 'value'),
-        ],
-    )
-    def update_datatable(
-        data,
-        page_current,
-        page_size_editable,
-        columns,
-        ):
-        data= data['data']
-        patched_table= Patch()
-        patched_sum_table= Patch()
-        patched_pages= Patch()
-        if df_schema.level_0.SUBSIDY in [col[0] for col in data['columns']]:
-            data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[2] in columns or col[0] in columns], data['data'])]
-            data['columns'] = [col for col in data['columns'] if col[2] in columns or col[0] in columns]
-        else:
-            data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[1] in columns], data['data'])]
-            data['columns'] = [col for col in data['columns'] if col[1] in columns]
-        patched_pages = math.ceil((len(data['data']) - 2) / page_size_editable)
-        page_size_editable = (
-            page_size_editable if page_size_editable and page_size_editable > 0 else 1)
-        patched_table= create_table({k: (v if k not in ['data', 'index'] 
-                   else (v[((page_current - 1) * page_size_editable) + 1: (page_current * page_size_editable) + 1] if len(v) >= (page_current * page_size_editable) + 1 else v)
-                ) for k, v in data.items()})
-        patched_sum_table= create_table(
-            {k: (v if k not in ['data', 'index'] 
-                   else [v[-1]]) for (k, v) in data.items()
+    # @callback(
+    #     [
+    #         Output(DATATABLE.TABLE, 'children'),
+    #         Output(DATATABLE.SUM, 'children'),
+    #         Output('page_current', 'total'),
+    #     ],
+    #     [
+    #         Input(LOAN.RESULT.DATAFRAME, 'data'),
+    #         Input('page_current', 'page'),
+    #         Input(DATATABLE.PAGE.SIZE, 'value'),  # 調整列數
+    #         Input(DATATABLE.COLUMN, 'value'),
+    #     ],
+    # )
+    # def update_datatable(
+    #     data,
+    #     page_current,
+    #     page_size_editable,
+    #     columns,
+    #     ):
+    #     data= data['data']
+    #     patched_table= Patch()
+    #     patched_sum_table= Patch()
+    #     patched_pages= Patch()
+    #     if df_schema.level_0.SUBSIDY in [col[0] for col in data['columns']]:
+    #         data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[2] in columns or col[0] in columns], data['data'])]
+    #         data['columns'] = [col for col in data['columns'] if col[2] in columns or col[0] in columns]
+    #     else:
+    #         data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[1] in columns], data['data'])]
+    #         data['columns'] = [col for col in data['columns'] if col[1] in columns]
+    #     patched_pages = math.ceil((len(data['data']) - 2) / page_size_editable)
+    #     page_size_editable = (
+    #         page_size_editable if page_size_editable and page_size_editable > 0 else 1)
+    #     patched_table= create_table({k: (v if k not in ['data', 'index'] 
+    #                else (v[((page_current - 1) * page_size_editable) + 1: (page_current * page_size_editable) + 1] if len(v) >= (page_current * page_size_editable) + 1 else v)
+    #             ) for k, v in data.items()})
+    #     patched_sum_table= create_table(
+    #         {k: (v if k not in ['data', 'index'] 
+    #                else [v[-1]]) for (k, v) in data.items()
+    #         }
+    #     )
+    #     return patched_table, patched_sum_table, patched_pages
+    
+    # build client_side_callback for above callback
+    clientside_callback(
+        """
+        function(data, page_current, page_size_editable, columns){
+            if (data){
+                data= JSON.parse(data);
+                if (data['columns'].map(x=>x[0]).includes('subsidy')){
+                    data['data'] = data['data'].map(x=>x.filter((_, i)=>data['columns'][i][2] in columns || data['columns'][i][0] in columns));
+                    data['columns'] = data['columns'].filter(x=>x[2] in columns || x[0] in columns);
+                }else{
+                    data['data'] = data['data'].map(x=>x.filter((_, i)=>data['columns'][i][1] in columns));
+                    data['columns'] = data['columns'].filter(x=>x[1] in columns);
+                }
+                page_size_editable = page_size_editable ? page_size_editable : 1;
+                return [
+                    data['data'].slice((page_current - 1) * page_size_editable + 1, page_current * page_size_editable + 1),
+                    [data['data'].slice(-1)],
+                    Math.ceil((data['data'].length - 2) / page_size_editable)
+                ];
             }
-        )
-        return patched_table, patched_sum_table, patched_pages
+        }
+        """,
+        Output(DATATABLE.TABLE, 'children'),
+        Output(DATATABLE.SUM, 'children'),
+        Output('page_current', 'total'),
+        Input(LOAN.RESULT.DATAFRAME, 'data'),
+        Input('page_current', 'page'),
+        Input(DATATABLE.PAGE.SIZE, 'value'),  # 調整列數
+        Input(DATATABLE.COLUMN, 'value'),
+    )
+    
     return layout
 
 # python app/Dashboard/pages/components/DataTable/table.py
