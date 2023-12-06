@@ -1,4 +1,4 @@
-from dash import Dash, html, dcc, Input, Output, State, callback, Patch, callback_context, clientside_callback, Patch
+from dash import Dash, html, dcc, Input, Output, State, callback, Patch, callback_context, clientside_callback
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
@@ -118,14 +118,14 @@ class panel():
                         patched_memory['start_date'] = start_date
                 elif triggered_id['type'] == suffix_for_type(ids.ADVANCED.DROPDOWN.OPTIONS, ids.LOAN.TYPE):
                     patched_memory['method'] = repayment_methods
-                elif triggered_id['type'] == suffix_for_type(ids.LOAN.INTEREST, ids.LOAN.TYPE):
+                elif triggered_id['type'] == suffix_for_type(ids.LOAN.INTEREST, ids.LOAN.TYPE) and interest:
                         patched_memory['interest_arr']['interest']= [interest]
                         patched_memory['interest_arr']['time']= []
                 elif triggered_id['type'] == suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.TYPE):
-                        patched_memory['interest_arr']['interest']= [memory['interest_arr']['interest'][0], *arr.values()]
+                        patched_memory['interest_arr']['interest']= [patched_memory['interest_arr']['interest'][0], *arr.values()]
                         patched_memory['interest_arr']['time']= [int(v) for v in arr.keys()]
                 elif triggered_id['type'] == suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.PREPAY.TYPE):
-                    memory['prepay_arr'] = {
+                    patched_memory['prepay_arr'] = {
                             'amount': [*prepay_arr.values()],
                             'time': [int(v) for v in prepay_arr.keys()]
                         }
@@ -140,11 +140,11 @@ class panel():
                             'amount': [*subsidy_prepay_arr.values()],
                             'time': [int(v) for v in subsidy_prepay_arr.keys()]
                         }
-                elif triggered_id['type'] == suffix_for_type(ids.LOAN.INTEREST, ids.LOAN.SUBSIDY.TYPE):
+                elif triggered_id['type'] == suffix_for_type(ids.LOAN.INTEREST, ids.LOAN.SUBSIDY.TYPE) and subsidy_interest:
                         patched_memory['subsidy_arr']['interest_arr']['interest']= [subsidy_interest]
                         patched_memory['subsidy_arr']['interest_arr']['time']= []
                 elif triggered_id['type'] == suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.SUBSIDY.TYPE):
-                    patched_memory['subsidy_arr']['interest_arr']['interest']= [memory['subsidy_arr']['interest_arr']['interest'][0], *subsidy_arr.values()]
+                    patched_memory['subsidy_arr']['interest_arr']['interest']= [patched_memory['subsidy_arr']['interest_arr']['interest'][0], *subsidy_arr.values()]
                     patched_memory['subsidy_arr']['interest_arr']['time']= [int(v) for v in subsidy_arr.keys()]
             else:
                 if callback_context.triggered_id == ids.LOAN.SUBSIDY.START:

@@ -26,8 +26,11 @@ app = Dash(__name__,
 
 # enable horizontal scrolling: https://community.plotly.com/t/horizontal-scroll-bootstrap-modal-component/43547
 def graph():
-    layout= dbc.Container(
+    layout= dmc.Container(
         [
+            dcc.Store(
+                id= 'clientside-figure-storage', 
+            ),   
             html.Br(),
             dmc.Group(
                 [
@@ -75,25 +78,9 @@ def graph():
                 style= {
                 }
             ),
-            dbc.Col(
-                dcc.Graph(
-                    figure= go.Figure(
-                        layout= dict(
-                            modebar= {
-                                'bgcolor': 'rgba(255, 255, 255, 0.3)',
-                                'activecolor':'gray',
-                                'orientation': 'v',
-                            },
-                            paper_bgcolor='rgba(0,0,0,0)',
-                            plot_bgcolor='rgba(255,255,255, 0.3)',
-                            legend= {
-                                'groupclick': 'toggleitem',
-                            },
-                            margin= {'t': 30},
-                        )
-                    ),
-                    id= GRAPH.LINE,
-                ),
+            dcc.Graph(
+                id= GRAPH.LINE, 
+                config={'displayModeBar': False}
             ),
         ],
         fluid=True,
@@ -103,270 +90,47 @@ def graph():
     )
 
 # options for dropdown menu
-#     @callback(
-#         Output('menu-dropdown', 'children'),
-#         Output('menu-dropdown', 'style'),
-#         Input(GRAPH.ACCUMULATION, 'value'),
-#         Input('menu-target', 'children'),
-#         Input(LOAN.RESULT.DATAFRAME, 'data'),
-#     )
-#     def update_toggle_items(
-#         accum, 
-#         label,
-#         data,
-#         ):
-#         data= data['data']
-#         level_0 = {c[0] for c in data['columns']}
-#         if df_schema.level_0.TOTAL in level_0:
-#             return [], {'display': 'none'}
-#         else:
-#             columns_for_original_mortgate= [
-#                 df_schema.level_2.PAYMENT, 
-#                 df_schema.level_2.PRINCIPAL, 
-#                 df_schema.level_2.INTEREST, 
-#                 df_schema.level_2.RESIDUAL,
-#             ]
-#             if accum and accum == 'cumulative':
-#                 columns_for_original_mortgate= [v for v in columns_for_original_mortgate if v != df_schema.level_2.RESIDUAL]
-#             dropdown= [
-#                     dmc.MenuItem(
-#                         column, 
-#                         id= {
-#                             'index': column, 
-#                             'type': GRAPH.DROPDOWN.ITEM
-#                         },
-#                     ) for column in columns_for_original_mortgate if column != label
-#                 ] # avoid duplicate label
-#             return dropdown, {'display': 'block'}
-
-    # build client-side callback for above dropdown menu callback
-    app.clientside_callback(
-        """
-        function (accum, label, data) {
-            data= data['data'];
-            level_0 = new Set(data['columns'].map(c => c[0]));
-            if (level_0.has('Total')) {
-                return [], {'display': 'none'};
-            } else {
-                columns_for_original_mortgate= [
-                    'Payment',
-                    'Principal',
-                    'Interest',
-                    'Residual',
-                ];
-                if (accum && accum == 'cumulative') {
-                    columns_for_original_mortgate= columns_for_original_mortgate.filter(v => v != 'Residual');
-                }
-                dropdown= columns_for_original_mortgate.filter(v => v != label).map(column => {
-                    return {
-                        'label': column,
-                        'value': column,
-                        'id': {
-                            'index': column,
-                            'type': 'dropdown-item',
-                        },
-                    };
-                });
-                return dropdown, {'display': 'block'};
-            }
-        }
-        """,
+    @callback(
         Output('menu-dropdown', 'children'),
         Output('menu-dropdown', 'style'),
         Input(GRAPH.ACCUMULATION, 'value'),
         Input('menu-target', 'children'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
     )
+    def update_toggle_items(
+        accum, 
+        label,
+        data,
+        ):
+        data= data['data']
+        level_0 = {c[0] for c in data['columns']}
+        if df_schema.level_0.TOTAL in level_0:
+            return [], {'display': 'none'}
+        else:
+            columns_for_original_mortgate= [
+                df_schema.level_2.PAYMENT, 
+                df_schema.level_2.PRINCIPAL, 
+                df_schema.level_2.INTEREST, 
+                df_schema.level_2.RESIDUAL,
+            ]
+            if accum and accum == 'cumulative':
+                columns_for_original_mortgate= [v for v in columns_for_original_mortgate if v != df_schema.level_2.RESIDUAL]
+            dropdown= [
+                    dmc.MenuItem(
+                        column, 
+                        id= {
+                            'index': column, 
+                            'type': GRAPH.DROPDOWN.ITEM
+                        },
+                    ) for column in columns_for_original_mortgate if column != label
+                ] # avoid duplicate label
+            return dropdown, {'display': 'block'}
+
 
 # update the results
-    # @callback(
+    @callback(
         # Output(GRAPH.LINE, 'figure'),
-        # Output('menu-target', 'children'),
-        # Output('menu-target', 'rightIcon'),
-        # Output('menu-target', 'loading'),
-        # Output('menu-target', 'gradient'),
-        # Input(GRAPH.ACCUMULATION, 'value'),
-        # Input(LOAN.RESULT.DATAFRAME, 'data'),
-        # Input({'index': ALL, 'type': GRAPH.DROPDOWN.ITEM}, 'n_clicks'),
-        # State('menu-target', 'children'),
-    # )
-    # def _graph(
-        # accum, 
-        # data,
-        # _,
-        # label,
-        # ):
-        # ctx= callback_context
-        # data= data['data']
-        # patched_figure= Patch()
-        # if isinstance(ctx.triggered_id, dict):
-            # chosen_figure= ctx.triggered_id['index']
-        # else:
-            # if df_schema.level_0.TOTAL not in [col[0] for col in data['columns']]: #type: ignore
-                # if accum == 'cumulative':
-                    # if label== df_schema.level_2.RESIDUAL:
-                        # chosen_figure= df_schema.level_2.PAYMENT
-                    # else:
-                        # chosen_figure= label
-                # else:
-                    # chosen_figure= (label if label != df_schema.level_0.TOTAL else df_schema.level_2.PAYMENT)
-            # else:
-                # chosen_figure = df_schema.level_0.TOTAL
-        # 
-        # ns, cols = zip(*[(n, col) for n, col in enumerate(data['columns']) if chosen_figure in col])
-        # res= []
-        # for n, col in zip(ns, cols):
-            # dff= [data[n] for data in data['data'][1:-1]]
-            # method= (" + ".join([co for co in col if co != chosen_figure]) if len(col) > 2 else col[0])
-            # 
-            # if accum == 'cumulative':
-                # dff= [*accumulate(dff)] 
-            # dff= [*map(lambda x: f"{round(x):,}", dff)]
-            # x_axis_value= data['index']
-            # 
-            # res.append(go.Scatter(
-                    # x= x_axis_value,
-                    # y= dff,
-                    # legendgroup= chosen_figure,
-                    # legendgrouptitle_text= chosen_figure,
-                    # name= method,                   
-                    # mode= 'lines',
-                    # connectgaps= True,
-                    # stackgroup= (col[0] if accum == 'cumulative' else None),
-                    # text= [method]* len(x_axis_value),
-                    # hovertemplate =
-                        # "<br><b>%{text}</b>" +
-                        # "<br><b>Time</b>: %{x}" + 
-                        # "<br><b>Amount</b>: %{y:,}" +
-                        # "<extra></extra>",
-                # ),
-            # )
-        # patched_figure['data']= res
-
-        # patched_figure['layout']['xaxis']= dict(
-            # title= 'Time',
-            # showgrid=True,
-            # gridwidth=1,
-            # gridcolor='LightGray',
-        # )
-        # patched_figure['layout']['yaxis']= dict(
-            # title= 'Amount',
-            # showgrid=True,
-            # gridwidth=1,
-            # gridcolor='LightGray',
-            # type= 'log',
-            # tickformat= ',.0f',
-            # rangemode= 'tozero',
-        # )
-        # patched_figure['layout']['autosize']= False
-        # patched_figure['layout']['width']= 1050
-        # patched_figure['layout']['height']= 600
-        # patched_figure['layout']['showlegend']= False
-        # patched_figure['layout']['hovermode']= 'x'        
-        # return patched_figure, chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL else {"from": "indigo", "to": "cyan"})
-    
-    # build client-side callback for above graph callback
-    clientside_callback(
-        """
-        function(accum, data, _, label) {
-            data= data['data'];
-            patched_figure= {
-                'data': [],
-                'layout': {
-                    'xaxis': {
-                        'title': 'Time',
-                        'showgrid': true,
-                        'gridwidth': 1,
-                        'gridcolor': 'LightGray',
-                    },
-                    'yaxis': {
-                        'title': 'Amount',
-                        'showgrid': true,
-                        'gridwidth': 1,
-                        'gridcolor': 'LightGray',
-                        'type': 'log',
-                        'tickformat': ',.0f',
-                        'rangemode': 'tozero',
-                    },
-                    'autosize': false,
-                    'width': 1050,
-                    'height': 600,
-                    'showlegend': false,
-                    'hovermode': 'x',
-                },
-            };
-            if (typeof ctx !== 'undefined') {
-                if (ctx.triggered.map(t => t.prop_id).includes('menu-target.children')) {
-                    chosen_figure= label;
-                } else {
-                    if (data['columns'].map(c => c[0]).includes('Total')) {
-                        chosen_figure= 'Total';
-                    } else {
-                        if (accum == 'cumulative') {
-                            if (label == 'Residual') {
-                                chosen_figure= 'Payment';
-                            } else {
-                                chosen_figure= label;
-                            }
-                        } else {
-                            chosen_figure= (label == 'Total' ? 'Payment' : label);
-                        }
-                    }
-                }
-            } else {
-                if (data['columns'].map(c => c[0]).includes('Total')) {
-                    chosen_figure= 'Total';
-                } else {
-                    if (accum == 'cumulative') {
-                        if (label == 'Residual') {
-                            chosen_figure= 'Payment';
-                        } else {
-                            chosen_figure= label;
-                        }
-                    } else {
-                        chosen_figure= (label == 'Total' ? 'Payment' : label);
-                    }
-                }
-            }
-            ns= [];
-            cols= [];
-            for (let n= 0; n < data['columns'].length; n++) {
-                if (data['columns'][n].includes(chosen_figure)) {
-                    ns.push(n);
-                    cols.push(data['columns'][n]);
-                }
-            }
-            res= [];
-            for (let i= 0; i < ns.length; i++) {
-                dff= data['data'].slice(1, -1).map(x => x[ns[i]]);
-                method= (cols[i].length > 2 ? cols[i].filter(c => c != chosen_figure).join(' + ') : cols[i][0]);
-                if (accum == 'cumulative') {
-                    dff= dff.reduce((a, x, i) => [...a, x + (a[i - 1] || 0)], []);
-                }
-                dff= dff.map(x => x.toLocaleString());
-                x_axis_value= data['index'];
-                res.push({
-                    'x': x_axis_value,
-                    'y': dff,
-                    'legendgroup': chosen_figure,
-                    'legendgrouptitle_text': chosen_figure,
-                    'name': method,
-                    'mode': 'lines',
-                    'connectgaps': true,
-                    'stackgroup': (accum == 'cumulative' ? cols[i][0] : null),
-                    'text': Array(x_axis_value.length).fill(method),
-                    'hovertemplate':
-                        "<br><b>%{text}</b>" +
-                        "<br><b>Time</b>: %{x}" +
-                        "<br><b>Amount</b>: %{y:,}" +
-                        "<extra></extra>",
-                });
-            }
-            patched_figure['data']= res;
-            return patched_figure, chosen_figure, (chosen_figure != 'Total' ? {'icon': 'raphael:arrowdown'} : null), false, (chosen_figure == 'Total' ? {'from': 'teal', 'to': 'blue', 'deg': 60} : {'from': 'indigo', 'to': 'cyan'});
-        }
-        """,
-        Output(GRAPH.LINE, 'figure'),
+        Output('clientside-figure-storage', 'data'),
         Output('menu-target', 'children'),
         Output('menu-target', 'rightIcon'),
         Output('menu-target', 'loading'),
@@ -375,6 +139,116 @@ def graph():
         Input(LOAN.RESULT.DATAFRAME, 'data'),
         Input({'index': ALL, 'type': GRAPH.DROPDOWN.ITEM}, 'n_clicks'),
         State('menu-target', 'children'),
+    )
+    def _graph(
+        accum, 
+        data,
+        _,
+        label,
+        ):
+        ctx= callback_context
+        data= data['data']
+        if isinstance(ctx.triggered_id, dict):
+            chosen_figure= ctx.triggered_id['index']
+        else:
+            if df_schema.level_0.TOTAL not in [col[0] for col in data['columns']]: #type: ignore
+                if accum == 'cumulative':
+                    if label== df_schema.level_2.RESIDUAL:
+                        chosen_figure= df_schema.level_2.PAYMENT
+                    else:
+                        chosen_figure= label
+                else:
+                    chosen_figure= (label if label != df_schema.level_0.TOTAL else df_schema.level_2.PAYMENT)
+            else:
+                chosen_figure = df_schema.level_0.TOTAL
+        figure_config= {
+                    'data': [
+                        {
+                            'type': 'scatter',
+                            'x': [],
+                            'y': [],
+                        },
+                    ],
+                    'layout': {
+                        'modebar': {
+                            'bgcolor': 'rgba(255, 255, 255, 0.3)',
+                            'activecolor':'gray',
+                            'orientation': 'v',
+                        },
+                        'paper_bgcolor':'rgba(0,0,0,0)',
+                        'plot_bgcolor': 'rgba(255,255,255, 0.3)',
+                        'legend': {
+                            'groupclick': 'toggleitem',
+                            'orientation': 'h',
+                            'yanchor': 'bottom',
+                            'y': 1.01,
+                            'xanchor': 'right',
+                            'x': 1,
+                        },
+                        'margin': {'t': 30},
+                        'xaxis': {
+                                'title': 'Time',
+                                'showgrid': True,
+                                'gridwidth': 1,
+                                'gridcolor': 'LightGray',
+                            },
+                        'yaxis': {
+                            'title': 'Amount',
+                            'showgrid': True,
+                            'gridwidth': 1,
+                            'gridcolor': 'LightGray',
+                            'type': 'log',
+                            'tickformat': ',.0f',
+                            'rangemode': 'tozero',
+                        },
+                    },
+                }
+        ns, cols = zip(*[(n, col) for n, col in enumerate(data['columns']) if chosen_figure in col])
+        for n, col in zip(ns, cols):
+            dff= [data[n] for data in data['data'][1:-1]]
+            method= (" + ".join([co for co in col if co != chosen_figure]) if len(col) > 2 else col[0])
+            
+            if accum == 'cumulative':
+                dff= [*accumulate(dff)] 
+            dff= [*map(lambda x: f"{round(x):,}", dff)]
+            x_axis_value= data['index']
+
+            figure_config['data'].append(
+                {
+                    'connectgaps': True,
+                    'hovertemplate': '<br><b>%{text}</b><br><b>Time</b>: %{x}<br><b>Amount</b>: %{y:,}<extra></extra>',
+                    'legendgroup': chosen_figure,
+                    'legendgrouptitle': {'text': chosen_figure},
+                    'mode': 'lines',
+                    'name': method,
+                    'text': [method]* len(x_axis_value),
+                    'type': 'scatter',
+                    'stackgroup': (col[0] if accum == 'cumulative' else None),
+                    'x': x_axis_value,
+                    'y': dff,
+                }
+            )
+        figure= go.Figure(figure_config)
+        return figure, chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL else {"from": "indigo", "to": "cyan"})
+    
+    # clientside callback for updating the figure
+    clientside_callback(
+        """
+        function(figure) {
+            if(figure === undefined) {
+                return {'data': [], 'layout': {}};
+            }
+            const fig = Object.assign({}, figure, {
+                data: figure.data.map(d => Object.assign({}, d)),
+                layout: {
+                    ...figure.layout,
+                }
+            });
+            return fig;
+        }
+        """,
+        Output(GRAPH.LINE, 'figure'),
+        Input('clientside-figure-storage', 'data'),
     )
 
     return layout

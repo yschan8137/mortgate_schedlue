@@ -194,17 +194,16 @@ def addon(
         _,
         selected_time,
         current_input,
-        # memory,
+        memory,
     ):
         patched_item = Patch()
-        patched_memory= Patch()
         if selected_time and current_input:
-            patched_memory[str(selected_time)] = float(current_input)
+            memory[str(selected_time)] = float(current_input)
             sorted_memory= {}
-            for k in [str(sorted_key) for sorted_key in sorted([int(key) for key in patched_memory.keys()])]: 
-                sorted_memory[k]= patched_memory[k]
+            for k in [str(sorted_key) for sorted_key in sorted([int(key) for key in [v for v in memory.keys()]])]: 
+                sorted_memory[k]= memory[k]
             patched_item= [new_checklist_item(_, type= type, result= {k: v}) for (k, v) in sorted_memory.items()]
-            return patched_item, 0, 0, patched_memory
+            return patched_item, 0, 0, memory
         else:
             raise PreventUpdate
         
@@ -233,26 +232,25 @@ def addon(
         Output({"index": index, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
         Input({"index": index, "type": suffix_for_type(ADDON.DELETE, type)}, 'n_clicks'),
         State({'index': ALL, 'type': suffix_for_type('done', type)}, 'checked'),
-        # State({"index": index, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
+        State({"index": index, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
         prevent_initial_call=True
     )
     def delete_items(
         _, 
         state, 
-        # memory, 
+        memory, 
         ):
-        patched_item = Patch()
-        patched_memory= Patch()
         values_to_remove = []
-        if patched_memory:
+        patched_item = Patch()
+        if memory:
             for i, value in enumerate([s for s in state if s]): # Errors occurred when multiple components were deployed and "None" were added in the state list. To address this problem, I filtered the state list to remove all instances of "None" and only kept the instances of "done".  
                 if value:
                     values_to_remove.insert(0, i)
             for i in values_to_remove:
                 del patched_item[i]
                 # remove corresponding items from the memory.
-                del patched_memory[list(patched_memory.keys())[i]]
-            return patched_item, patched_memory
+                del memory[list(memory.keys())[i]]
+            return patched_item, memory
         else:
             raise PreventUpdate
         
