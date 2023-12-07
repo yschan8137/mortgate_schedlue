@@ -163,11 +163,11 @@ def graph():
                 chosen_figure = df_schema.level_0.TOTAL
         figure_config= {
                     'data': [
-                        {
-                            'type': 'scatter',
-                            'x': [],
-                            'y': [],
-                        },
+                        # {
+                            # 'type': 'scatter',
+                            # 'x': [],
+                            # 'y': [],
+                        # },
                     ],
                     'layout': {
                         'modebar': {

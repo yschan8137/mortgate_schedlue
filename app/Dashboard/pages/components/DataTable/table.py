@@ -1,6 +1,6 @@
 import math
 import dash
-from dash import Dash, html, Input, Output, dash_table, callback, Patch, clientside_callback
+from dash import Dash, html, dcc, Input, Output, dash_table, callback, Patch, clientside_callback, State
 import dash_mantine_components as dmc
 import time
 from itertools import groupby
@@ -73,6 +73,7 @@ def table():
     layout = html.Div(
         dmc.Stack(
             [
+                dcc.Store(id= 'clientside_table', data= {}),
                 dmc.Group(
                     children= [
                         dmc.Stack(
@@ -140,16 +141,18 @@ def table():
 
     ## data table
     @callback(
-        [
-            Output(DATATABLE.TABLE, 'children'),
-            Output(DATATABLE.SUM, 'children'),
-            Output('page_current', 'total'),
-        ],
+        Output('clientside_table', 'data'),
+        # [
+            # Output(DATATABLE.TABLE, 'children'),
+            # Output(DATATABLE.SUM, 'children'),
+            # Output('page_current', 'total'),
+        # ],
         [
             Input(LOAN.RESULT.DATAFRAME, 'data'),
             Input('page_current', 'page'),
             Input(DATATABLE.PAGE.SIZE, 'value'),  # 調整列數
             Input(DATATABLE.COLUMN, 'value'),
+            State('clientside_table', 'data'),
         ],
     )
     def update_datatable(
@@ -157,42 +160,47 @@ def table():
         page_current,
         page_size_editable,
         columns,
+        memory,
         ):
         data= data['data']
-        patched_table= Patch()
-        patched_sum_table= Patch()
-        patched_pages= Patch()
         if df_schema.level_0.SUBSIDY in [col[0] for col in data['columns']]:
             data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[2] in columns or col[0] in columns], data['data'])]
             data['columns'] = [col for col in data['columns'] if col[2] in columns or col[0] in columns]
         else:
             data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[1] in columns], data['data'])]
             data['columns'] = [col for col in data['columns'] if col[1] in columns]
-        patched_pages = math.ceil((len(data['data']) - 2) / page_size_editable)
+        pages = math.ceil((len(data['data']) - 2) / page_size_editable)
         page_size_editable = (
             page_size_editable if page_size_editable and page_size_editable > 0 else 1)
-        patched_table= create_table({k: (v if k not in ['data', 'index'] 
+        table= create_table({k: (v if k not in ['data', 'index'] 
                    else (v[((page_current - 1) * page_size_editable) + 1: (page_current * page_size_editable) + 1] if len(v) >= (page_current * page_size_editable) + 1 else v[((page_current - 1) * page_size_editable) + 1:-1])
                 ) for k, v in data.items()})
-        patched_sum_table= create_table(
+        sum_table= create_table(
             {k: (v if k not in ['data', 'index'] 
                    else [v[-1]]) for (k, v) in data.items()
             }
         )
-        return patched_table, patched_sum_table, patched_pages
+        memory['table']= table
+        memory['sum_table']= sum_table
+        memory['pages']= pages
+        return memory #patched_table, patched_sum_table, patched_pages
     
-    # https://dash.plotly.com/clientside-callbacks#using-plotly-express-to-generate-a-figure
-    # clientside_callback(
-    #     """
-    #     async function(value) {
-    #     const response = await fetch(value);
-    #     const data = await response.json();
-    #     return data;
-    #     }
-    #     """,
-    #     Output("my-table-promises", "data"),
-    #     Input("data-select", "value"),
-    # )
+    clientside_callback(
+        """
+        async function(data) {
+            if (data === undefined) {
+                return;
+            }
+            return [data['table'], data['sum_table'], data['pages']];
+        }
+        """,
+         [
+             Output(DATATABLE.TABLE, 'children'),
+            Output(DATATABLE.SUM, 'children'),
+            Output('page_current', 'total'),
+         ],
+         Input('clientside_table', 'data'),
+    )
 
     return layout
 
