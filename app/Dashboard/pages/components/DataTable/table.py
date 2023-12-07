@@ -142,6 +142,7 @@ def table():
     ## data table
     @callback(
         Output('clientside_table', 'data'),
+        Output('page_current', 'page'),
         # [
             # Output(DATATABLE.TABLE, 'children'),
             # Output(DATATABLE.SUM, 'children'),
@@ -172,8 +173,11 @@ def table():
         pages = math.ceil((len(data['data']) - 2) / page_size_editable)
         page_size_editable = (
             page_size_editable if page_size_editable and page_size_editable > 0 else 1)
+        print('pages: ', pages)
+        if page_current > pages:
+            page_current = pages
         table= create_table({k: (v if k not in ['data', 'index'] 
-                   else (v[((page_current - 1) * page_size_editable) + 1: (page_current * page_size_editable) + 1] if len(v) >= (page_current * page_size_editable) + 1 else v[((page_current - 1) * page_size_editable) + 1:-1])
+                   else (v[((page_current - 1) * page_size_editable) + 1: (page_current * page_size_editable) + 1] if len(v) > (page_current * page_size_editable) + 1 else v[((page_current - 1) * page_size_editable) + 1:-1])
                 ) for k, v in data.items()})
         sum_table= create_table(
             {k: (v if k not in ['data', 'index'] 
@@ -183,7 +187,7 @@ def table():
         memory['table']= table
         memory['sum_table']= sum_table
         memory['pages']= pages
-        return memory #patched_table, patched_sum_table, patched_pages
+        return memory, page_current #patched_table, patched_sum_table, patched_pages
     
     clientside_callback(
         """
