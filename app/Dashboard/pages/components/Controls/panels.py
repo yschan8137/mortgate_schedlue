@@ -1,9 +1,9 @@
-from dash import Dash, html, dcc, Input, Output, State, callback, Patch, callback_context, clientside_callback
+from dash import Dash, html, dcc, Input, Output, State, callback, Patch, callback_context, no_update
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
 
 from app.Dashboard.assets import ids, specs
@@ -46,6 +46,7 @@ class panel():
         def update_data_frame(kwargs):
             # It is neccessary that all the sufficient parameters are given.
             patched_memory= Patch()
+            
             if (subsidy_start:= kwargs['subsidy_arr']['start'] > 0) and subsidy_start <= 24 and (kwargs['subsidy_arr']['amount'] > 0) and (kwargs['subsidy_arr']['tenure'] > 0) and (subsidy_interest:= kwargs['subsidy_arr']['interest_arr']['interest']) and (len([c for c in subsidy_interest if c]) > 0):
                 patched_memory['data'] = calculator(**kwargs, thousand_sep= False)
                 return patched_memory
@@ -167,9 +168,7 @@ class panel():
                              'time': [],
                              'amount': [],
                         },
-                    }
-                else:
-                    pass           
+                    }  
             return patched_memory
         
         
@@ -187,10 +186,13 @@ class panel():
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.DROPDOWN.LIST, ids.LOAN.SUBSIDY.PREPAY.TYPE)}, 'data', allow_duplicate=True),
             ],
             Input('Reset', 'n_clicks'),
-            State(ids.LOAN.RESULT.KWARGS, 'data'),
+            # State(ids.LOAN.RESULT.KWARGS, 'data'),
             prevent_initial_call=True
         )
-        def reset_all(_, memory):
+        def reset_all(
+            _, 
+            # memory
+            ):
             if callback_context.triggered_id == "Reset":
                 return [0, 0, 0, 0, cls.kwargs_schema, 0, {}, {}, [], []]
             else:

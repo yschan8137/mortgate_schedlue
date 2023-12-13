@@ -8,5 +8,10 @@
     "chat.editor.fontSize": 16,
     "markdown.preview.fontSize": 16,
     "editor.accessibilityPageSize": 20,
-    "editor.bracketPairColorization.independentColorPoolPerBracketType": true
+    "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+    "python.linting.pylintArgs": [
+        "--disable=missing-module-docstring",
+        "--disable=missing-function-docstring",
+        "--disable=missing-class-docstring"
+      ]
 }

@@ -186,7 +186,7 @@ def addon(
         [
             State({"index": MATCH, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)}, 'value'),
             State({"index": MATCH, "type": suffix_for_type(ADDON.INPUT, type)}, 'value'),
-            # State({"index": MATCH, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
+            State({"index": MATCH, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
         ],
         prevent_initial_call=True
     )

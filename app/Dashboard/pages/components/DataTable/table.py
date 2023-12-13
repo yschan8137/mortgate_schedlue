@@ -1,28 +1,28 @@
+# pylint: disable=C0114
 import math
-import dash
-from dash import Dash, html, dcc, Input, Output, dash_table, callback, Patch, clientside_callback, State
+from dash import Dash, html, Input, Output, callback
 import dash_mantine_components as dmc
 import time
 from itertools import groupby
 
 from app.Dashboard.assets.ids import LOAN, DATATABLE
 from app.Loan import df_schema
-from app.Dashboard.pages.components.toolkit import convert_df_to_dash
 from app.Dashboard.pages.components.Controls.panels import panel
 from app.Dashboard.assets import specs
 
 
-app = Dash(__name__, 
-       external_stylesheets=[
-           "https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;900&display=swap",
-        ],
-       suppress_callback_exceptions=True,
-       ) 
+app = Dash(
+    __name__, 
+    external_stylesheets=[
+        "https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;900&display=swap",
+    ],
+    suppress_callback_exceptions=True)
 
-def create_table(df, **kwargs):
-    style= kwargs.get('style', {})
-    style['textAlign']= 'center'
-    Index_name= kwargs.get('index', {}).get('name', 'Index')
+
+def create_table(df, **kwargs): 
+    style = kwargs.get('style', {})
+    style['textAlign'] = 'center'
+    Index_name = kwargs.get('index', {}).get('name', 'Index')
     indexes, columns, values = df['index'], df['columns'], df['data']
     header = [html.Tr(
         [
@@ -38,6 +38,7 @@ def create_table(df, **kwargs):
     ]
     table = [html.Thead(header), html.Tbody(rows)]
     return table
+
 
 class CONFIG:
     class SPLITS:
@@ -73,12 +74,12 @@ def table():
     layout = html.Div(
         dmc.Stack(
             [
-                dcc.Store(id= 'clientside_table', data= {}),
+                # dcc.Store(id= 'clientside_table', data= {}),
                 dmc.Group(
                     children= [
                         dmc.Stack(
                             [
-                                dmc.Title("Columns", order= 3),
+                                dmc.Title("Table", order= 2),
                                 dmc.CheckboxGroup(
                                     [
                                         dmc.Checkbox(
@@ -105,35 +106,46 @@ def table():
                         rows_per_page,
                     ],
                 ),
-                dmc.Table(
-                    children= [],
-                    id= DATATABLE.SUM,
-                    striped= True,
-                    highlightOnHover=True,
-                    withBorder=True,
-                    withColumnBorders=True,
-                    verticalSpacing="xs",
-                    horizontalSpacing=10,                    
-                ),
-                dmc.Table(
-                    children= [],
-                    id= DATATABLE.TABLE,
-                    striped= True,
-                    highlightOnHover=True,
-                    withBorder=True,
-                    withColumnBorders=True,
-                    verticalSpacing="xs",
-                    horizontalSpacing=10,
-                ),
-                dmc.Pagination(
-                    total= 1,
-                    page= 1,
-                    siblings=1, 
-                    withControls= True,
-                    withEdges= True,
-                    position= 'right',
-                    id= 'page_current',
-                ),
+                dmc.LoadingOverlay(
+                    [
+                        dmc.Table(
+                            children= [],
+                            id= DATATABLE.SUM,
+                            striped= True,
+                            highlightOnHover=True,
+                            withBorder=True,
+                            withColumnBorders=True,
+                            verticalSpacing="xs",
+                            horizontalSpacing=10,                    
+                        ),
+                        dmc.Table(
+                            children= [],
+                            id= DATATABLE.TABLE,
+                            striped= True,
+                            highlightOnHover=True,
+                            withBorder=True,
+                            withColumnBorders=True,
+                            verticalSpacing="xs",
+                            horizontalSpacing=10,
+                        ),
+                        dmc.Pagination(
+                            total= 1,
+                            page= 1,
+                            siblings=1, 
+                            withControls= True,
+                            withEdges= True,
+                            position= 'right',
+                            id= 'page_current',
+                        ),
+                    ],
+                    loaderProps= {
+                        "variant": "bars",
+                        "color": "yellow", 
+                        "size": "lg",
+                        'is_loading': True,
+                    },
+                    transitionDuration= 0.5,
+                )
             ]
         )
     )
@@ -141,19 +153,17 @@ def table():
 
     ## data table
     @callback(
-        Output('clientside_table', 'data'),
-        Output('page_current', 'page'),
-        # [
-            # Output(DATATABLE.TABLE, 'children'),
-            # Output(DATATABLE.SUM, 'children'),
-            # Output('page_current', 'total'),
-        # ],
+        # Output('clientside_table', 'data'),
+            Output(DATATABLE.TABLE, 'children'),
+            Output(DATATABLE.SUM, 'children'),
+            Output('page_current', 'total'),
+            Output('page_current', 'page'),
         [
             Input(LOAN.RESULT.DATAFRAME, 'data'),
             Input('page_current', 'page'),
             Input(DATATABLE.PAGE.SIZE, 'value'),  # 調整列數
             Input(DATATABLE.COLUMN, 'value'),
-            State('clientside_table', 'data'),
+            # State('clientside_table', 'data'),
         ],
     )
     def update_datatable(
@@ -161,8 +171,9 @@ def table():
         page_current,
         page_size_editable,
         columns,
-        memory,
+        # memory,
         ):
+        table_time0= time.time()
         data= data['data']
         if df_schema.level_0.SUBSIDY in [col[0] for col in data['columns']]:
             data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[2] in columns or col[0] in columns], data['data'])]
@@ -173,38 +184,36 @@ def table():
         pages = math.ceil((len(data['data']) - 2) / page_size_editable)
         page_size_editable = (
             page_size_editable if page_size_editable and page_size_editable > 0 else 1)
-        print('pages: ', pages)
         if page_current > pages:
             page_current = pages
-        table= create_table({k: (v if k not in ['data', 'index'] 
+        elif page_current == 0:
+            page_current = 1
+        tb= create_table({k: (v if k not in ['data', 'index'] 
                    else (v[((page_current - 1) * page_size_editable) + 1: (page_current * page_size_editable) + 1] if len(v) > (page_current * page_size_editable) + 1 else v[((page_current - 1) * page_size_editable) + 1:-1])
                 ) for k, v in data.items()})
-        sum_table= create_table(
+        sum_tb= create_table(
             {k: (v if k not in ['data', 'index'] 
                    else [v[-1]]) for (k, v) in data.items()
             }
         )
-        memory['table']= table
-        memory['sum_table']= sum_table
-        memory['pages']= pages
-        return memory, page_current #patched_table, patched_sum_table, patched_pages
+        return tb, sum_tb, pages, page_current
     
-    clientside_callback(
-        """
-        async function(data) {
-            if (data === undefined) {
-                return;
-            }
-            return [data['table'], data['sum_table'], data['pages']];
-        }
-        """,
-         [
-             Output(DATATABLE.TABLE, 'children'),
-            Output(DATATABLE.SUM, 'children'),
-            Output('page_current', 'total'),
-         ],
-         Input('clientside_table', 'data'),
-    )
+    # clientside_callback(
+    #     """
+    #     function(data) {
+    #         if (data=== undefined) {
+    #             return;
+    #         }
+    #         return [data['table'], data['sum_table'], data['pages']];
+    #     };
+    #     """,
+    #      [
+    #          Output(DATATABLE.TABLE, 'children'),
+    #          Output(DATATABLE.SUM, 'children'),
+    #          Output('page_current', 'total'),
+    #      ],
+    #      Input('clientside_table', 'data'),
+    # )
 
     return layout
 

@@ -34,7 +34,7 @@ class APP:
                 'margin-right': '5%',
             }
             class GITHUB:
-                LINK= "[YOUR GITHUB PROFILE URL]"
+                LINK= "https://github.com/yschan8137"
                 STYLE= {
                     "color": "white",
                     'size': '100px',
@@ -68,10 +68,7 @@ class APP:
                 "border-bottom": "1px solid #0C82DF",
                 "margin-top": "10px",
                 'margin-bottom': '5px',
-                # "position": 'absolute',
-                # "left": "86%",
                 "margin-right": "10%",
-                # "margin-bottom": "3%",
             }
             
     class TAB:
@@ -89,10 +86,10 @@ class APP:
     class PANEL:
         STYLE= {
             'width': 'auto',
-            'height': '92vh',
+            'height': '98vh',
             'margin-top': 10,
             'margin-left': 15,
-            'overflow-y': 'auto',
+            'overflow-y': 'scroll',
             'scrollbar-color': '#0C82DF #E2E2E2',
         }
         
