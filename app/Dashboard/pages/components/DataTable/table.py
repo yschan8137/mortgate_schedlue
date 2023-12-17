@@ -79,7 +79,7 @@ def table():
                     children= [
                         dmc.Stack(
                             [
-                                dmc.Title("Table", order= 2),
+                                dmc.Title("Details", order= 2),
                                 dmc.CheckboxGroup(
                                     [
                                         dmc.Checkbox(
