@@ -13,5 +13,7 @@
         "--disable=missing-module-docstring",
         "--disable=missing-function-docstring",
         "--disable=missing-class-docstring"
-      ]
+      ],
+      "notebook.output.wordWrap": true,
+      "notebook.stickyScroll.enabled": true
 }

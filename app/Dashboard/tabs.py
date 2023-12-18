@@ -18,21 +18,17 @@ FA621 = "https://use.fontawesome.com/releases/v6.2.1/css/all.css"
 APP_TITLE = "Amort"
 
 
-# [] divided frames by setting html. div
-# [] scroll bar style
-
 app = Dash(
     __name__,
-    # assets_folder= 'app/Dashboard/assets', #redirects to assets folder
     suppress_callback_exceptions=True,
     external_stylesheets=[
         "https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;900&display=swap",
         dbc.themes.LUMEN,  # Dash Themes CSS
         dbc.icons.BOOTSTRAP,
-        FA621,  # Font Awesome Icons CSS
+        "https://use.fontawesome.com/releases/v6.2.1/css/all.css",  # Font Awesome Icons CSS
     ],
     title=APP_TITLE,
-    # assets_external_path= 'app/Dashboard/assets',
+    assets_external_path= 'app/Dashboard/assets',
     
 )
 

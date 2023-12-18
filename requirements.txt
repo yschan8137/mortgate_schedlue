@@ -17,3 +17,4 @@ python-i18n[YAML]
 multiprocess
 dash-mantine-components
 dash-iconify
+# gunicorn
