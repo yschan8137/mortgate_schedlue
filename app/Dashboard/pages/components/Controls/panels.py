@@ -34,6 +34,9 @@ class panel():
                     data= {**cls.kwargs_schema},
                 ),
                 dcc.Store(
+                    'cache',
+                ),
+                dcc.Store(
                     ids.LOAN.RESULT.DATAFRAME,
                     data={},
                 ),
@@ -42,11 +45,14 @@ class panel():
         # register the result for data convertions.
         @callback(
             Output(ids.LOAN.RESULT.DATAFRAME, 'data'),
-            Input(ids.LOAN.RESULT.KWARGS, 'data'))
-        def update_data_frame(kwargs):
+            Output('cache', 'data'),
+            Input(ids.LOAN.RESULT.KWARGS, 'data'),
+            State('cache', 'data'),
+            )
+        def update_data_frame(kwargs, cache):
             # It is neccessary that all the sufficient parameters are given.
             patched_memory= Patch()
-            if ( 
+            if (
                 (subsidy_start:= kwargs['subsidy_arr']['start'] > 0) 
                 and subsidy_start <= 24 and (kwargs['subsidy_arr']['amount'] > 0) 
                 and (kwargs['subsidy_arr']['tenure'] > 0) 
@@ -57,8 +63,11 @@ class panel():
                 return patched_memory
             else:
                 new_kwargs = {k: v for (k, v) in kwargs.items() if k != 'subsidy_arr'}
-                patched_memory['data'] = calculator(**new_kwargs, thousand_sep= False)
-                return patched_memory
+                if new_kwargs == cache:
+                    raise PreventUpdate()
+                else:
+                    patched_memory['data'] = calculator(**new_kwargs, thousand_sep= False)
+                return patched_memory, new_kwargs 
     
         @callback(
                 Output(ids.LOAN.RESULT.KWARGS, 'data'),
