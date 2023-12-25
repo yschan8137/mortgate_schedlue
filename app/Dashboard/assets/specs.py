@@ -73,13 +73,13 @@ class APP:
             
     class TAB:
         STYLE= {
-            'width': 1100,
-            'height': '92vh',
+            # 'width': 1100,
+            # 'height': '92vh',
             # 'overflowY': 'auto',
-            'position': 'absolute',
-            'margin-top': 10,
-            'margin-left': 50,
-            'background-color': 'rgba(255, 255, 255, 0)',
+            # 'position': 'absolute',
+            # 'margin-top': 10,
+            # 'margin-left': 50,
+            # 'background-color': 'rgba(255, 255, 255, 0)',
             'overflow-y': 'auto',
         }
         

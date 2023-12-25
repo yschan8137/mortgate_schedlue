@@ -67,25 +67,25 @@ panel_tabs= dmc.Tabs(
                 dmc.TabsList(
                     [
                         dmc.Tab(
-                               ids.APP.INDEX.GRAPH,
+                               id= 'main-options',
                                icon= DashIconify(icon="bi:graph-up"),
-                               value= ids.APP.INDEX.GRAPH,
+                               value= 'Main',
                                ),
                         dmc.Tab(
-                               ids.APP.INDEX.DATA,
+                               id= 'advanced-options',
                                icon= DashIconify(icon="ph:table-light"),
-                               value= ids.APP.INDEX.DATA,
+                               value= 'Advanced',
                         ),
                     ]
                 ),
-                dmc.TabsPanel(graph(), value= ids.APP.INDEX.GRAPH),
+                dmc.TabsPanel(panel.front(), value= 'Main'),
                 dmc.TabsPanel(
-                    dataframe.table(), 
-                    value= ids.APP.INDEX.DATA,
+                    panel._advancedoptions(), 
+                    value= 'Advanced',
                 ),
             ],
-            value= ids.APP.INDEX.GRAPH,
-            id="card-tabs",
+            value= 'Main',
+            id="options-tabs",
             activateTabWithKeyboard= True,
             style= specs.APP.TAB.STYLE,
             className= 'custom-scrollbar'
@@ -107,22 +107,21 @@ app.layout = dmc.MantineProvider(  # <- Wrap App with Loading Component
         # NAVBAR,
         dmc.Container(
             [
-                html.Div(
-                    children= [
-                        panel.front(),
-                        html.Br(),
-                        panel._advancedoptions(),
-                    ],
-                    className= 'custom-scrollbar',
-                    style= {
-                        'width': 375,
-                        'height': '98vh',
-                        'margin-top': 10,
-                        'margin-left': 15,
-                        'overflow-y': 'scroll',
-                        'scrollbar-color': '#0C82DF #E2E2E2',
-                    },
-                ),
+                panel_tabs,
+                # html.Div(
+                #     children= [
+                #         panel_tabs,
+                #     ],
+                #     className= 'custom-scrollbar',
+                #     style= {
+                #         'width': 375,
+                #         'height': '98vh',
+                #         'margin-top': 10,
+                #         'margin-left': 15,
+                #         'overflow-y': 'scroll',
+                #         'scrollbar-color': '#0C82DF #E2E2E2',
+                #     },
+                # ),
                 html.Div(
                     [
                         graph(),
