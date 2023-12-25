@@ -46,8 +46,13 @@ class panel():
         def update_data_frame(kwargs):
             # It is neccessary that all the sufficient parameters are given.
             patched_memory= Patch()
-            
-            if (subsidy_start:= kwargs['subsidy_arr']['start'] > 0) and subsidy_start <= 24 and (kwargs['subsidy_arr']['amount'] > 0) and (kwargs['subsidy_arr']['tenure'] > 0) and (subsidy_interest:= kwargs['subsidy_arr']['interest_arr']['interest']) and (len([c for c in subsidy_interest if c]) > 0):
+            if ( 
+                (subsidy_start:= kwargs['subsidy_arr']['start'] > 0) 
+                and subsidy_start <= 24 and (kwargs['subsidy_arr']['amount'] > 0) 
+                and (kwargs['subsidy_arr']['tenure'] > 0) 
+                and (subsidy_interest:= kwargs['subsidy_arr']['interest_arr']['interest']) 
+                and (len([c for c in subsidy_interest if c]) > 0)
+                ):
                 patched_memory['data'] = calculator(**kwargs, thousand_sep= False)
                 return patched_memory
             else:
