@@ -28,7 +28,7 @@ app = Dash(
         "https://use.fontawesome.com/releases/v6.2.1/css/all.css",  # Font Awesome Icons CSS
     ],
     title=APP_TITLE,
-    assets_external_path= 'app/Dashboard/assets',
+    assets_folder= 'app/Dashboard/assets',
     
 )
 
@@ -62,6 +62,34 @@ app = Dash(
 #             className= 'custom-scrollbar'
 #         )
 
+panel_tabs= dmc.Tabs(
+            [
+                dmc.TabsList(
+                    [
+                        dmc.Tab(
+                               ids.APP.INDEX.GRAPH,
+                               icon= DashIconify(icon="bi:graph-up"),
+                               value= ids.APP.INDEX.GRAPH,
+                               ),
+                        dmc.Tab(
+                               ids.APP.INDEX.DATA,
+                               icon= DashIconify(icon="ph:table-light"),
+                               value= ids.APP.INDEX.DATA,
+                        ),
+                    ]
+                ),
+                dmc.TabsPanel(graph(), value= ids.APP.INDEX.GRAPH),
+                dmc.TabsPanel(
+                    dataframe.table(), 
+                    value= ids.APP.INDEX.DATA,
+                ),
+            ],
+            value= ids.APP.INDEX.GRAPH,
+            id="card-tabs",
+            activateTabWithKeyboard= True,
+            style= specs.APP.TAB.STYLE,
+            className= 'custom-scrollbar'
+        )
 
 app.layout = dmc.MantineProvider(  # <- Wrap App with Loading Component
     id= ids.APP.LOADING,
@@ -77,7 +105,7 @@ app.layout = dmc.MantineProvider(  # <- Wrap App with Loading Component
     children=[
         panel.register(),
         # NAVBAR,
-        dmc.Group(
+        dmc.Container(
             [
                 html.Div(
                     children= [
@@ -86,29 +114,40 @@ app.layout = dmc.MantineProvider(  # <- Wrap App with Loading Component
                         panel._advancedoptions(),
                     ],
                     className= 'custom-scrollbar',
-                    style= specs.APP.PANEL.STYLE,
+                    style= {
+                        'width': 375,
+                        'height': '98vh',
+                        'margin-top': 10,
+                        'margin-left': 15,
+                        'overflow-y': 'scroll',
+                        'scrollbar-color': '#0C82DF #E2E2E2',
+                    },
                 ),
-                # tabs,
                 html.Div(
                     [
                         graph(),
-                        dmc.Space(h=30),
+                        html.Br(),
                         dataframe.table(),
                     ],
                     className= 'custom-scrollbar',
                     style= {
-                        'width': '70%',
+                        'width': 'calc(100vw - 365px)',
                         'height': '98vh',
-                        'left': '30%',
-                        'align-items': 'center',
                         'overflow-y': 'scroll',
                         'scrollbar-color': '#0C82DF #E2E2E2',
+                        'margin-left': 5,
                     }
                 ),
+                
             ],
-            spacing= 10,
-            position= 'flex-start',
-            align= 'start',
+            fluid= True,
+            style= {
+                'width': '100vw',
+                'height': '98vh',
+                'margin': 0,
+                'padding': 0,
+                'display': 'flex',
+            }
         )
     ],
     withGlobalStyles= True,
@@ -120,4 +159,9 @@ if __name__ == "__main__":
     app.run_server(
         # debug=True,
         # threaded=True, 
-)
+        # dev_tools_ui=True,
+        # dev_tools_hot_reload= True,
+        # threaded=True,
+        # port= 8050,
+        # dev_tools_hot_reload_interval= 1000,
+    )

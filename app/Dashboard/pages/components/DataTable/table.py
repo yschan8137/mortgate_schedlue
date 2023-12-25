@@ -118,6 +118,8 @@ def table():
                             verticalSpacing="xs",
                             horizontalSpacing=10,                    
                         ),
+
+                        dmc.Space(h= 10),
                         dmc.Table(
                             children= [],
                             id= DATATABLE.TABLE,

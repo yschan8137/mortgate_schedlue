@@ -221,7 +221,7 @@ class panel():
                     align="center",
                     spacing= 0,
                     style= {
-                        'width': 350,
+                        'width': 365,
                         'height': 'auto',
                         'border': '1px solid #ccc',
                         'border-radius': '5px',
@@ -283,7 +283,7 @@ class panel():
             align="left",
             spacing= 0,
             style= {
-                'width': 350,
+                'width': 365,
                 'height': 'auto',
                 'border': '1px solid #ccc',
                 'border-radius': '5px',

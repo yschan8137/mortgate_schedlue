@@ -1,6 +1,6 @@
 """Build a graph for the loan"""
 from itertools import accumulate
-from dash import Dash, dcc, callback, Output, Input, State, ALL, callback_context, html
+from dash import Dash, dcc, callback, Output, Input, State, ALL, callback_context, html, no_update
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 import plotly.express as px
@@ -17,27 +17,12 @@ def graph():
     """Build the graph"""
     layout = dmc.Container(
         [
-            dmc.Group(
+            dmc.Container(
                 [
                     html.Div(
                         dmc.LoadingOverlay(
-                            children= [
-                                dcc.Graph(
-                                        id='bars-graph-for-gerneral',
-                                        style={
-                                            'background-color': 'rgba(0, 0, 0, 0)',
-                                            'margin-top': '10px',
-                                        },
-                                        config={
-                                            'displayModeBar': False,
-                                            'doubleClick': 'reset+autosize',
-                                            'autosizable': True,
-                                            'editable': False,
-                                            'scrollZoom': False,
-                                            'staticPlot': False,
-                                        }
-                                ),
-                            ],
+                            id= 'loading-overlay-for-general',
+                            children= [],
                             loaderProps={
                                 "variant": "oval",
                                  "color": "blue", 
@@ -51,45 +36,43 @@ def graph():
                             'border': '1px solid #ccc',
                             'border-radius': '5px',
                             'height': 150,
+                            'width': '100%',
+                            'margin-right': '10px',
                         },
                     ),
                     html.Div(
                         dmc.LoadingOverlay(
-                                children= [
-                                    dcc.Graph(
-                                        id='bars-graph-for-details',
-                                        style={
-                                            'background-color': 'rgba(0, 0, 0, 0)',
-                                            'margin-top': '10px',
-                                        },
-                                        config={
-                                            'displayModeBar': False,
-                                            'doubleClick': 'reset+autosize',
-                                            'autosizable': True,
-                                            'editable': False,
-                                            'scrollZoom': False,
-                                            'staticPlot': False,
-                                        }
-                                )
-                            ],
+                                id= 'loading-overlay-for-details',
+                                children= [],
                             loaderProps={"variant": "oval",
                                  "color": "blue", 
                                  "size": "lg",
                                  'is_loading': True,
                             },
+                            style= {
+                                'margin-top': '10px',
+                            },
                             transitionDuration= 0.5,
+                            
+
                         ),
                         style={
                             'border-radius': '5px',
                             'border': '1px solid #ccc',
-                            'border-radius': '5px',
                             'height': 150,
+                            'width': '100%',
                         },
                     ),
                 ],
-                grow=True,
+                fluid=True,
+                size= 'md',
                 style= {
                     'margin-top': '10px',
+                    'display': 'inline-flex',
+                    'width': '100%',
+                    'justify-content': 'space-between', # 
+                    
+
                 }    
             ),
             dmc.Space(h=30),
@@ -141,27 +124,7 @@ def graph():
             ),
             html.Div(
                 dmc.LoadingOverlay(
-                    dcc.Graph(
-                        id=GRAPH.LINE,
-                        hoverData= {'points': [{'x': '0', 'hovertext': 'ETP'}]},
-                        config={
-                            'displayModeBar': False,
-                            'responsive': True,
-                            'doubleClick': 'reset+autosize',
-                            'toImageButtonOptions': {
-                                'format': 'svg',
-                                'filename': 'custom_image',
-                                'height': 600,
-                                'width': 1000,
-                                'scale': 1,
-                            },
-                        },
-                        style={
-                            'width': '100%',
-                            'height': 600,
-                        },
-                    ),
-                    id= 'loading-overlay',
+                    id= 'loading-overlay-for-main-graph',
                     loaderProps={"variant": "oval",
                                  "color": "blue", 
                                  "size": "lg",
@@ -170,7 +133,6 @@ def graph():
                     transitionDuration= 0.5,
                 ),
                 style={
-                    'width': '100%',
                     'height': 600,
                 },
             ),
@@ -223,7 +185,7 @@ def graph():
 
 #2 update the main graph
     @callback(
-        Output(GRAPH.LINE, 'figure'),
+        Output('loading-overlay-for-main-graph', 'children'),
         Output('menu-target', 'children'),
         Output('menu-target', 'rightIcon'),
         Output('menu-target', 'loading'),
@@ -301,11 +263,31 @@ def graph():
         )
         fig.update_layout(showlegend= False)
 
-        return fig, chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL else {"from": "indigo", "to": "cyan"})
+        return dcc.Graph(
+                        figure= fig,
+                        id=GRAPH.LINE,
+                        hoverData= {'points': [{'x': '0', 'hovertext': 'ETP'}]},
+                        config={
+                            'displayModeBar': False,
+                            'responsive': True,
+                            'doubleClick': 'reset+autosize',
+                            'toImageButtonOptions': {
+                                'format': 'svg',
+                                'filename': 'custom_image',
+                                'height': 600,
+                                'width': 1000,
+                                'scale': 1,
+                            },
+                        },
+                        style={
+                            'width': '100%',
+                            'height': 600,
+                        },
+                    ), chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL else {"from": "indigo", "to": "cyan"})
 
 #3 callback for updating the information from hoverData
     @callback(
-        Output('bars-graph-for-gerneral', 'figure'),
+        Output('loading-overlay-for-general', 'children'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
     )
     def update_general_info(
@@ -335,12 +317,17 @@ def graph():
                     text_auto= True,                
                     color= 'columns',
                     height= 180,
-                    width= 530,
+                    width= 500,
                     title= '<b>Average Payment</b>',
                     color_discrete_map= {
                         df_schema.level_1.ETP: '#0C82DF',
                         df_schema.level_1.EPP: '#F7DC6F',
                     },
+                    hover_data= {
+                        'columns': False,
+                        'data': True,
+                    },
+                    hover_name= 'columns',
                 )
                 figure.update_layout(bar_layout)
                 figure.update_yaxes(
@@ -348,6 +335,7 @@ def graph():
                     showticklabels= False,
                 )
                 figure.update_xaxes(
+                    range= [0, max(bars_data['data']) * 1.5],
                     visible= False,
                     showticklabels= False,
                 )
@@ -366,13 +354,29 @@ def graph():
                     visible= False,
                     showticklabels= False,
                 )
-            return figure
+            return dcc.Graph(
+                    figure= figure,
+                    animate= True,
+                    style={
+                        'background-color': 'rgba(0, 0, 0, 0)',
+                        'margin-top': '10px',
+                        # 'width': '100%',
+                    },
+                    config={
+                        'displayModeBar': False,
+                        'doubleClick': 'reset+autosize',
+                        'autosizable': True,
+                        'editable': False,
+                        'scrollZoom': False,
+                        'staticPlot': False,
+                    }
+            )
         else:
             raise PreventUpdate
 
 #4 callback for updating the detail information from hoverData
     @callback(
-        Output('bars-graph-for-details', 'figure'),
+        Output('loading-overlay-for-details', 'children'),
         Input(GRAPH.LINE, 'hoverData'),
         State(LOAN.RESULT.DATAFRAME, 'data'),
     )
@@ -382,13 +386,14 @@ def graph():
         ):
         bar_layout= dict(
             showlegend= False,
-            margin= dict(l=20, r=10, t=35, b=50),
+            margin= dict(l=20, r=10, t=35, b=40),
             paper_bgcolor= 'rgba(0, 0, 0, 0)',
             plot_bgcolor= 'rgba(0, 0, 0, 0)',
         )
         if memory:
-            if hover_data:
-                timepoint= hover_data['points'][0]['x']
+            timepoint= hover_data['points'][0]['x']
+            
+            if timepoint != '0':
                 chosen_figure= hover_data['points'][0]['hovertext']
                 bar_data = {
                     'names': chosen_figure,
@@ -424,18 +429,21 @@ def graph():
                     text= 'data',
                     text_auto= True,                
                     color= 'items',
-                    height= 200,
-                    width= 500,
+                    height= 180,
+                    width= 380,
                     orientation= 'h',
-                    title= '''
-                            <b>{} 
-                            Time: {}</b>
-                            '''.format(bar_data['names'], timepoint),
+                    title= '<b>Details</b>',
                     color_discrete_map= {
                         'principal': '#FF7F50',
                         'interest': '#F7DC6F',
-                        'residual': '#6495ED',
+                        'residual': '#E5E7E9',
                     },
+                    hover_data= {
+                        'items': False,
+                        'index': False,
+                        'data': True,
+                    },
+                    hover_name= 'items',
                 )
                 fig.update_layout(bar_layout)
                 fig.update_yaxes(
@@ -443,38 +451,40 @@ def graph():
                     showticklabels= False,
                 )
                 fig.update_xaxes(
-                    range= [0, (bar_data['data'][0] + bar_data['data'][2])* 1.1],
+                    # dynamcal range for x axis, while ensuring the bar would not exceed the graph
+                    range= [0, sum(bar_data['data'])],
+
+
                     visible= False,
                     showticklabels= False,
                 )
                 fig.update_traces(
+                    textposition='auto',
                     texttemplate='%{text:,}',
-                    width= .3,
+                    width= 0.5,
                 )
-                return fig
+                return dcc.Graph(
+                        figure= fig,
+                        animate= True,
+                        style={
+                            'background-color': 'rgba(0, 0, 0, 0)',
+                            'margin-top': '10px',
+                            # 'width': '95%' 
+                        },
+                        config={
+                            'displayModeBar': False,
+                            'doubleClick': 'reset+autosize',
+                            'autosizable': True,
+                            'editable': False,
+                            'scrollZoom': False,
+                            'staticPlot': False,
+                        }
+                )
             else:
-                fig= px.bar(
-                    height= 300,
-                    width= 500,
-                )
-                fig.update_layout(bar_layout)
-                fig.update_yaxes(
-                    visible= False,
-                    showticklabels= False,
-                )
-                fig.update_xaxes(
-                    visible= False,
-                    showticklabels= False,
-                )
-                return fig
+                return no_update
         else:
             raise PreventUpdate
        
-       
-    return layout
-        
-                
-        
     return layout
 
 # py -m app.Dashboard.pages.components.Graphic.app
