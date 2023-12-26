@@ -291,7 +291,7 @@ class panel():
                     ]
                 )
             ],
-            mb= 5,
+            # mb= 5,
             # ml= 0,
             # mr= 20,
             align="left",

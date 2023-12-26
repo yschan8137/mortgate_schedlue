@@ -292,7 +292,8 @@ class AdvancedOptions(MortgageOptions):
                                         'font-size': '18px'
                                     },
                                 ),
-                                dmc.AccordionPanel(children)
+                                dmc.AccordionPanel(children),
+
                             ],
                             value= title,
                             id='accordion-{}'.format(title),
@@ -303,6 +304,7 @@ class AdvancedOptions(MortgageOptions):
                             },
                         ) for title, children, icon, name in zip(titles, childrens, icon, name)
                     ],
+                    value= titles[0],
                     style=style,
                 ),
             ],
