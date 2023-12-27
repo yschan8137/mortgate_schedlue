@@ -62,8 +62,8 @@ def addon(
                                 disabled=disabled,
                                 size= 'md',
                                 style= {
-                                    'width': 80,
-                                    # 'color': '#4C9F85'
+                                    'width': '10dvw',
+                                    'display': 'inline-block'
                                 },
                                 clearable= True,
                                 placeholder= 'Time',
@@ -71,10 +71,10 @@ def addon(
                     dmc.NumberInput(
                        id= {"index": index, "type": suffix_for_type(ADDON.INPUT, type)},
                        style={
-                           "width": 100,
+                           "width": '60dvw',
                            },
                        value= 0,
-                       size= 'md',
+                       size= 'sm',
                        step= (0.01 if input_type == 'float' else 1),
                        min= 0,
                        max= (100 if input_type == 'float' else None),
@@ -93,7 +93,8 @@ def addon(
                                 disabled= disabled,
                                 size= 'md',
                                 style= {
-                                    'width': 55,
+                                    # 'width': '50%',
+                                    'display': 'inline-block'
                                 },
                             ),
                             dmc.Button(
@@ -104,17 +105,24 @@ def addon(
                                 disabled= disabled,
                                 size= 'md',
                                 style= {
-                                    'width': 55,
+                                    # 'width': '50%',
+                                    'display': 'inline-block'
                                 },
                             )
-                        ]
+                        ],
+                        style= {
+                            'width': '20dvw',
+                            'display': 'flex',
+                            'flexDirection': 'row',
+                        },
                     )
                 ],
-                spacing= 0,
                 style= {
+                    'width': '100%',
                     'display': 'flex',
+                    'flexDirection': 'row',
                 },
-                align= 'start',
+                # align= 'start',
                 position= 'left',
             ),
             dbc.Collapse(
@@ -123,11 +131,10 @@ def addon(
                     dbc.Card(
                         children= [dbc.CardBody(id= {"index": index, "type": suffix_for_type(ADDON.NEW, type)})],
                         style= {
-                            'width': 285,
+                            'width': '100%',
                             'height': '150px',
-                            'overflow': 'scroll',
-                            'radius': '10px',
-                            'borderRadius': '10px',
+                            # 'radius': '10px',
+                            # 'borderRadius': '10px',
                         },
                         className= 'custom-scrollbar',
                     )
@@ -264,7 +271,6 @@ def addon(
             return False
         else:
             return True
-
 
     return layout
 

@@ -75,7 +75,7 @@ def graph():
 
                 }    
             ),
-            dmc.Space(h=30),
+            dmc.Space(h=20),
             dmc.Group(
                 [
                     dmc.Menu(
@@ -122,6 +122,8 @@ def graph():
                     'width': '100%',
                 }
             ),
+            dmc.Space(h=10),
+            
             html.Div(
                 dmc.LoadingOverlay(
                     id= 'loading-overlay-for-main-graph',
@@ -282,6 +284,8 @@ def graph():
                         style={
                             'width': '100%',
                             'height': 600,
+                            'background-color': 'white',
+                            'border-radius': '5px',
                         },
                     ), chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL else {"from": "indigo", "to": "cyan"})
 

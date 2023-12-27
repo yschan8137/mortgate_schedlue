@@ -300,11 +300,10 @@ class AdvancedOptions(MortgageOptions):
                             style={
                                 'align-items': 'center',
                                 'justify-content': 'left',
-                                'background-color': 'transparent',
+                                'width': '100%',
                             },
                         ) for title, children, icon, name in zip(titles, childrens, icon, name)
                     ],
-                    value= titles[0],
                     style=style,
                 ),
             ],
