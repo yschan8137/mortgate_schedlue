@@ -54,16 +54,16 @@ def addon(
             dcc.Store(id={"index": index, "type": suffix_for_type(ADDON.DISABLED, type)}, data=disabled),
             # That's the outcome what we want.
             dcc.Store(id={"index": index, "type": suffix_for_type(ADDON.MEMORY, type)}, data={}),
-            dmc.Group(
+            html.Div(
                 children= [
                     dmc.Select(
                                 data= [],
                                 id={"index": index, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)},
                                 disabled=disabled,
-                                size= 'md',
+                                # size= 'md',
                                 style= {
-                                    'width': '10dvw',
-                                    'display': 'inline-block'
+                                    'width': '35%',
+                                    # 'display': 'inline'
                                 },
                                 clearable= True,
                                 placeholder= 'Time',
@@ -71,14 +71,16 @@ def addon(
                     dmc.NumberInput(
                        id= {"index": index, "type": suffix_for_type(ADDON.INPUT, type)},
                        style={
-                           "width": '60dvw',
+                           "width": '50%',
+                            # 'display': 'inline',
                            },
                        value= 0,
-                       size= 'sm',
+                    #    size= 'md',
                        step= (0.01 if input_type == 'float' else 1),
                        min= 0,
                        max= (100 if input_type == 'float' else None),
                        precision= (2 if input_type == 'float' else 0),
+                       hideControls= (False if input_type == 'float' else True),
                        type= ('float' if input_type == 'float' else 'number'),
                     ),
                     dmc.ButtonGroup(
@@ -91,11 +93,7 @@ def addon(
                                     icon= 'icon-park-twotone:add',
                                 ),
                                 disabled= disabled,
-                                size= 'md',
-                                style= {
-                                    # 'width': '50%',
-                                    'display': 'inline-block'
-                                },
+                                # size= 'md',
                             ),
                             dmc.Button(
                                 id={"index": index, "type": suffix_for_type(ADDON.DELETE, type)},
@@ -103,28 +101,17 @@ def addon(
                                 gradient={"from": "grape", "to": "pink", "deg": 35},
                                 children= DashIconify(icon= 'tabler:trash'),
                                 disabled= disabled,
-                                size= 'md',
-                                style= {
-                                    # 'width': '50%',
-                                    'display': 'inline-block'
-                                },
+                                # size= 'md',
                             )
                         ],
-                        style= {
-                            'width': '20dvw',
-                            'display': 'flex',
-                            'flexDirection': 'row',
-                        },
                     )
                 ],
                 style= {
-                    'width': '100%',
+                    # 'width': '100%',
                     'display': 'flex',
-                    'flexDirection': 'row',
                 },
-                # align= 'start',
-                position= 'left',
             ),
+
             dbc.Collapse(
                 id= {"index": index, "type": suffix_for_type(ADDON.COLLAPSE, type)},
                 children=[
@@ -143,7 +130,6 @@ def addon(
                 style= {
                     'width': '100%',
                 },
-                
             ),
         ],
     )
@@ -336,7 +322,7 @@ def refreshable_dropdown(
                         data=[*options],
                         size= 'sm',
                         style={
-                            "width": width + 10, 
+                            # "width": '100%', 
                             "marginBottom": 5,
                         },
                     ),
@@ -401,4 +387,6 @@ if __name__ == "__main__":
     )
     def update_arrangement(memory):
         return [[1, memory['tenure'] - 1]]
-    app.run_server(debug=True)
+    app.run_server(
+        debug=True
+        )

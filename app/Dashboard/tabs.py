@@ -20,78 +20,78 @@ APP_TITLE = "Amort"
 
 app = Dash(
     __name__,
+    # redirect the assets folder 
+    assets_folder= 'app/Dashboard/assets',
+
     suppress_callback_exceptions=True,
     external_stylesheets=[
-        "https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;900&display=swap",
-        dbc.themes.LUMEN,  # Dash Themes CSS
-        dbc.icons.BOOTSTRAP,
-        "https://use.fontawesome.com/releases/v6.2.1/css/all.css",  # Font Awesome Icons CSS
-    ],
-    title=APP_TITLE,
-    assets_folder= 'app/Dashboard/assets',
-    
+    "https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;900&display=swap",
+    dbc.themes.LUMEN,  # Dash Themes CSS
+    dbc.icons.BOOTSTRAP,
+    "https://use.fontawesome.com/releases/v6.2.1/css/all.css",  # Font Awesome Icons CSS
+    ]
 )
 
 
-# tabs = dmc.Tabs(
-#             [
-#                 dmc.TabsList(
-#                     [
-#                         dmc.Tab(
-#                                ids.APP.INDEX.GRAPH,
-#                                icon= DashIconify(icon="bi:graph-up"),
-#                                value= ids.APP.INDEX.GRAPH,
-#                                ),
-#                         dmc.Tab(
-#                                ids.APP.INDEX.DATA,
-#                                icon= DashIconify(icon="ph:table-light"),
-#                                value= ids.APP.INDEX.DATA,
-#                         ),
-#                     ]
-#                 ),
-#                 dmc.TabsPanel(graph(), value= ids.APP.INDEX.GRAPH),
-#                 dmc.TabsPanel(
-#                     dataframe.table(), 
-#                     value= ids.APP.INDEX.DATA,
-#                 ),
-#             ],
-#             value= ids.APP.INDEX.GRAPH,
-#             id="card-tabs",
-#             activateTabWithKeyboard= True,
-#             style= specs.APP.TAB.STYLE,
-#             className= 'custom-scrollbar'
-#         )
-
 panel_tabs= dmc.Tabs(
-            [
-                dmc.TabsList(
-                    [
-                        dmc.Tab(
-                               id= 'main-options',
-                               icon= DashIconify(icon="bi:graph-up"),
-                               value= 'Main',
-                               ),
-                        dmc.Tab(
-                               id= 'advanced-options',
-                               icon= DashIconify(icon="ph:table-light"),
-                               value= 'Advanced',
+        [
+            dmc.TabsList(
+                [
+                    dmc.Tab(
+                        children= 'Main',
+                        id= 'main-options',
+                        #    icon= DashIconify(icon="bi:graph-up"),
+                        value= 'Main',
+                        style= {
+                            'font-weight': 'bold',
+                          },
                         ),
-                    ]
-                ),
-                dmc.TabsPanel(panel.front(), value= 'Main'),
-                dmc.TabsPanel(
-                    panel._advancedoptions(), 
-                    value= 'Advanced',
-                ),
-            ],
-            value= 'Main',
-            id="options-tabs",
-            activateTabWithKeyboard= True,
-            style= specs.APP.TAB.STYLE,
-            className= 'custom-scrollbar'
-        )
+                    dmc.Tab(
+                        children= 'Advanced',
+                        id= 'advanced-options',
+                        # icon= DashIconify(icon="ph:table-light"),
+                        value= 'Advanced',
+                        icon=DashIconify(icon="tabler:settings"),
+                        style= {
+                            'font-weight': 'bold',
+                          },
+                    ),
+                ],
+                grow= True,
+            ),
+            dmc.TabsPanel(panel.front(), value= 'Main'),
+            dmc.TabsPanel(
+                html.Div(
+                    panel._advancedoptions(),
+                    className= 'custom-scrollbar',
+                    style= {
+                        'width': '100%',
+                        'height': '70dvh',
+                        'overflow-y': 'scroll',
+                        # 'scrollbar-color': '#0C82DF #E2E2E2',
+                        'color': '#333',
+                        'background-color': 'white',
+                    },
+                ), 
+                value= 'Advanced',
+            ),
+        ],
+        value= 'Main',
+        id="options-tabs",
+        activateTabWithKeyboard= True,
+        className= 'custom-scrollbar',
+        variant= 'outline',
+        style= {
+            'width': '100%',
+            'height': '100%',
+            'scrollbar-color': '#0C82DF #E2E2E2',
+            'color': '#333',
+            'background-color': 'white',
+        },
 
-app.layout = dmc.MantineProvider(  # <- Wrap App with Loading Component
+    )
+
+app.layout = dmc.MantineProvider(
     id= ids.APP.LOADING,
     theme= {
         "fontFamily": "'Inter', sans-serif",
@@ -107,21 +107,27 @@ app.layout = dmc.MantineProvider(  # <- Wrap App with Loading Component
         # NAVBAR,
         dmc.Container(
             [
-                panel_tabs,
-                # html.Div(
-                #     children= [
-                #         panel_tabs,
-                #     ],
-                #     className= 'custom-scrollbar',
-                #     style= {
-                #         'width': 375,
-                #         'height': '98vh',
-                #         'margin-top': 10,
-                #         'margin-left': 15,
-                #         'overflow-y': 'scroll',
-                #         'scrollbar-color': '#0C82DF #E2E2E2',
-                #     },
-                # ),
+                
+                html.Div(
+                    children= [
+                        panel_tabs,
+                    ],
+                    className= 'custom-scrollbar',
+                    style= {
+                        'width': '25dvw',
+                        'height': '80%',
+                        'margin-top': 10,
+                        'margin-left': 15,
+                        'scrollbar-color': '#0C82DF #E2E2E2',
+                        'border': '1px solid #ccc',
+                        'border-radius': '5px',
+                        'font-size': '20px',
+                        'font-weight': 'bold',
+                        'padding': '10px',
+                        'color': '#333',
+                        'background-color': 'white',
+                    },
+                ),
                 html.Div(
                     [
                         graph(),
@@ -130,24 +136,28 @@ app.layout = dmc.MantineProvider(  # <- Wrap App with Loading Component
                     ],
                     className= 'custom-scrollbar',
                     style= {
-                        'width': 'calc(100vw - 365px)',
-                        'height': '98vh',
+                        'width': 'calc(100dvw - 365px)',
+                        # 'height': '98vh',
+                        'height': '80%',
                         'overflow-y': 'scroll',
                         'scrollbar-color': '#0C82DF #E2E2E2',
-                        'margin-left': 5,
+                        'margin-left': 20,
+                        'margin-right': 20,
                     }
                 ),
                 
             ],
             fluid= True,
             style= {
+                'background-color': 'rgba(246,248,250,255)',
                 'width': '100vw',
                 'height': '98vh',
                 'margin': 0,
                 'padding': 0,
                 'display': 'flex',
             }
-        )
+        ),
+        
     ],
     withGlobalStyles= True,
 )

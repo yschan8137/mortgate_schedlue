@@ -19,7 +19,7 @@ class MortgageOptions:
     index: str = ""
     type: str = ids.LOAN.TYPE
     kwargs_schema = default_kwargs
-    width= specs.COMPONENTS.MORTGAGEOPTIONS.WIDTH
+    width= '100%'
 
     # To enble the update of all attributes of the class, including index and type.
     @classmethod
@@ -39,7 +39,10 @@ class MortgageOptions:
                             placeholder= 'Enter the loan amount',
                             min= 0,
                             step= 1,
-                            style={"width": cls.width},
+                            style={
+                                "width": cls.width,
+                                'item-align': 'center',
+                                },
                             required= True,
                             type= 'number',
                             size= 'md',
@@ -56,7 +59,9 @@ class MortgageOptions:
                          dmc.NumberInput(
                             id= {"index": cls.index, "type": ids.LOAN.DOWNPAYMENT},
                             label= 'Down Payment Rate',
-                            style={"width": cls.width},
+                            style={
+                                "width": cls.width
+                            },
                             value= cls.kwargs_schema['down_payment_rate'],
                             # rightSection=DashIconify(icon="carbon:percentage"),
                             size= 'md',
@@ -305,6 +310,7 @@ class AdvancedOptions(MortgageOptions):
                         ) for title, children, icon, name in zip(titles, childrens, icon, name)
                     ],
                     style=style,
+                    value= titles
                 ),
             ],
         )
@@ -316,9 +322,13 @@ class AdvancedOptions(MortgageOptions):
     def prepayment(cls, type=ids.LOAN.PREPAY.TYPE):
         layout = html.Div(
             [
-                dbc.Label(
+                dmc.Text(
                     'Prepay Arrangement',
-                    size=specs.COMPONENTS.ADVANCEDOPTIONS.PREPAY.LABEL.SIZE,
+                    size= 'lg',
+                    weight= 'bold',
+                    style= {
+                        'margin-bottom': '10px',
+                    }
                 ),
                 addon(
                     type=type,
@@ -342,6 +352,15 @@ class AdvancedOptions(MortgageOptions):
     def subsidy(cls, type=ids.LOAN.SUBSIDY.TYPE):
         layout = html.Div(
             [
+                dmc.Text(
+                    'Subsidy Arrangement',
+                    size= 'lg',
+                    weight= 'bold',
+                    style= {
+                        'margin-top': '10px',
+                        'margin-bottom': '10px',
+                    }
+                ),
                 html.Div(
                     [
                         dmc.Button(

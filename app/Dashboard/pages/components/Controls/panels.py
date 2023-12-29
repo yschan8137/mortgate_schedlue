@@ -220,7 +220,7 @@ class panel():
     """
     @classmethod
     def front(cls):
-        layout= dmc.Stack(
+        layout= html.Div(
                     [
                         cls.mortgage.amount(),
                         cls.mortgage.tenure(),
@@ -230,23 +230,13 @@ class panel():
                         cls.mortgage.start_date(),
                         cls.mortgage.repayment_methods(),
                     ],
-                    mb= 5,
-                    ml= 0,
-                    align="center",
-                    spacing= 0,
-                    # style= {
-                    #     'width': 365,
-                    #     'height': 'auto',
-                    #     'border': '1px solid #ccc',
-                    #     'border-radius': '5px',
-                    #     'font-size': '20px',
-                    #     'font-weight': 'bold',
-                    #     'padding': '20px',
-                    #     'color': '#333',
-                    #     'item-align': 'center',
-                    #     'background-color': '#E2E2E2',
-                    #     'box-shadow': '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
-                    # }
+                    style= {
+                        'width': '80%',
+                        'padding': '0px',
+                        'margin': '0px',
+                        'margin-left': '10%',
+                        'margin-right': '10%',
+                    }
                 )
         # cls.synchronize(index)
 
@@ -254,7 +244,7 @@ class panel():
 
     @classmethod
     def _advancedoptions(cls):
-        layout= dmc.Stack(
+        layout= html.Div(
             [
                 cls.advanced.accordion(
                     style= specs.COMPONENTS.ADVANCEDOPTIONS.ACCORDION.STYLE,
@@ -290,21 +280,8 @@ class panel():
                     ]
                 )
             ],
-            align="left",
-            spacing= 0,
-            # style= {
-            #     'width': 365,
-            #     'height': 'auto',
-            #     'border': '1px solid #ccc',
-            #     'border-radius': '5px',
-            #     'font-size': '20px',
-            #     'font-weight': 'bold',
-            #     'padding': '20px',
-            #     'color': '#333',
-            #     'background-color': '#E2E2E2',
-            #     'box-shadow': '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
-            # },
         )
+
         return layout
 
     # synchronize the variables among pages.

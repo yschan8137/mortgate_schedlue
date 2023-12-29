@@ -17,7 +17,7 @@ def graph():
     """Build the graph"""
     layout = dmc.Container(
         [
-            dmc.Container(
+            dmc.Group(
                 [
                     html.Div(
                         dmc.LoadingOverlay(
@@ -29,6 +29,10 @@ def graph():
                                  "size": "lg",
                                  'is_loading': True,
                             },
+                            style= {
+                                'margin-top': '10px',
+                                'height': 130,
+                            },
                             transitionDuration= 0.5,
                         ),
                         style={
@@ -36,8 +40,7 @@ def graph():
                             'border': '1px solid #ccc',
                             'border-radius': '5px',
                             'height': 150,
-                            'width': '100%',
-                            'margin-right': '10px',
+                            'background-color': 'white',
                         },
                     ),
                     html.Div(
@@ -51,6 +54,7 @@ def graph():
                             },
                             style= {
                                 'margin-top': '10px',
+                                'height': 130,
                             },
                             transitionDuration= 0.5,
                             
@@ -60,19 +64,13 @@ def graph():
                             'border-radius': '5px',
                             'border': '1px solid #ccc',
                             'height': 150,
-                            'width': '100%',
+                            'background-color': 'white',
                         },
                     ),
                 ],
-                fluid=True,
-                size= 'md',
+                grow=True,
                 style= {
                     'margin-top': '10px',
-                    'display': 'inline-flex',
-                    'width': '100%',
-                    'justify-content': 'space-between', # 
-                    
-
                 }    
             ),
             dmc.Space(h=20),
@@ -122,8 +120,7 @@ def graph():
                     'width': '100%',
                 }
             ),
-            dmc.Space(h=10),
-            
+            dmc.Space(h=20),
             html.Div(
                 dmc.LoadingOverlay(
                     id= 'loading-overlay-for-main-graph',
@@ -251,7 +248,7 @@ def graph():
             y="Amount", 
             color="methods", 
             title='<b>Life of Loan</b>', 
-            width=1000, 
+            # width=1000, 
             height=600,
             log_y= True,
             line_shape="spline",
@@ -284,8 +281,9 @@ def graph():
                         style={
                             'width': '100%',
                             'height': 600,
-                            'background-color': 'white',
+                            'margin-top': '5px',
                             'border-radius': '5px',
+                            'border': '1px solid #ccc',
                         },
                     ), chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL else {"from": "indigo", "to": "cyan"})
 
@@ -321,7 +319,7 @@ def graph():
                     text_auto= True,                
                     color= 'columns',
                     height= 180,
-                    width= 500,
+                    width= 400,
                     title= '<b>Average Payment</b>',
                     color_discrete_map= {
                         df_schema.level_1.ETP: '#0C82DF',
@@ -339,7 +337,7 @@ def graph():
                     showticklabels= False,
                 )
                 figure.update_xaxes(
-                    range= [0, max(bars_data['data']) * 1.5],
+                    range= [0, max(bars_data['data']) * 1.1],
                     visible= False,
                     showticklabels= False,
                 )
@@ -364,7 +362,7 @@ def graph():
                     style={
                         'background-color': 'rgba(0, 0, 0, 0)',
                         'margin-top': '10px',
-                        # 'width': '100%',
+                        'width': '100%',
                     },
                     config={
                         'displayModeBar': False,
@@ -434,13 +432,13 @@ def graph():
                     text_auto= True,                
                     color= 'items',
                     height= 180,
-                    width= 380,
+                    # width= 480,
                     orientation= 'h',
-                    title= '<b>Details</b>',
+                    title= '<b>Payment Breakdown</b>',
                     color_discrete_map= {
                         'principal': '#FF7F50',
                         'interest': '#F7DC6F',
-                        'residual': '#E5E7E9',
+                        'residual': '#6495ED',
                     },
                     hover_data= {
                         'items': False,
@@ -455,15 +453,12 @@ def graph():
                     showticklabels= False,
                 )
                 fig.update_xaxes(
-                    # dynamcal range for x axis, while ensuring the bar would not exceed the graph
-                    range= [0, sum(bar_data['data'])],
-
-
+                    # dynamcally range the x axis
+                    range= [0, sum(bar_data['data']) * 1.1],
                     visible= False,
                     showticklabels= False,
                 )
                 fig.update_traces(
-                    textposition='auto',
                     texttemplate='%{text:,}',
                     width= 0.5,
                 )
@@ -473,7 +468,7 @@ def graph():
                         style={
                             'background-color': 'rgba(0, 0, 0, 0)',
                             'margin-top': '10px',
-                            # 'width': '95%' 
+                            'width': '100%', 
                         },
                         config={
                             'displayModeBar': False,

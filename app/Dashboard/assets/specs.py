@@ -95,7 +95,7 @@ class APP:
         
 class COMPONENTS:
     class MORTGAGEOPTIONS:
-        WIDTH= 290
+        WIDTH= '100%'
         class TENURE:
             class TEXT:
                 SIZE= 'lg'
