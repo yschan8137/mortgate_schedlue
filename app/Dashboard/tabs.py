@@ -20,15 +20,13 @@ APP_TITLE = "Amort"
 
 app = Dash(
     __name__,
-    # redirect the assets folder 
-    assets_folder= 'app/Dashboard/assets',
-
     suppress_callback_exceptions=True,
     external_stylesheets=[
     "https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;900&display=swap",
     dbc.themes.LUMEN,  # Dash Themes CSS
     dbc.icons.BOOTSTRAP,
     "https://use.fontawesome.com/releases/v6.2.1/css/all.css",  # Font Awesome Icons CSS
+    "app/Dashboard/assets/style.css",
     ]
 )
 
@@ -83,12 +81,10 @@ panel_tabs= dmc.Tabs(
         variant= 'outline',
         style= {
             'width': '100%',
-            'height': '100%',
-            'scrollbar-color': '#0C82DF #E2E2E2',
+            # 'height': '70vdh',
             'color': '#333',
             'background-color': 'white',
         },
-
     )
 
 app.layout = dmc.MantineProvider(
@@ -100,6 +96,16 @@ app.layout = dmc.MantineProvider(
             "Button": {"styles": {"root": {"fontWeight": 400}}},
             "Alert": {"styles": {"title": {"fontWeight": 500}}},
             "AvatarGroup": {"styles": {"truncated": {"fontWeight": 500}}},
+            'scrollbar': {
+                'thumb': {
+                    'backgroundColor': '#0C82DF',
+                    'borderRadius': '4px',
+                },
+                'track': {
+                    'backgroundColor': '#E2E2E2',
+                    'borderRadius': '4px',
+                },
+            },
         },
     },
     children=[
@@ -115,10 +121,10 @@ app.layout = dmc.MantineProvider(
                     className= 'custom-scrollbar',
                     style= {
                         'width': '25dvw',
-                        'height': '80%',
+                        'height': '80dvh',
                         'margin-top': 10,
                         'margin-left': 15,
-                        'scrollbar-color': '#0C82DF #E2E2E2',
+                        # 'scrollbar-color': '#0C82DF #E2E2E2',
                         'border': '1px solid #ccc',
                         'border-radius': '5px',
                         'font-size': '20px',
@@ -137,8 +143,7 @@ app.layout = dmc.MantineProvider(
                     className= 'custom-scrollbar',
                     style= {
                         'width': 'calc(100dvw - 365px)',
-                        # 'height': '98vh',
-                        'height': '80%',
+                        'height': '98vh',
                         'overflow-y': 'scroll',
                         'scrollbar-color': '#0C82DF #E2E2E2',
                         'margin-left': 20,
@@ -160,6 +165,9 @@ app.layout = dmc.MantineProvider(
         
     ],
     withGlobalStyles= True,
+    withCSSVariables= True,
+    
+
 )
 
 # python app/Dashboard/tabs.py
