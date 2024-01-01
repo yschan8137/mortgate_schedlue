@@ -56,23 +56,46 @@ class panel():
             ):
             # It is neccessary that all the sufficient parameters are given.
             patched_memory= Patch()
-            condition_1 = ((subsidy_start:= kwargs['subsidy_arr']['start'] > 0) and subsidy_start <= 24)
-            condition_2 = (kwargs['subsidy_arr']['amount'] > 0)
-            condition_3 = (kwargs['subsidy_arr']['tenure'] > 0) 
-            condition_4 = (len([c for c in kwargs['subsidy_arr']['interest_arr']['interest'] if c]) > 0)
-            kwargs_apart_from_subsudy = {k: v for (k, v) in kwargs.items() if k != 'subsidy_arr'}    
-            if (condition_1 or condition_2 or condition_3 or condition_4):
-                if (condition_1 and condition_2 and condition_3 and condition_4):
-                    patched_memory['data'] = calculator(**kwargs, thousand_sep= False)
-                    return patched_memory, no_update
-                else:
-                    raise PreventUpdate()
-            else:
-                if len(cache)> 0 and (kwargs['subsidy_arr']['method'] != cache['subsidy_arr']['method']):
-                        return no_update, kwargs        
-                else:
-                    patched_memory['data'] = calculator(**kwargs_apart_from_subsudy, thousand_sep= False)
+            subsidy_amount = kwargs['subsidy_arr']['amount']
+            subsidy_start = kwargs['subsidy_arr']['start']
+            subsidy_tenure = kwargs['subsidy_arr']['tenure']
+            subsidy_interest = [c for c in kwargs['subsidy_arr']['interest_arr']['interest'] if c]            
+
+            if len(cache) > 0:
+                if kwargs['subsidy_arr'] != cache['subsidy_arr']:
+                    if (
+                        subsidy_amount > 0 and
+                        subsidy_start > 0 and
+                        subsidy_tenure > 0 and
+                        len(subsidy_interest) > 0
+                        ):
+                        patched_memory['data'] = calculator(**kwargs, thousand_sep= False)
+                    elif subsidy_amount == 0 and subsidy_start == 0 and subsidy_tenure == 0 and len(subsidy_interest) == 0:
+                        patched_memory['data'] = calculator(**kwargs, thousand_sep= False)
+                    else:
+                        raise PreventUpdate()
                     return patched_memory, kwargs
+                else:
+                    patched_memory['data'] = calculator(**kwargs, thousand_sep= False)
+                    return patched_memory, kwargs
+                    
+            # condition_1 = ((subsidy_start:= kwargs['subsidy_arr']['start'] > 0) and subsidy_start <= 24)
+            # condition_2 = (kwargs['subsidy_arr']['amount'] > 0)
+            # condition_3 = (kwargs['subsidy_arr']['tenure'] > 0) 
+            # condition_4 = (len([c for c in kwargs['subsidy_arr']['interest_arr']['interest'] if c]) > 0)
+            # kwargs_apart_from_subsudy = {k: v for (k, v) in kwargs.items() if k != 'subsidy_arr'}    
+            # if (condition_1 or condition_2 or condition_3 or condition_4):
+                # if (condition_1 and condition_2 and condition_3 and condition_4):
+                    # patched_memory['data'] = calculator(**kwargs, thousand_sep= False)
+                    # return patched_memory, no_update
+                # else:
+                    # raise PreventUpdate()
+            # else:
+                # if len(cache)> 0 and (kwargs['subsidy_arr']['method'] != cache['subsidy_arr']['method']):
+                        # return no_update, kwargs        
+                # else:
+                    # patched_memory['data'] = calculator(**kwargs_apart_from_subsudy, thousand_sep= False)
+                    # return patched_memory, kwargs
                 
     
         @callback(
