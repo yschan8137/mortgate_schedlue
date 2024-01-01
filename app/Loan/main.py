@@ -31,10 +31,10 @@ default_kwargs = {
         'tenure': 0,
         'grace_period': 0,
         'prepay_arr': {'amount': [], 'time': []},
-        'method': [
-            'EQUAL_TOTAL', 
-            'EQUAL_PRINCIPAL'
-        ]
+            'method': [
+                'EQUAL_TOTAL', 
+                'EQUAL_PRINCIPAL'
+            ]
     },
 }
 

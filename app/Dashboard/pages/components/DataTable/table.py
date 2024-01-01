@@ -15,6 +15,7 @@ app = Dash(
     __name__, 
     external_stylesheets=[
         "https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;900&display=swap",
+        "app/Dashboard/assets/style.css",
     ],
     suppress_callback_exceptions=True)
 

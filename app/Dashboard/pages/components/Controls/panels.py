@@ -35,6 +35,7 @@ class panel():
                 ),
                 dcc.Store(
                     'cache',
+                    data= {}
                 ),
                 dcc.Store(
                     ids.LOAN.RESULT.DATAFRAME,
@@ -49,25 +50,30 @@ class panel():
             Input(ids.LOAN.RESULT.KWARGS, 'data'),
             State('cache', 'data'),
             )
-        def update_data_frame(kwargs, cache):
+        def update_data_frame(
+            kwargs, 
+            cache,
+            ):
             # It is neccessary that all the sufficient parameters are given.
             patched_memory= Patch()
-            if (
-                (subsidy_start:= kwargs['subsidy_arr']['start'] > 0) 
-                and subsidy_start <= 24 and (kwargs['subsidy_arr']['amount'] > 0) 
-                and (kwargs['subsidy_arr']['tenure'] > 0) 
-                and (subsidy_interest:= kwargs['subsidy_arr']['interest_arr']['interest']) 
-                and (len([c for c in subsidy_interest if c]) > 0)
-                ):
-                patched_memory['data'] = calculator(**kwargs, thousand_sep= False)
-                return patched_memory
-            else:
-                new_kwargs = {k: v for (k, v) in kwargs.items() if k != 'subsidy_arr'}
-                if new_kwargs == cache:
-                    raise PreventUpdate()
+            condition_1 = ((subsidy_start:= kwargs['subsidy_arr']['start'] > 0) and subsidy_start <= 24)
+            condition_2 = (kwargs['subsidy_arr']['amount'] > 0)
+            condition_3 = (kwargs['subsidy_arr']['tenure'] > 0) 
+            condition_4 = (len([c for c in kwargs['subsidy_arr']['interest_arr']['interest'] if c]) > 0)
+            kwargs_apart_from_subsudy = {k: v for (k, v) in kwargs.items() if k != 'subsidy_arr'}    
+            if (condition_1 or condition_2 or condition_3 or condition_4):
+                if (condition_1 and condition_2 and condition_3 and condition_4):
+                    patched_memory['data'] = calculator(**kwargs, thousand_sep= False)
+                    return patched_memory, no_update
                 else:
-                    patched_memory['data'] = calculator(**new_kwargs, thousand_sep= False)
-                return patched_memory, new_kwargs 
+                    raise PreventUpdate()
+            else:
+                if len(cache)> 0 and (kwargs['subsidy_arr']['method'] != cache['subsidy_arr']['method']):
+                        return no_update, kwargs        
+                else:
+                    patched_memory['data'] = calculator(**kwargs_apart_from_subsudy, thousand_sep= False)
+                    return patched_memory, kwargs
+                
     
         @callback(
                 Output(ids.LOAN.RESULT.KWARGS, 'data'),
@@ -93,7 +99,6 @@ class panel():
                     Input(ids.LOAN.SUBSIDY.TENURE, 'value'),
                 ],
                 Input('Reset', 'n_clicks'),
-                # State(ids.LOAN.RESULT.KWARGS, 'data'),
         )
         def update_kwargs(
             total_amount,
@@ -118,6 +123,7 @@ class panel():
             ):
             patched_memory= Patch()
             if isinstance(triggered_id := callback_context.triggered_id, dict):
+                print('000000', triggered_id['type'])
                 if triggered_id['type'] == suffix_for_type(ids.LOAN.AMOUNT, ids.LOAN.TYPE):
                     patched_memory['total_amount'] = (total_amount if total_amount else 0)
                 elif triggered_id['type'] == ids.LOAN.DOWNPAYMENT:
@@ -147,7 +153,7 @@ class panel():
                 elif triggered_id['type'] == suffix_for_type(ids.LOAN.AMOUNT, ids.LOAN.SUBSIDY.TYPE):
                     patched_memory['subsidy_arr']['amount'] = (subsidy_amount if subsidy_amount else 0)
                 elif triggered_id['type'] == suffix_for_type(ids.LOAN.GRACE, ids.LOAN.SUBSIDY.TYPE):
-                    triggered_id['type'] = (subsidy_grace_period if subsidy_grace_period else 0)
+                    patched_memory['subsidy_arr']['grace_period'] = (subsidy_grace_period if subsidy_grace_period else 0)
                 elif triggered_id['type'] == suffix_for_type(ids.ADVANCED.DROPDOWN.OPTIONS, ids.LOAN.SUBSIDY.TYPE):
                     patched_memory['subsidy_arr']['method'] = subsidy_repayment_methods
                 elif triggered_id['type'] == suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.SUBSIDY.PREPAY.TYPE):
@@ -173,11 +179,11 @@ class panel():
                           'start': 0,
                           'tenure': 0,
                           'grace_period': 0,
-                          'method': cls.kwargs_schema,
                           'interest_arr': {
                                'time': [],
                                'interest': [0],
                         },
+                        'method': ['EQUAL_TOTAL', 'EQUAL_PRINCIPAL'],
                         'prepay_arr': {
                              'time': [],
                              'amount': [],
@@ -192,7 +198,7 @@ class panel():
                 Output(ids.LOAN.SUBSIDY.START, 'value', allow_duplicate=True),
                 Output(ids.LOAN.SUBSIDY.TENURE, 'value', allow_duplicate=True),
                 Output({"index": cls.index, "type": suffix_for_type(ids.LOAN.GRACE, ids.LOAN.SUBSIDY.TYPE)}, 'value'),
-                Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.DROPDOWN.OPTIONS, ids.LOAN.SUBSIDY.TYPE)}, 'value', allow_duplicate=True),
+                # Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.DROPDOWN.OPTIONS, ids.LOAN.SUBSIDY.TYPE)}, 'value', allow_duplicate=True),
                 Output({"index": cls.index, "type": suffix_for_type(ids.LOAN.INTEREST, ids.LOAN.SUBSIDY.TYPE)}, 'value', allow_duplicate=True),
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.SUBSIDY.TYPE)}, 'data', allow_duplicate=True),
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.SUBSIDY.PREPAY.TYPE)}, 'data', allow_duplicate=True),
@@ -200,15 +206,13 @@ class panel():
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.DROPDOWN.LIST, ids.LOAN.SUBSIDY.PREPAY.TYPE)}, 'data', allow_duplicate=True),
             ],
             Input('Reset', 'n_clicks'),
-            # State(ids.LOAN.RESULT.KWARGS, 'data'),
             prevent_initial_call=True
         )
         def reset_all(
             _, 
-            # memory
             ):
             if callback_context.triggered_id == "Reset":
-                return [0, 0, 0, 0, cls.kwargs_schema, 0, {}, {}, [], []]
+                return [0, 0, 0, 0, 0, {}, {}, [], []]
             else:
                 raise PreventUpdate
 

@@ -1,3 +1,7 @@
+""" This module contains the data table component that is rendered by pands dataframe."""
+
+""""Depreciated due to efficiency consideration. Use dash_table.DataTable instead. """
+
 import math
 import dash
 from dash import Dash, html, Input, Output, dash_table, callback

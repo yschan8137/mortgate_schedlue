@@ -30,6 +30,10 @@ app = Dash(
     ]
 )
 
+#TODO:
+#    -fix the issues for information diagram regarding excess column data from subsidy loans. 
+#    -add side navbar
+#    -enable dynamic adjustable screen size
 
 panel_tabs= dmc.Tabs(
         [
@@ -38,7 +42,6 @@ panel_tabs= dmc.Tabs(
                     dmc.Tab(
                         children= 'Main',
                         id= 'main-options',
-                        #    icon= DashIconify(icon="bi:graph-up"),
                         value= 'Main',
                         style= {
                             'font-weight': 'bold',
@@ -47,7 +50,6 @@ panel_tabs= dmc.Tabs(
                     dmc.Tab(
                         children= 'Advanced',
                         id= 'advanced-options',
-                        # icon= DashIconify(icon="ph:table-light"),
                         value= 'Advanced',
                         icon=DashIconify(icon="tabler:settings"),
                         style= {
@@ -66,7 +68,6 @@ panel_tabs= dmc.Tabs(
                         'width': '100%',
                         'height': '70dvh',
                         'overflow-y': 'scroll',
-                        # 'scrollbar-color': '#0C82DF #E2E2E2',
                         'color': '#333',
                         'background-color': 'white',
                     },
@@ -81,7 +82,6 @@ panel_tabs= dmc.Tabs(
         variant= 'outline',
         style= {
             'width': '100%',
-            # 'height': '70vdh',
             'color': '#333',
             'background-color': 'white',
         },
@@ -96,16 +96,6 @@ app.layout = dmc.MantineProvider(
             "Button": {"styles": {"root": {"fontWeight": 400}}},
             "Alert": {"styles": {"title": {"fontWeight": 500}}},
             "AvatarGroup": {"styles": {"truncated": {"fontWeight": 500}}},
-            'scrollbar': {
-                'thumb': {
-                    'backgroundColor': '#0C82DF',
-                    'borderRadius': '4px',
-                },
-                'track': {
-                    'backgroundColor': '#E2E2E2',
-                    'borderRadius': '4px',
-                },
-            },
         },
     },
     children=[
@@ -124,7 +114,6 @@ app.layout = dmc.MantineProvider(
                         'height': '80dvh',
                         'margin-top': 10,
                         'margin-left': 15,
-                        # 'scrollbar-color': '#0C82DF #E2E2E2',
                         'border': '1px solid #ccc',
                         'border-radius': '5px',
                         'font-size': '20px',
@@ -170,7 +159,7 @@ app.layout = dmc.MantineProvider(
 
 )
 
-# python app/Dashboard/tabs.py
+# python app/Dashboard/main.py
 # py -m app.Dashboard.tabs
 if __name__ == "__main__":
     app.run_server(

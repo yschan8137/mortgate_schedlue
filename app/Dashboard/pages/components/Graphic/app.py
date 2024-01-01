@@ -493,7 +493,8 @@ if __name__ == '__main__':
         __name__,
         external_stylesheets=[
             dbc.themes.LUMEN, 
-            dbc.icons.BOOTSTRAP
+            dbc.icons.BOOTSTRAP,
+            "app/Dashboard/assets/style.css",
             ],
         suppress_callback_exceptions=True,
     )
