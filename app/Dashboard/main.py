@@ -31,9 +31,10 @@ app = Dash(
 )
 
 #TODO:
-#    -fix the issues for information diagram regarding excess column data from subsidy loans. 
-#    -add side navbar
-#    -enable dynamic adjustable screen size
+#    []-fix the issues for information diagram regarding excess column data from subsidy loans. 
+#    []-add side navbar
+#    [X]-enable dynamic adjustable screen size
+#    []-apply modal for table
 
 panel_tabs= dmc.Tabs(
         [

@@ -85,7 +85,7 @@ def graph():
                                     variant="gradient",
                                     gradient={"from": "indigo", "to": "cyan"},
                                     style={
-                                        'width': '110px',
+                                        # 'width': '110px',
                                     },
                                     loading={'loading_type': 'overlay'},
                                     loaderPosition='center',
@@ -217,7 +217,7 @@ def graph():
                     chosen_figure = (
                         label if label != df_schema.level_0.TOTAL else df_schema.level_2.PAYMENT)
             else:
-                chosen_figure = df_schema.level_0.TOTAL
+                chosen_figure = df_schema.level_0.TOTAL # 總計
         
         ns, cols = zip(*[(n, col) for n, col in enumerate(data['columns']) if chosen_figure in col])
         x_axis_value = data['index'][1:-1]
@@ -226,34 +226,34 @@ def graph():
         data_frame_for_loan_timeSeries= {
             'Time': [],
             'Amount': [],
-            'labels': [],
+            # 'labels': [],
             'methods': [],
         }
 
-        for n, col in zip(ns, cols): # n: index of the column, col: column name
+        for n, col in zip(ns, cols): # n: index of the column; col: column name
             dff = [data[n] for data in data['data'][1:-1]]
             method = (" + ".join([co for co in col if co != chosen_figure]) if len(col) > 2 else col[0])
+
             if accum == 'cumulative':
                 dff = [*accumulate(dff)]
             dff = [*map(lambda x: f"{round(x):,}", dff)]
             
             data_frame_for_loan_timeSeries['Time'].extend(x_axis_value)
             data_frame_for_loan_timeSeries['Amount'].extend(dff)
-            data_frame_for_loan_timeSeries['labels'].extend([method] * len(x_axis_value))
+            # data_frame_for_loan_timeSeries['labels'].extend([method] * len(x_axis_value))
             data_frame_for_loan_timeSeries['methods'].extend([method] * len(x_axis_value))
             
         fig = px.line(
             data_frame_for_loan_timeSeries, 
             x= "Time", 
-            y="Amount", 
+            y= "Amount", 
             color="methods", 
             title='<b>Life of Loan</b>', 
-            # width=1000, 
             height=600,
             log_y= True,
             line_shape="spline",
             render_mode="svg",
-            hover_name="methods",
+            hover_name= "methods",
             template="plotly_white",
             color_discrete_map= {
                     df_schema.level_1.ETP: '#0C82DF',
@@ -274,7 +274,6 @@ def graph():
                                 'format': 'svg',
                                 'filename': 'custom_image',
                                 'height': 600,
-                                'width': 1000,
                                 'scale': 1,
                             },
                         },
@@ -293,7 +292,7 @@ def graph():
         Input(LOAN.RESULT.DATAFRAME, 'data'),
     )
     def update_general_info(
-        memory
+        memory,
         ):
         bar_layout= dict(
             showlegend= False,
@@ -303,14 +302,20 @@ def graph():
         )
         if memory:
             bars_data = {
-                'columns': list({col[0] for col in memory['data']['columns']}),
+                'columns': [],
                 'data': []
             }
+
+            for col in memory['data']['columns']:
+                if len(col) > 2 and col[0] == df_schema.level_0.TOTAL:
+                    bars_data['columns'].append(" + ".join([co for co in col]))
+                    bars_data['data'].append(round(memory['data']['data'][-1][memory['data']['columns'].index(col)] / len(memory['data']['index'][1:-1])))
+                else:
+                    if col[1] == df_schema.level_2.PAYMENT:
+                        bars_data['columns'].append(col[0])
+                        bars_data['data'].append(round(memory['data']['data'][-1][memory['data']['columns'].index(col)] / len(memory['data']['index'][1:-1])))
+            
             if bars_data['columns'][0]:
-                bars_data['data']= [
-                    round([da for col, da in zip(memory['data']['columns'], memory['data']['data'][-1]) if col[0]== chosen_col and col[1]== df_schema.level_2.PAYMENT][0]/ len(memory['data']['index'][1:-1]))
-                        for chosen_col in bars_data['columns']
-                ]
                 figure= px.bar(
                     bars_data,
                     x= 'data',
@@ -319,7 +324,6 @@ def graph():
                     text_auto= True,                
                     color= 'columns',
                     height= 180,
-                    width= 400,
                     title= '<b>Average Payment</b>',
                     color_discrete_map= {
                         df_schema.level_1.ETP: '#0C82DF',
@@ -381,10 +385,12 @@ def graph():
         Output('loading-overlay-for-details', 'children'),
         Input(GRAPH.LINE, 'hoverData'),
         State(LOAN.RESULT.DATAFRAME, 'data'),
+        State('menu-target', 'children')
     )
     def hover_data(
         hover_data,
-        memory
+        memory,
+        chosen_figure,
         ):
         bar_layout= dict(
             showlegend= False,
@@ -396,9 +402,9 @@ def graph():
             timepoint= hover_data['points'][0]['x']
             
             if timepoint != '0':
-                chosen_figure= hover_data['points'][0]['hovertext']
+                hovered_figure= hover_data['points'][0]['hovertext']
                 bar_data = {
-                    'names': chosen_figure,
+                    'names': hovered_figure,
                     'items': ['principal', 'interest', 'residual'],
                     'data': [],
                     'index': 0,
@@ -407,7 +413,13 @@ def graph():
                             np.sum(
                                     [
                                         [da for col, da in zip(memory['data']['columns'], data) 
-                                         if col[0]== chosen_figure and col[1]== df_schema.level_2.PRINCIPAL] 
+                                         if (
+                                             (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0][:5] and col[2]== df_schema.level_2.PRINCIPAL) or
+                                             (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0][:5] and col[2]== df_schema.level_2.PRINCIPAL)
+                                             if len(col) > 2
+                                             else col[0] == hovered_figure and col[1] == df_schema.level_2.PRINCIPAL
+                                            ) 
+                                         ] 
                                          for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
                                     ]
                                 )
@@ -416,14 +428,37 @@ def graph():
                             np.sum(
                                     [
                                         [da for col, da in zip(memory['data']['columns'], data) 
-                                         if col[0]== chosen_figure and col[1]== df_schema.level_2.INTEREST] 
+                                         if (
+                                             (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0][:5] and col[2]== df_schema.level_2.INTEREST) or
+                                             (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0][:5] and col[2]== df_schema.level_2.INTEREST)
+                                             if len(col) > 2
+                                             else col[0] == hovered_figure and col[1] == df_schema.level_2.INTEREST
+                                            )
+                                         ] 
                                          for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
                                     ]
                                 )
                             )
-                residual = round([data for col, data in zip(memory['data']['columns'], memory['data']['data'][memory['data']['index'].index(timepoint)]) if col[0]== chosen_figure and col[1]== df_schema.level_2.RESIDUAL][0])
+                residual = round(
+                    np.sum(
+                        [
+                            data 
+                            for col, data in zip(
+                                memory['data']['columns'], 
+                                memory['data']['data'][memory['data']['index'].index(timepoint)]
+                                ) if (
+                                        (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0][:5] and col[2]== df_schema.level_2.RESIDUAL) or
+                                        (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0][:5] and col[2]== df_schema.level_2.RESIDUAL)                                        
+                                        if len(col) > 2
+                                        else col[0] == hovered_figure and col[1] == df_schema.level_2.RESIDUAL
+                                    )
+                        ]
+                    )
+                )
+                
                 bar_data['data']= [principal, interest, residual]
 
+                print('bar_data on line 456:', bar_data)
                 fig= px.bar(
                     bar_data,
                     x= 'data',
@@ -432,7 +467,6 @@ def graph():
                     text_auto= True,                
                     color= 'items',
                     height= 180,
-                    # width= 480,
                     orientation= 'h',
                     title= '<b>Payment Breakdown</b>',
                     color_discrete_map= {
