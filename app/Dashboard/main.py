@@ -1,4 +1,4 @@
-from dash import Dash, html
+from dash import Dash, html, Input, Output, State
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
@@ -104,6 +104,24 @@ app.layout = dmc.MantineProvider(
         # NAVBAR,
         dmc.Container(
             [
+                dmc.Modal(
+                    title="Details",
+                    id="show-table",
+                    centered=True,
+                    zIndex=10000,
+                    size= "90%",
+                    children=[dataframe.table()],
+                    style= {
+                        'height': '98dvh',
+                        'font-size': '20px',
+                        'font-weight': 'bold',
+                        'color': '#333',
+                        'overflow-y': 'scroll',
+                        'background-color': 'rgba(246,248,250,255)',
+                        
+                    },
+                    className= 'custom-scrollbar',
+                ),
                 
                 html.Div(
                     children= [
@@ -128,7 +146,6 @@ app.layout = dmc.MantineProvider(
                     [
                         graph(),
                         html.Br(),
-                        dataframe.table(),
                     ],
                     className= 'custom-scrollbar',
                     style= {
@@ -159,6 +176,15 @@ app.layout = dmc.MantineProvider(
     
 
 )
+
+@app.callback(
+    Output("show-table", "opened"),
+    Input("detailed-table", "n_clicks"),
+    State("show-table", "opened"),
+)
+def toggle_modal(_, opened):
+    if _:
+        return not opened 
 
 # python app/Dashboard/main.py
 # py -m app.Dashboard.tabs

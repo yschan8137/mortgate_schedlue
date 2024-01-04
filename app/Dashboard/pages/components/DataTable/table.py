@@ -80,7 +80,6 @@ def table():
                     children= [
                         dmc.Stack(
                             [
-                                dmc.Title("Details", order= 2),
                                 dmc.CheckboxGroup(
                                     [
                                         dmc.Checkbox(
@@ -119,7 +118,6 @@ def table():
                             verticalSpacing="xs",
                             horizontalSpacing=10,                    
                         ),
-
                         dmc.Space(h= 10),
                         dmc.Table(
                             children= [],
@@ -130,7 +128,12 @@ def table():
                             withColumnBorders=True,
                             verticalSpacing="xs",
                             horizontalSpacing=10,
+                            style= {
+                                'overflow-x': 'scroll',
+                            },
+                            className= 'custom-scrollbar',
                         ),
+                        dmc.Space(h= 5),
                         dmc.Pagination(
                             total= 1,
                             page= 1,
@@ -149,8 +152,16 @@ def table():
                     },
                     transitionDuration= 0.5,
                 )
-            ]
-        )
+            ],
+            
+        ),
+        style= {
+            'width': '100%',
+            'height': '100%',
+            'margin': 0,
+            'padding': 0,
+        },
+        className= 'custom-scrollbar',
     )
 
 

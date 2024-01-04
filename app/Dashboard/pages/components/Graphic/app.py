@@ -47,7 +47,13 @@ def graph():
                         dmc.LoadingOverlay(
                                 id= 'loading-overlay-for-details',
                                 children= [],
-                            loaderProps={"variant": "oval",
+                            loading_state= {
+                                'is_loading': False,
+                                'loading_type': 'overlay',
+                                'prop_name': 'children',
+                                },
+                            loaderProps={
+                                "variant": "oval",
                                  "color": "blue", 
                                  "size": "lg",
                                  'is_loading': True,
@@ -55,6 +61,7 @@ def graph():
                             style= {
                                 'margin-top': '10px',
                                 'height': 130,
+                                'fontweight': 'bold',
                             },
                             transitionDuration= 0.5,
                             
@@ -74,53 +81,73 @@ def graph():
                 }    
             ),
             dmc.Space(h=20),
-            dmc.Group(
+            html.Div(
                 [
-                    dmc.Menu(
+                    dmc.Group(
                         [
-                            dmc.MenuTarget(
-                                dmc.Button(
-                                    id='menu-target',
-                                    children=df_schema.level_2.PAYMENT,
-                                    variant="gradient",
-                                    gradient={"from": "indigo", "to": "cyan"},
-                                    style={
-                                        # 'width': '110px',
-                                    },
-                                    loading={'loading_type': 'overlay'},
-                                    loaderPosition='center',
-                                    loaderProps={"variant": "dots",
-                                                 "color": "white", "size": "sm"},
-                                ),
+                            dmc.Menu(
+                                [
+                                    dmc.MenuTarget(
+                                        dmc.Button(
+                                            id='menu-target',
+                                            children=df_schema.level_2.PAYMENT,
+                                            variant="gradient",
+                                            gradient={"from": "indigo", "to": "cyan"},
+                                            style={
+                                                # 'width': '110px',
+                                            },
+                                            loading={'loading_type': 'overlay'},
+                                            loaderPosition='center',
+                                            loaderProps={"variant": "dots",
+                                                         "color": "white", "size": "sm"},
+                                        ),
+                                    ),
+                                    dmc.MenuDropdown(
+                                        [],
+                                        id='menu-dropdown',
+                                    ),
+                                ],
+                                id=GRAPH.DROPDOWN.MENU,
                             ),
-                            dmc.MenuDropdown(
-                                [],
-                                id='menu-dropdown',
+                            dmc.SegmentedControl(
+                                id=GRAPH.ACCUMULATION,
+                                value="regular",
+                                data=[
+                                    {"value": "regular", "label": "Regular"},
+                                    {"value": "cumulative", "label": "Cumulative"},
+                                ],
+                                size='sm',
+                                style={
+                                    'background-color': "rgba(0, 62, 143, 0.29)",
+                                    'box-shadow': '0 0 5px #ccc',
+                                },
                             ),
                         ],
-                        id=GRAPH.DROPDOWN.MENU,
-                    ),
-                    dmc.SegmentedControl(
-                        id=GRAPH.ACCUMULATION,
-                        value="regular",
-                        data=[
-                            {"value": "regular", "label": "Regular"},
-                            {"value": "cumulative", "label": "Cumulative"},
-                        ],
-                        size='sm',
+                        spacing=10,
+                        position='left',
                         style={
-                            'background-color': "rgba(0, 62, 143, 0.29)",
-                            'box-shadow': '0 0 5px #ccc',
-                        },
+                            # 'width': '100%',
+                        }
                     ),
+                    dmc.Button(
+                        'Details', 
+                        id= 'detailed-table', 
+                        variant="gradient",
+                        size='sm',
+                        gradient={"from": "indigo", "to": "cyan"},
+                        leftIcon=DashIconify(icon="fluent:database-plug-connected-20-filled"),
+                    )
                 ],
-                spacing=10,
-                position='left',
                 style={
+                    'display': 'flex',
+                    'justify-content': 'space-between',
+                    'align-items': 'center',
                     'width': '100%',
+                    'height': 'auto',
+                    'margin-top': '5px',
                 }
             ),
-            dmc.Space(h=20),
+            dmc.Space(h=10),
             html.Div(
                 dmc.LoadingOverlay(
                     id= 'loading-overlay-for-main-graph',
@@ -308,7 +335,7 @@ def graph():
 
             for col in memory['data']['columns']:
                 if len(col) > 2 and col[0] == df_schema.level_0.TOTAL:
-                    bars_data['columns'].append(" + ".join([co for co in col]))
+                    bars_data['columns'].append(" + ".join([co for co in col if co != df_schema.level_0.TOTAL]))
                     bars_data['data'].append(round(memory['data']['data'][-1][memory['data']['columns'].index(col)] / len(memory['data']['index'][1:-1])))
                 else:
                     if col[1] == df_schema.level_2.PAYMENT:
@@ -414,8 +441,8 @@ def graph():
                                     [
                                         [da for col, da in zip(memory['data']['columns'], data) 
                                          if (
-                                             (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0][:5] and col[2]== df_schema.level_2.PRINCIPAL) or
-                                             (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0][:5] and col[2]== df_schema.level_2.PRINCIPAL)
+                                             (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.PRINCIPAL) or
+                                             (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.PRINCIPAL)
                                              if len(col) > 2
                                              else col[0] == hovered_figure and col[1] == df_schema.level_2.PRINCIPAL
                                             ) 
@@ -429,8 +456,8 @@ def graph():
                                     [
                                         [da for col, da in zip(memory['data']['columns'], data) 
                                          if (
-                                             (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0][:5] and col[2]== df_schema.level_2.INTEREST) or
-                                             (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0][:5] and col[2]== df_schema.level_2.INTEREST)
+                                             (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST) or
+                                             (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST)
                                              if len(col) > 2
                                              else col[0] == hovered_figure and col[1] == df_schema.level_2.INTEREST
                                             )
@@ -447,8 +474,8 @@ def graph():
                                 memory['data']['columns'], 
                                 memory['data']['data'][memory['data']['index'].index(timepoint)]
                                 ) if (
-                                        (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0][:5] and col[2]== df_schema.level_2.RESIDUAL) or
-                                        (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0][:5] and col[2]== df_schema.level_2.RESIDUAL)                                        
+                                        (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL) or
+                                        (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL)                                        
                                         if len(col) > 2
                                         else col[0] == hovered_figure and col[1] == df_schema.level_2.RESIDUAL
                                     )
@@ -458,7 +485,6 @@ def graph():
                 
                 bar_data['data']= [principal, interest, residual]
 
-                print('bar_data on line 456:', bar_data)
                 fig= px.bar(
                     bar_data,
                     x= 'data',
@@ -514,7 +540,22 @@ def graph():
                         }
                 )
             else:
-                return no_update
+                return dmc.Center(
+                        dmc.Text(
+                        'Tap the graph for more details', 
+                        weight='bold', 
+                        variant="gradient",
+                        gradient={"from": "red", "to": "yellow", "deg": 45},
+                        style={
+                            'width': '100%',
+                            'height': '100%',
+                            "fontSize": 30,
+                            'textAlign': 'center',
+                            'margin-top': '50px',
+                            }, 
+
+                    )
+                )
         else:
             raise PreventUpdate
        
