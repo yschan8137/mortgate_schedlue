@@ -85,7 +85,7 @@ def table():
                                         dmc.Checkbox(
                                             label= v, 
                                             value= v,
-                                            className= 'mb-1',
+                                            # className= 'mb-1',
                                         ) for v in [
                                             df_schema.level_2.PRINCIPAL,
                                             df_schema.level_2.INTEREST,

@@ -1,6 +1,3 @@
-from errno import EPIPE
-
-
 class LOAN:
     AMOUNT = 'the amount of the loan'
     DOWNPAYMENT = 'downpayment rate of the loan'

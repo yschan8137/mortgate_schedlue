@@ -7,9 +7,9 @@ sys.path.append('./')
 
 # from app.Dashboard.navbar import create_navbar
 from app.Dashboard.pages.components.Controls.panels import panel
-from app.Dashboard.pages.components.Graphic.app import graph
+from app.Dashboard.pages.components.Graphic.main import graph
 from app.Dashboard.pages.components.DataTable import table as dataframe
-from app.Dashboard.assets import ids, specs
+from app.Dashboard.assets import ids
 
 
 # NAVBAR = create_navbar()
@@ -31,10 +31,11 @@ app = Dash(
 )
 
 #TODO:
-#    []-fix the issues for information diagram regarding excess column data from subsidy loans. 
+#    [X]-fix the issues for information diagram regarding excess column data from subsidy loans. 
+#    []-donut charts for the information diagrams
 #    []-add side navbar
 #    [X]-enable dynamic adjustable screen size
-#    []-apply modal for table
+#    [X]-apply modal for table
 
 panel_tabs= dmc.Tabs(
         [
@@ -110,6 +111,7 @@ app.layout = dmc.MantineProvider(
                     centered=True,
                     zIndex=10000,
                     size= "90%",
+                    overlayOpacity= 0.5,
                     children=[dataframe.table()],
                     style= {
                         'height': '98dvh',
@@ -117,7 +119,8 @@ app.layout = dmc.MantineProvider(
                         'font-weight': 'bold',
                         'color': '#333',
                         'overflow-y': 'scroll',
-                        'background-color': 'rgba(246,248,250,255)',
+                        'radius': '5px',
+                        # 'background-color': 'rgba(246,248,250,255)',
                         
                     },
                     className= 'custom-scrollbar',
@@ -145,7 +148,6 @@ app.layout = dmc.MantineProvider(
                 html.Div(
                     [
                         graph(),
-                        html.Br(),
                     ],
                     className= 'custom-scrollbar',
                     style= {
@@ -173,8 +175,6 @@ app.layout = dmc.MantineProvider(
     ],
     withGlobalStyles= True,
     withCSSVariables= True,
-    
-
 )
 
 @app.callback(
