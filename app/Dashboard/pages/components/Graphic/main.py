@@ -88,7 +88,6 @@ def graph():
                             frame= dict(
                                 duration= 10,
                                 redraw= True,
-                                # redraw= True,
                             ),
                             transition= dict(
                                 duration= 10,
@@ -612,10 +611,10 @@ def graph():
                 bar_data = {
                     'names': hovered_figure,
                     'items': ['principal', 'interest', 'residual'],
-                    'data': [],
-                    'parent': ['payment', 'payment', 'residual'],
-                    'index': 0,
+                    'value': [],
+                    'parent': ['repayment', 'repayment', 'residual'],
                 }
+
                 principal = [
                     [da for col, da in zip(memory['data']['columns'], data) 
                      if (
@@ -650,15 +649,15 @@ def graph():
                                 else col[0] == hovered_figure and col[1] == df_schema.level_2.RESIDUAL
                             )
                 ]
+                bar_data['value']= [round(np.sum(principal)), round(np.sum(interest)), round(np.sum(residual))]
                 
-                bar_data['data']= [principal, interest, residual]
                 fig= px.sunburst(
                     bar_data,
-                    values='data', 
+                    values='value', 
                     names='items',
                     parents='parent',
                     color_discrete_sequence=["gold", "mediumturquoise", "darkorange", "lightgreen"], 
-                    template='seaborn', 
+                    template='seaborn',
                 )
                 fig.update_layout(
                     annotations=[
@@ -672,16 +671,21 @@ def graph():
                     ],
                     title={
                         'text': '<b>Payment Breakdown</b>',
-                        'y': 0.95,
+                        'y': 0.1,
                         'x': 0.5,
                         'xanchor': 'center',
                         'yanchor': 'bottom',
                     },
-                     
+                    legend={
+                        'orientation': 'h',
+                        'yanchor': 'bottom',
+                        'y': 0.1,
+                        'xanchor': 'center',
+                        'x': 0.5,
+                    },
                 )
                 fig.update_traces(
                     texttemplate= '%{label}: %{value:,}',
-                    
                 )
                 return fig
             else:
