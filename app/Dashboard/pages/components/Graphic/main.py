@@ -613,66 +613,52 @@ def graph():
                     'names': hovered_figure,
                     'items': ['principal', 'interest', 'residual'],
                     'data': [],
+                    'parent': ['payment', 'payment', 'residual'],
                     'index': 0,
                 }
-                principal = round(
-                            np.sum(
-                                    [
-                                        [da for col, da in zip(memory['data']['columns'], data) 
-                                         if (
-                                             (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.PRINCIPAL) or
-                                             (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.PRINCIPAL)
-                                             if len(col) > 2
-                                             else col[0] == hovered_figure and col[1] == df_schema.level_2.PRINCIPAL
-                                            ) 
-                                         ] 
-                                         for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
-                                    ]
-                                )
+                principal = [
+                    [da for col, da in zip(memory['data']['columns'], data) 
+                     if (
+                         (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.PRINCIPAL) or
+                         (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.PRINCIPAL)
+                         if len(col) > 2
+                         else col[0] == hovered_figure and col[1] == df_schema.level_2.PRINCIPAL
+                        ) 
+                     ] 
+                     for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
+                ]
+                interest = [
+                    [da for col, da in zip(memory['data']['columns'], data) 
+                     if (
+                         (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST) or
+                         (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST)
+                         if len(col) > 2
+                         else col[0] == hovered_figure and col[1] == df_schema.level_2.INTEREST
+                        )
+                     ] 
+                     for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
+                ]
+                residual = [
+                    data 
+                    for col, data in zip(
+                        memory['data']['columns'], 
+                        memory['data']['data'][memory['data']['index'].index(timepoint)]
+                        ) if (
+                                (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL) or
+                                (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL)                                        
+                                if len(col) > 2
+                                else col[0] == hovered_figure and col[1] == df_schema.level_2.RESIDUAL
                             )
-                interest = round(
-                            np.sum(
-                                    [
-                                        [da for col, da in zip(memory['data']['columns'], data) 
-                                         if (
-                                             (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST) or
-                                             (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST)
-                                             if len(col) > 2
-                                             else col[0] == hovered_figure and col[1] == df_schema.level_2.INTEREST
-                                            )
-                                         ] 
-                                         for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
-                                    ]
-                                )
-                            )
-                residual = round(
-                    np.sum(
-                        [
-                            data 
-                            for col, data in zip(
-                                memory['data']['columns'], 
-                                memory['data']['data'][memory['data']['index'].index(timepoint)]
-                                ) if (
-                                        (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL) or
-                                        (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL)                                        
-                                        if len(col) > 2
-                                        else col[0] == hovered_figure and col[1] == df_schema.level_2.RESIDUAL
-                                    )
-                        ]
-                    )
-                )
+                ]
                 
                 bar_data['data']= [principal, interest, residual]
-                fig= px.pie(
+                fig= px.sunburst(
                     bar_data,
                     values='data', 
-                    names='items', 
-                    hole=.5, 
+                    names='items',
+                    parents='parent',
                     color_discrete_sequence=["gold", "mediumturquoise", "darkorange", "lightgreen"], 
                     template='seaborn', 
-                    labels={'Sales':'Sales (in millions)'}, 
-                    hover_data=['data'],
-                    title='<b>Payment Breakdown</b>',
                 )
                 fig.update_layout(
                     annotations=[
@@ -681,11 +667,21 @@ def graph():
                             x=0.5, 
                             y=0.5,
                             font_size=15, 
-                            showarrow=False
+                            showarrow=False,
                             )
-                        ], 
-                        legend=dict(title='Countries'
-                                    )
+                    ],
+                    title={
+                        'text': '<b>Payment Breakdown</b>',
+                        'y': 0.95,
+                        'x': 0.5,
+                        'xanchor': 'center',
+                        'yanchor': 'bottom',
+                    },
+                     
+                )
+                fig.update_traces(
+                    texttemplate= '%{label}: %{value:,}',
+                    
                 )
                 return fig
             else:
