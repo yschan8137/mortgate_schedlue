@@ -692,11 +692,9 @@ def graph():
                     ] for name in bar_data['names']
                 ]
                 # bar_data['value']= [round(np.sum(principal)), round(np.sum(interest)), round(np.sum(residual))]
-                
                 bar_data['value']= [round(np.sum(v)) for v in [*principal, *interest, *residual]]
                 bar_data['names'] = sorted(bar_data['names'] * int(len(bar_data['value']) / len(bar_data['names'])))
-                bar_data['items'] = sorted(bar_data['items'] * int(len(bar_data['value']) / len(bar_data['items'])))
-
+                bar_data['items'] = bar_data['items'] * int(len(bar_data['value']) / len(bar_data['items']))
                 fig= px.pie(
                     bar_data,
                     values='value',
