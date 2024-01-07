@@ -690,7 +690,7 @@ def graph():
                 ]
                 # bar_data['value']= [round(np.sum(principal)), round(np.sum(interest)), round(np.sum(residual))]
                 bar_data['names'] = bar_data['names'] * 3
-                bar_data['value']= [round(np.sum(v)) for v in [*merge_sublist(principal), *merge_sublist(interest), *merge_sublist(residual)]]
+                bar_data['value']= [round(np.sum(v)) for v in [*principal, *interest, *residual]]
                 fig= px.pie(
                     bar_data,
                     values='value',
