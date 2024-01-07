@@ -689,7 +689,7 @@ def graph():
                     ] for name in bar_data['names']
                 ]
                 # bar_data['value']= [round(np.sum(principal)), round(np.sum(interest)), round(np.sum(residual))]
-                bar_data['names'] = bar_data['names'] * 3
+                bar_data['names'] = bar_data['names'] * len(bar_data['names'])
                 bar_data['value']= [round(np.sum(v)) for v in [*principal, *interest, *residual]]
                 fig= px.pie(
                     bar_data,
