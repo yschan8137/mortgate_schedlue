@@ -654,7 +654,8 @@ def graph():
                             [
                                 da for col, da in zip(memory['data']['columns'], data) 
                                 if (
-                                    col[1]== name and col[2] == df_schema.level_2.PRINCIPAL
+                                    (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.PRINCIPAL) or 
+                                    (col[0] == df_schema.level_0.SUBSIDY and col[1] == name and col[2] == df_schema.level_2.PRINCIPAL)
                                     if len(col) > 2
                                     else col[0] == name and col[1] == df_schema.level_2.PRINCIPAL
                                 )
@@ -667,7 +668,8 @@ def graph():
                             [
                                 da for col, da in zip(memory['data']['columns'], data) 
                                 if (
-                                    col[1]== name and col[2] == df_schema.level_2.INTEREST
+                                    (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.INTEREST) or
+                                    (col[0] == df_schema.level_0.SUBSIDY and col[1] == name and col[2] == df_schema.level_2.INTEREST)
                                     if len(col) > 2
                                     else col[0] == name and col[1] == df_schema.level_2.INTEREST
                                 )
@@ -682,15 +684,19 @@ def graph():
                             memory['data']['columns'], 
                             memory['data']['data'][memory['data']['index'].index(timepoint)]
                             ) if (
-                                col[1]== name and col[2]== df_schema.level_2.RESIDUAL 
+                                    (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.RESIDUAL) or
+                                    (col[0] == df_schema.level_0.SUBSIDY and col[1] == name and col[2] == df_schema.level_2.RESIDUAL)
                                 if len(col) > 2
                                 else col[0] == name and col[1] == df_schema.level_2.RESIDUAL
                             )
                     ] for name in bar_data['names']
                 ]
                 # bar_data['value']= [round(np.sum(principal)), round(np.sum(interest)), round(np.sum(residual))]
-                bar_data['names'] = bar_data['names'] * len(bar_data['names'])
+                
                 bar_data['value']= [round(np.sum(v)) for v in [*principal, *interest, *residual]]
+                bar_data['names'] = sorted(bar_data['names'] * int(len(bar_data['value']) / len(bar_data['names'])))
+                bar_data['items'] = sorted(bar_data['items'] * int(len(bar_data['value']) / len(bar_data['items'])))
+
                 fig= px.pie(
                     bar_data,
                     values='value',
