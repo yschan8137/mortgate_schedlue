@@ -11,7 +11,7 @@ import sys
 sys.path.append('./')
 
 from app.Dashboard.assets.ids import GRAPH, LOAN
-from app.Loan import df_schema
+from app.Loan import df_schema, merge_sublist
 
 
 def graph():
@@ -88,6 +88,7 @@ def graph():
                             frame= dict(
                                 duration= 10,
                                 redraw= True,
+                                # redraw= True,
                             ),
                             transition= dict(
                                 duration= 10,
@@ -213,7 +214,7 @@ def graph():
                     transitionDuration= 0.5,
                 ),
                 style={
-                    'height': 465,
+                    'height': 460,
                     'border-radius': '5px',
                     'border': '1px solid #ccc',
                     'background-color': 'white',
@@ -223,7 +224,7 @@ def graph():
         ],
         style={
             'width': '100%',
-            'height': '98dvh',
+            'height': '95dvh',
             'margin-top': '10px',
             'margin-bottom': '10px',
             'margin-left': '20px',
@@ -604,88 +605,137 @@ def graph():
         chosen_figure
         ):
         if memory:
-            timepoint= hover_data['points'][0]['x']
-            
+            timepoint= hover_data['points'][0]['x']  
             if timepoint != '0':
                 hovered_figure= hover_data['points'][0]['hovertext']
                 bar_data = {
-                    'names': hovered_figure,
+                    'names': [df_schema.level_1.EPP, df_schema.level_1.ETP], 
                     'items': ['principal', 'interest', 'residual'],
                     'value': [],
-                    'parent': ['repayment', 'repayment', 'residual'],
                 }
 
-                principal = [
-                    [da for col, da in zip(memory['data']['columns'], data) 
-                     if (
-                         (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.PRINCIPAL) or
-                         (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.PRINCIPAL)
-                         if len(col) > 2
-                         else col[0] == hovered_figure and col[1] == df_schema.level_2.PRINCIPAL
-                        ) 
-                     ] 
-                     for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
-                ]
-                interest = [
-                    [da for col, da in zip(memory['data']['columns'], data) 
-                     if (
-                         (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST) or
-                         (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST)
-                         if len(col) > 2
-                         else col[0] == hovered_figure and col[1] == df_schema.level_2.INTEREST
-                        )
-                     ] 
-                     for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
-                ]
-                residual = [
-                    data 
-                    for col, data in zip(
-                        memory['data']['columns'], 
-                        memory['data']['data'][memory['data']['index'].index(timepoint)]
-                        ) if (
-                                (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL) or
-                                (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL)                                        
-                                if len(col) > 2
-                                else col[0] == hovered_figure and col[1] == df_schema.level_2.RESIDUAL
-                            )
-                ]
-                bar_data['value']= [round(np.sum(principal)), round(np.sum(interest)), round(np.sum(residual))]
+                # principal = [
+                #     [da for col, da in zip(memory['data']['columns'], data) 
+                #      if (
+                #          (col[0]== df_schema.level_0.ORIGINAL and col[1]== bar_data['names'] and col[2]== df_schema.level_2.PRINCIPAL) or
+                #          (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.PRINCIPAL)
+                #          if len(col) > 2
+                #          else col[0] == hovered_figure and col[1] == df_schema.level_2.PRINCIPAL
+                #         ) 
+                #      ] 
+                #      for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
+                # ]
                 
-                fig= px.sunburst(
+                # interest = [
+                    # [da for col, da in zip(memory['data']['columns'], data) 
+                    #  if (
+                        #  (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST) or
+                        #  (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST)
+                        #  if len(col) > 2
+                        #  else col[0] == hovered_figure and col[1] == df_schema.level_2.INTEREST
+                        # )
+                    #  ] 
+                    #  for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
+                # ]
+                # residual = [
+                    # data 
+                    # for col, data in zip(
+                        # memory['data']['columns'], 
+                        # memory['data']['data'][memory['data']['index'].index(timepoint)]
+                        # ) if (
+                                # (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL) or
+                                # (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL)                                        
+                                # if len(col) > 2
+                                # else col[0] == hovered_figure and col[1] == df_schema.level_2.RESIDUAL
+                            # )
+                # ]
+                principal= [
+                        [
+                            [
+                                da for col, da in zip(memory['data']['columns'], data) 
+                                if (
+                                    col[1]== name and col[2] == df_schema.level_2.PRINCIPAL
+                                    if len(col) > 2
+                                    else col[0] == name and col[1] == df_schema.level_2.PRINCIPAL
+                                )
+                            ][0] 
+                            for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
+                        ] for name in bar_data['names']
+                ]
+                interest= [
+                        [
+                            [
+                                da for col, da in zip(memory['data']['columns'], data) 
+                                if (
+                                    col[1]== name and col[2] == df_schema.level_2.INTEREST
+                                    if len(col) > 2
+                                    else col[0] == name and col[1] == df_schema.level_2.INTEREST
+                                )
+                            ][0] 
+                            for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
+                        ] for name in bar_data['names']
+                ]
+                residual= [
+                    [
+                        data 
+                        for col, data in zip(
+                            memory['data']['columns'], 
+                            memory['data']['data'][memory['data']['index'].index(timepoint)]
+                            ) if (
+                                col[1]== name and col[2]== df_schema.level_2.RESIDUAL 
+                                if len(col) > 2
+                                else col[0] == name and col[1] == df_schema.level_2.RESIDUAL
+                            )
+                    ] for name in bar_data['names']
+                ]
+                # bar_data['value']= [round(np.sum(principal)), round(np.sum(interest)), round(np.sum(residual))]
+                bar_data['names'] = bar_data['names'] * 3
+                bar_data['value']= [round(np.sum(v)) for v in [*merge_sublist(principal), *merge_sublist(interest), *merge_sublist(residual)]]
+                fig= px.pie(
                     bar_data,
-                    values='value', 
+                    values='value',
                     names='items',
-                    parents='parent',
-                    color_discrete_sequence=["gold", "mediumturquoise", "darkorange", "lightgreen"], 
+                    hole= 0.8,
+                    opacity= 0.8,
+                    color_discrete_sequence= px.colors.sequential.Teal,
                     template='seaborn',
+                    facet_col= 'names',
                 )
                 fig.update_layout(
-                    annotations=[
+                    annotations= [
                         dict(
-                            text='Sales By Country', 
-                            x=0.5, 
-                            y=0.5,
-                            font_size=15, 
-                            showarrow=False,
-                            )
+                            text= 'Put annotation here',
+                            x= 0.5,
+                            y= 0.5,
+                            font_size= 15,
+                            showarrow= False,
+                        )
                     ],
-                    title={
-                        'text': '<b>Payment Breakdown</b>',
-                        'y': 0.1,
-                        'x': 0.5,
-                        'xanchor': 'center',
-                        'yanchor': 'bottom',
-                    },
-                    legend={
-                        'orientation': 'h',
-                        'yanchor': 'bottom',
-                        'y': 0.1,
-                        'xanchor': 'center',
-                        'x': 0.5,
-                    },
+                    title= dict(
+                        text= '<b>Payment Breakdown</b>',
+                        x= 0.5,
+                        y= 0,
+                        xanchor= 'center',
+                        yanchor= 'bottom',
+                    ),
+                    showlegend= True,
+                    legend= dict(
+                        orientation= 'v',
+                        yanchor= 'bottom',
+                        y= 1.02,
+                        xanchor= 'right',
+                        x= 1,
+                    ),
+                    margin= dict(l=20, r=10, t=35, b=40),
+                    paper_bgcolor= 'rgba(0, 0, 0, 0)',
+                    plot_bgcolor= 'rgba(0, 0, 0, 0)',
                 )
                 fig.update_traces(
-                    texttemplate= '%{label}: %{value:,}',
+                    texttemplate='%{percent:.2%}',
+                    textposition='inside',
+                    textinfo='percent+label',
+                    hovertemplate= '%{label}: %{value:,}',
+                    
                 )
                 return fig
             else:
