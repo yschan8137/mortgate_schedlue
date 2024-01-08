@@ -32,7 +32,7 @@ app = Dash(
 
 #TODO:
 #    [X]-fix the issues for information diagram regarding excess column data from subsidy loans. 
-#    []-donut charts for the information diagrams
+#    [X]-donut charts for the information diagrams
 #    []-add side navbar
 #    [X]-enable dynamic adjustable screen size
 #    [X]-apply modal for table
@@ -61,14 +61,27 @@ panel_tabs= dmc.Tabs(
                 ],
                 grow= True,
             ),
-            dmc.TabsPanel(panel.front(), value= 'Main'),
+            dmc.TabsPanel(
+                html.Div(
+                    panel.front(),
+                    className= 'custom-scrollbar',
+                    style= {
+                        'width': '100%',
+                        'height': '80dvh',
+                        'overflow-y': 'scroll',
+                        'color': '#333',
+                        'background-color': 'white',
+                    },
+                ), 
+                value= 'Main'
+            ),
             dmc.TabsPanel(
                 html.Div(
                     panel._advancedoptions(),
                     className= 'custom-scrollbar',
                     style= {
                         'width': '100%',
-                        'height': '70dvh',
+                        'height': '80dvh',
                         'overflow-y': 'scroll',
                         'color': '#333',
                         'background-color': 'white',
@@ -94,6 +107,11 @@ app.layout = dmc.MantineProvider(
     theme= {
         "fontFamily": "'Inter', sans-serif",
         "primaryColor": "indigo",
+        "background": {
+            # 'color': 'rgba(246,248,250,255)',
+            "dark": "#141414",
+            "light": "#fff",
+        },
         "components": {
             "Button": {"styles": {"root": {"fontWeight": 400}}},
             "Alert": {"styles": {"title": {"fontWeight": 500}}},
@@ -112,7 +130,10 @@ app.layout = dmc.MantineProvider(
                     zIndex=10000,
                     size= "90%",
                     overlayOpacity= 0.5,
+                    overlayBlur= 5,
+                    withCloseButton= True,
                     children=[dataframe.table()],
+                    lockScroll= False,
                     style= {
                         'height': '98dvh',
                         'font-size': '20px',
@@ -120,27 +141,21 @@ app.layout = dmc.MantineProvider(
                         'color': '#333',
                         'overflow-y': 'scroll',
                         'radius': '5px',
-                        # 'background-color': 'rgba(246,248,250,255)',
-                        
                     },
                     className= 'custom-scrollbar',
                 ),
-                
                 html.Div(
                     children= [
                         panel_tabs,
                     ],
                     className= 'custom-scrollbar',
                     style= {
-                        'width': '25dvw',
-                        'height': '80dvh',
-                        'margin-top': 10,
-                        'margin-left': 15,
+                        'width': '20dvw',
+                        'height': '90dvh',
                         'border': '1px solid #ccc',
                         'border-radius': '5px',
                         'font-size': '20px',
                         'font-weight': 'bold',
-                        'padding': '10px',
                         'color': '#333',
                         'background-color': 'white',
                     },
@@ -151,12 +166,11 @@ app.layout = dmc.MantineProvider(
                     ],
                     className= 'custom-scrollbar',
                     style= {
-                        'width': 'calc(100dvw - 365px)',
+                        'width': '90dvw',
                         'height': '98vh',
                         'overflow-y': 'scroll',
                         'scrollbar-color': '#0C82DF #E2E2E2',
                         'margin-left': 20,
-                        'margin-right': 20,
                     }
                 ),
                 
@@ -165,11 +179,16 @@ app.layout = dmc.MantineProvider(
             style= {
                 'background-color': 'rgba(246,248,250,255)',
                 'width': '100vw',
-                'height': '98vh',
-                'margin': 0,
-                'padding': 0,
+                'height': '100vh',
                 'display': 'flex',
-            }
+                'flex-direction': 'row',
+                'justify-content': 'flex-start', # [center, flex-start, flex-end, space-around, space-between, space-evenly]
+                'align-items': 'first-start', # [center, flex-start, flex-end, stretch, baseline]
+                'padding-top': 15,
+                'padding-left': 15,
+                'padding-right': 15,
+            },
+            className= 'custom-scrollbar',
         ),
         
     ],

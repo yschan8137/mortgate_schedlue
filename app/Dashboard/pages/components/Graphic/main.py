@@ -6,6 +6,7 @@ from dash_iconify import DashIconify
 import plotly.express as px
 import dash_mantine_components as dmc
 import numpy as np
+from itertools import product
 
 import sys
 sys.path.append('./')
@@ -88,7 +89,6 @@ def graph():
                             frame= dict(
                                 duration= 10,
                                 redraw= True,
-                                # redraw= True,
                             ),
                             transition= dict(
                                 duration= 10,
@@ -165,7 +165,7 @@ def graph():
                         position='left',
                     ),
                     dmc.Button(
-                        'Details', 
+                        'spreadsheet', 
                         id= 'detailed-table', 
                         variant="gradient",
                         size='sm',
@@ -179,7 +179,6 @@ def graph():
                     'align-items': 'center',
                     'width': '100%',
                     'height': 'auto',
-                    'margin-top': '5px',
                 }
             ),
             dmc.Space(h=10),
@@ -196,7 +195,7 @@ def graph():
                                 'toImageButtonOptions': {
                                     'format': 'svg',
                                     'filename': 'custom_image',
-                                    'height': 'auto',
+                                    # 'height': 'auto',
                                     'scale': 1,
                                 },
                             },
@@ -225,10 +224,6 @@ def graph():
         style={
             'width': '100%',
             'height': '95dvh',
-            'margin-top': '10px',
-            'margin-bottom': '10px',
-            'margin-left': '20px',
-            'margin-right': '20px',
         },
         className= 'custom-scrollbar',
     )
@@ -468,7 +463,7 @@ def graph():
             # if timepoint != '0':
                 # hovered_figure= hover_data['points'][0]['hovertext']
                 # bar_data = {
-                    # 'names': hovered_figure,
+                    # 'method': hovered_figure,
                     # 'items': ['principal', 'interest', 'residual'],
                     # 'data': [],
                     # 'index': 0,
@@ -609,73 +604,54 @@ def graph():
             if timepoint != '0':
                 hovered_figure= hover_data['points'][0]['hovertext']
                 bar_data = {
-                    'names': [df_schema.level_1.EPP, df_schema.level_1.ETP], 
+                    'method': [df_schema.level_1.EPP, df_schema.level_1.ETP],
+                    'subsidy': [df_schema.level_1.EPP, df_schema.level_1.ETP],
                     'items': ['principal', 'interest', 'residual'],
                     'value': [],
                 }
-
-                # principal = [
-                #     [da for col, da in zip(memory['data']['columns'], data) 
-                #      if (
-                #          (col[0]== df_schema.level_0.ORIGINAL and col[1]== bar_data['names'] and col[2]== df_schema.level_2.PRINCIPAL) or
-                #          (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.PRINCIPAL)
-                #          if len(col) > 2
-                #          else col[0] == hovered_figure and col[1] == df_schema.level_2.PRINCIPAL
-                #         ) 
-                #      ] 
-                #      for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
-                # ]
-                
-                # interest = [
-                    # [da for col, da in zip(memory['data']['columns'], data) 
-                    #  if (
-                        #  (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST) or
-                        #  (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST)
-                        #  if len(col) > 2
-                        #  else col[0] == hovered_figure and col[1] == df_schema.level_2.INTEREST
-                        # )
-                    #  ] 
-                    #  for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
-                # ]
-                # residual = [
-                    # data 
-                    # for col, data in zip(
-                        # memory['data']['columns'], 
-                        # memory['data']['data'][memory['data']['index'].index(timepoint)]
-                        # ) if (
-                                # (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL) or
-                                # (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL)                                        
-                                # if len(col) > 2
-                                # else col[0] == hovered_figure and col[1] == df_schema.level_2.RESIDUAL
-                            # )
+                # principal= [
+                #         [
+                #             [
+                #                 da for col, da in zip(memory['data']['columns'], data) 
+                #                 if (
+                #                     (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.PRINCIPAL) and
+                #                     (col[0] == df_schema.level_0.SUBSIDY and col[1] == subsidy_name and col[2] == df_schema.level_2.PRINCIPAL)
+                #                     if len(col) > 2
+                #                     else col[0] == name and col[1] == df_schema.level_2.PRINCIPAL
+                #                 )
+                #             ][0] 
+                #             for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
+                #         ] for name in bar_data['method']
                 # ]
                 principal= [
+                    [
                         [
-                            [
-                                da for col, da in zip(memory['data']['columns'], data) 
-                                if (
-                                    (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.PRINCIPAL) or 
-                                    (col[0] == df_schema.level_0.SUBSIDY and col[1] == name and col[2] == df_schema.level_2.PRINCIPAL)
-                                    if len(col) > 2
-                                    else col[0] == name and col[1] == df_schema.level_2.PRINCIPAL
-                                )
-                            ][0] 
-                            for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
-                        ] for name in bar_data['names']
+                            data[n] for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
+                         ] 
+                         for n, col in enumerate(memory['data']['columns']) if (
+                             (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.PRINCIPAL) and
+                             (col[0] == df_schema.level_0.SUBSIDY and col[1] == subsidy_name and col[2] == df_schema.level_2.PRINCIPAL)
+                             if len(col) > 2
+                             else (col[0] == name and col[1] == df_schema.level_2.PRINCIPAL 
+                                   if name == subsidy_name else False
+                                   )
+                            )
+                    ] for name, subsidy_name in product(bar_data['method'], bar_data['subsidy'])
                 ]
                 interest= [
+                    [
                         [
-                            [
-                                da for col, da in zip(memory['data']['columns'], data) 
-                                if (
-                                    (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.INTEREST) or
-                                    (col[0] == df_schema.level_0.SUBSIDY and col[1] == name and col[2] == df_schema.level_2.INTEREST)
-                                    if len(col) > 2
-                                    else col[0] == name and col[1] == df_schema.level_2.INTEREST
-                                )
-                            ][0] 
-                            for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
-                        ] for name in bar_data['names']
+                            data[n] for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
+                         ] 
+                         for n, col in enumerate(memory['data']['columns']) if (
+                             (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.INTEREST) and
+                             (col[0] == df_schema.level_0.SUBSIDY and col[1] == subsidy_name and col[2] == df_schema.level_2.INTEREST)
+                             if len(col) > 2
+                             else (col[0] == name and col[1] == df_schema.level_2.INTEREST 
+                                   if name == subsidy_name else False
+                                   )
+                            )
+                    ] for name, subsidy_name in product(bar_data['method'], bar_data['subsidy'])
                 ]
                 residual= [
                     [
@@ -684,17 +660,20 @@ def graph():
                             memory['data']['columns'], 
                             memory['data']['data'][memory['data']['index'].index(timepoint)]
                             ) if (
-                                    (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.RESIDUAL) or
-                                    (col[0] == df_schema.level_0.SUBSIDY and col[1] == name and col[2] == df_schema.level_2.RESIDUAL)
+                                    (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.RESIDUAL) and
+                                    (col[0] == df_schema.level_0.SUBSIDY and col[1] == subsidy_name and col[2] == df_schema.level_2.RESIDUAL for subsidy_name in bar_data['subsidy'])
                                 if len(col) > 2
-                                else col[0] == name and col[1] == df_schema.level_2.RESIDUAL
+                                else (col[0] == name and col[1] == df_schema.level_2.RESIDUAL
+                                      if name == subsidy_name else False
+                                      )
                             )
-                    ] for name in bar_data['names']
+                    ] for name, subsidy_name in product(bar_data['method'], bar_data['subsidy'])
                 ]
-                # bar_data['value']= [round(np.sum(principal)), round(np.sum(interest)), round(np.sum(residual))]
-                bar_data['value']= [round(np.sum(v)) for v in [*principal, *interest, *residual]]
-                bar_data['names'] = sorted(bar_data['names'] * int(len(bar_data['value']) / len(bar_data['names'])))
-                bar_data['items'] = bar_data['items'] * int(len(bar_data['value']) / len(bar_data['items']))
+
+                bar_data['value']= [round(np.sum(v)) for v in [*merge_sublist(principal), *merge_sublist(interest), *merge_sublist(residual)]]
+                bar_data['method'] = bar_data['method'] * int(len(bar_data['value']) / len(bar_data['method']))
+                bar_data['subsidy'] = bar_data['subsidy'] * int(len(bar_data['value']) / len(bar_data['subsidy']))
+                bar_data['items'] = sorted(bar_data['items'] * int(len(bar_data['value']) / len(bar_data['items'])))
                 fig= px.pie(
                     bar_data,
                     values='value',
@@ -703,25 +682,25 @@ def graph():
                     opacity= 0.8,
                     color_discrete_sequence= px.colors.sequential.Teal,
                     template='seaborn',
-                    facet_col= 'names',
+                    facet_col= 'method',
                 )
                 fig.update_layout(
-                    annotations= [
-                        dict(
-                            text= 'Put annotation here',
-                            x= 0.5,
-                            y= 0.5,
-                            font_size= 15,
-                            showarrow= False,
-                        )
-                    ],
-                    title= dict(
-                        text= '<b>Payment Breakdown</b>',
-                        x= 0.5,
-                        y= 0,
-                        xanchor= 'center',
-                        yanchor= 'bottom',
-                    ),
+                    # annotations= [
+                    #     dict(
+                    #         text= 'Put annotation here',
+                    #         x= 0.5,
+                    #         y= 0.5,
+                    #         font_size= 15,
+                    #         showarrow= False,
+                    #     ),
+                    #     dict(
+                    #         text= 'Put annotation here',
+                    #         x= 0.5,
+                    #         y= 0.5,
+                    #         font_size= 15,
+                    #         showarrow= False,
+                    #     ),
+                    # ],
                     showlegend= True,
                     legend= dict(
                         orientation= 'v',
