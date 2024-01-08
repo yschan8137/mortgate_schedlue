@@ -236,8 +236,6 @@ class panel():
                     ],
                     style= {
                         'width': '80%',
-                        'padding': '0px',
-                        'margin': '0px',
                         'margin-left': '10%',
                         'margin-right': '10%',
                     }
