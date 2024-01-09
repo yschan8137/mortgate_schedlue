@@ -166,11 +166,11 @@ app.layout = dmc.MantineProvider(
                     ],
                     className= 'custom-scrollbar',
                     style= {
-                        'width': '90dvw',
+                        'width': '70dvw',
                         'height': '98vh',
                         'overflow-y': 'scroll',
                         'scrollbar-color': '#0C82DF #E2E2E2',
-                        'margin-left': 20,
+                        'margin-left': 25,
                     }
                 ),
                 
