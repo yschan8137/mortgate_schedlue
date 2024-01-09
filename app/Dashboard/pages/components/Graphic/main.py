@@ -708,6 +708,7 @@ def graph():
                 #     arg,
                 #     row,
                 #     col,
+                #     exclude_empty_subplots= True,
                 # )
                 fig.update_traces(
                     texttemplate='%{percent:.2%}',
