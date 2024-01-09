@@ -685,22 +685,6 @@ def graph():
                     facet_col= 'method',
                 )
                 fig.update_layout(
-                    # annotations= [
-                    #     dict(
-                    #         text= 'Put annotation here',
-                    #         x= 0.5,
-                    #         y= 0.5,
-                    #         font_size= 15,
-                    #         showarrow= False,
-                    #     ),
-                    #     dict(
-                    #         text= 'Put annotation here',
-                    #         x= 0.5,
-                    #         y= 0.5,
-                    #         font_size= 15,
-                    #         showarrow= False,
-                    #     ),
-                    # ],
                     showlegend= True,
                     legend= dict(
                         orientation= 'v',
@@ -713,6 +697,7 @@ def graph():
                     paper_bgcolor= 'rgba(0, 0, 0, 0)',
                     plot_bgcolor= 'rgba(0, 0, 0, 0)',
                 )
+                # fig.for_each_annotation()
                 fig.update_traces(
                     texttemplate='%{percent:.2%}',
                     textposition='inside',
