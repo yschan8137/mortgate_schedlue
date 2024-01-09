@@ -6,7 +6,11 @@ from dash_iconify import DashIconify
 import plotly.express as px
 import dash_mantine_components as dmc
 import numpy as np
+<<<<<<< HEAD
 from itertools import product, groupby
+=======
+from itertools import product
+>>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
 
 import sys
 sys.path.append('./')
@@ -83,6 +87,7 @@ def graph():
             # ),
             html.Div(
                 children= [
+<<<<<<< HEAD
                     html.Div(
                         ['test'],
                         style= {
@@ -92,6 +97,34 @@ def graph():
                             'background-color': 'white',
                             'border-radius': '5px',
                             'border': '1px solid gray',
+=======
+                    dcc.Graph(
+                        id= 'information-dashboard',
+                        animation_options= dict(
+                            frame= dict(
+                                duration= 10,
+                                redraw= True,
+                            ),
+                            transition= dict(
+                                duration= 10,
+                                easing= 'quad-in-out',
+                            )
+                        ),
+                        animate= True,
+                        style={
+                            'background-color': 'rgba(0, 0, 0, 0)',
+                            'width': '100%',
+                            'height': '100%', 
+                        },
+                        config={
+                            'displayModeBar': False,
+                            'doubleClick': 'reset+autosize',
+                            'autosizable': True,
+                            'editable': False,
+                            'scrollZoom': False,
+                            'staticPlot': False,
+                            'responsive': True,
+>>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
                         }
                     ),
                     html.Div(
@@ -218,6 +251,10 @@ def graph():
                                 'toImageButtonOptions': {
                                     'format': 'svg',
                                     'filename': 'custom_image',
+<<<<<<< HEAD
+=======
+                                    # 'height': 'auto',
+>>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
                                     'scale': 1,
                                 },
                             },
@@ -246,8 +283,11 @@ def graph():
         style={
             'width': '90%',
             'height': '95dvh',
+<<<<<<< HEAD
             'margin-left': 'auto',
             'margin-right': 'auto',
+=======
+>>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
         },
         className= 'custom-scrollbar',
     )
@@ -634,8 +674,11 @@ def graph():
                     'value': [],
                     'index': 0,
                 }
+<<<<<<< HEAD
                 # bar_data['method']= [col[1] if len(col) > 2 else col[0] for col in memory['data']['columns']]
                 # bar_data['subsidy']= [col[1] if len(col) > 2 else None for col in memory['data']['columns']]
+=======
+>>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
                 # principal= [
                 #         [
                 #             [
@@ -697,6 +740,7 @@ def graph():
                     ] for name, subsidy_name in product(bar_data['method'], bar_data['subsidy'])
                 ]
 
+<<<<<<< HEAD
                 bar_data['method'] = bar_data['method'] * int(len(bar_data['value']) / len(bar_data['method']))
                 bar_data['subsidy'] = bar_data['subsidy'] * int(len(bar_data['value']) / len(bar_data['subsidy']))
                 bar_data['value']= [round(np.sum(v)) for v in [*merge_sublist(principal), *merge_sublist(interest), *merge_sublist(residual)]]
@@ -733,6 +777,13 @@ def graph():
                     
                 # )
                 fig= px.bar(
+=======
+                bar_data['value']= [round(np.sum(v)) for v in [*merge_sublist(principal), *merge_sublist(interest), *merge_sublist(residual)]]
+                bar_data['method'] = bar_data['method'] * int(len(bar_data['value']) / len(bar_data['method']))
+                bar_data['subsidy'] = bar_data['subsidy'] * int(len(bar_data['value']) / len(bar_data['subsidy']))
+                bar_data['items'] = sorted(bar_data['items'] * int(len(bar_data['value']) / len(bar_data['items'])))
+                fig= px.pie(
+>>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
                     bar_data,
                     x= 'method',
                     y= 'value',
@@ -741,12 +792,18 @@ def graph():
                     color= 'items',
                     orientation= 'v',
                     opacity= 0.8,
+<<<<<<< HEAD
                     color_discrete_map= {
                         'principal': 'gold',
                         'interest': 'royalblue',
                         'residual': 'mediumturquoise',
                     },
                     template= 'seaborn',
+=======
+                    color_discrete_sequence= px.colors.sequential.Teal,
+                    template='seaborn',
+                    facet_col= 'method',
+>>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
                 )
                 fig.update_layout(
                     showlegend= True,
@@ -754,6 +811,7 @@ def graph():
                     paper_bgcolor= 'rgba(0, 0, 0, 0)',
                     plot_bgcolor= 'rgba(0, 0, 0, 0)',
                 )
+<<<<<<< HEAD
                 fig.update_xaxes(
                     visible= True,
                     showticklabels= True,
@@ -764,6 +822,21 @@ def graph():
                     visible= False,
                     showticklabels= False,
                 )
+=======
+                # fig.for_each_annotation(
+                    # fn,
+                    # selector (dict, function, int, str or None),
+                    # row,
+                    # col,
+                    # secondary_y,
+                # )
+                # fig.add_annotation(
+                #     arg,
+                #     row,
+                #     col,
+                #     exclude_empty_subplots= True,
+                # )
+>>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
                 fig.update_traces(
                     texttemplate= '%{value:,}',
                     width= 0.4,
