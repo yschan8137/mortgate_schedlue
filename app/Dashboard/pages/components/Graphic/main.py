@@ -703,7 +703,12 @@ def graph():
                     # row,
                     # col,
                     # secondary_y,
-                )
+                # )
+                # fig.add_annotation(
+                #     arg,
+                #     row,
+                #     col,
+                # )
                 fig.update_traces(
                     texttemplate='%{percent:.2%}',
                     textposition='inside',
