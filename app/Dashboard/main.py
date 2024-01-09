@@ -166,11 +166,10 @@ app.layout = dmc.MantineProvider(
                     ],
                     className= 'custom-scrollbar',
                     style= {
-                        'width': '90dvw',
+                        'width': '100dvw',
                         'height': '98vh',
                         'overflow-y': 'scroll',
                         'scrollbar-color': '#0C82DF #E2E2E2',
-                        'margin-left': 20,
                     }
                 ),
                 
@@ -182,7 +181,7 @@ app.layout = dmc.MantineProvider(
                 'height': '100vh',
                 'display': 'flex',
                 'flex-direction': 'row',
-                'justify-content': 'flex-start', # [center, flex-start, flex-end, space-around, space-between, space-evenly]
+                'justify-content': 'first-start', # [center, flex-start, flex-end, space-around, space-between, space-evenly]
                 'align-items': 'first-start', # [center, flex-start, flex-end, stretch, baseline]
                 'padding-top': 15,
                 'padding-left': 15,

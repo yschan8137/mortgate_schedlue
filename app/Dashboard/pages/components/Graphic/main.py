@@ -6,7 +6,7 @@ from dash_iconify import DashIconify
 import plotly.express as px
 import dash_mantine_components as dmc
 import numpy as np
-from itertools import product
+from itertools import product, groupby
 
 import sys
 sys.path.append('./')
@@ -83,42 +83,65 @@ def graph():
             # ),
             html.Div(
                 children= [
-                    dcc.Graph(
-                        id= 'information-dashboard',
-                        animation_options= dict(
-                            frame= dict(
-                                duration= 10,
-                                redraw= True,
-                            ),
-                            transition= dict(
-                                duration= 10,
-                                easing= 'quad-in-out',
-                            )
-                        ),
-                        animate= True,
-                        style={
-                            'background-color': 'rgba(0, 0, 0, 0)',
-                            'width': '100%',
-                            'height': '100%', 
-                        },
-                        config={
-                            'displayModeBar': False,
-                            'doubleClick': 'reset+autosize',
-                            'autosizable': True,
-                            'editable': False,
-                            'scrollZoom': False,
-                            'staticPlot': False,
-                            'responsive': True,
+                    html.Div(
+                        ['test'],
+                        style= {
+                            'width': '60%',
+                            'height': '100%',
+                            'justify-content': 'center',
+                            'background-color': 'white',
+                            'border-radius': '5px',
+                            'border': '1px solid gray',
                         }
-                    )
+                    ),
+                    html.Div(
+                        dcc.Graph(
+                            id= 'information-dashboard',
+                            animation_options= dict(
+                                frame= dict(
+                                    duration= 10,
+                                    redraw= True,
+                                ),
+                                transition= dict(
+                                    duration= 10,
+                                    easing= 'quad-in-out',
+                                )
+                            ),
+                            animate= True,
+                            config={
+                                'displayModeBar': False,
+                                'doubleClick': 'reset+autosize',
+                                'autosizable': False,
+                                'editable': False,
+                                'scrollZoom': False,
+                                'staticPlot': False,
+                                'responsive': True, 
+                            },
+                            style={
+                                'width': '100%',
+                                'height': '100%',
+                                'align-items': 'baseline',
+
+                            },
+
+                        ),
+                        style= {
+                            'width': '40%',
+                            'border-radius': '5px',
+                            'border': '1px solid gray',
+                        }
+                    ),
                 ],
                 style= {
+                    'display': 'flex',
                     'height': '40%',
                     'top': 'auto',
-                    'border-radius': '5px',
-                    'border': '1px solid #ccc',
+                    # 'border-radius': '5px',
+                    # 'border': '1px solid #ccc',
                     'background-color': 'white',
                     'box-shadow': '0 0 5px #ccc',
+                    'justify-content': 'space-between',
+
                 },
             ),
             dmc.Space(h=10),
@@ -195,7 +218,6 @@ def graph():
                                 'toImageButtonOptions': {
                                     'format': 'svg',
                                     'filename': 'custom_image',
-                                    # 'height': 'auto',
                                     'scale': 1,
                                 },
                             },
@@ -222,8 +244,10 @@ def graph():
             ),
         ],
         style={
-            'width': '100%',
+            'width': '90%',
             'height': '95dvh',
+            'margin-left': 'auto',
+            'margin-right': 'auto',
         },
         className= 'custom-scrollbar',
     )
@@ -608,7 +632,10 @@ def graph():
                     'subsidy': [df_schema.level_1.EPP, df_schema.level_1.ETP],
                     'items': ['principal', 'interest', 'residual'],
                     'value': [],
+                    'index': 0,
                 }
+                # bar_data['method']= [col[1] if len(col) > 2 else col[0] for col in memory['data']['columns']]
+                # bar_data['subsidy']= [col[1] if len(col) > 2 else None for col in memory['data']['columns']]
                 # principal= [
                 #         [
                 #             [
@@ -670,39 +697,77 @@ def graph():
                     ] for name, subsidy_name in product(bar_data['method'], bar_data['subsidy'])
                 ]
 
-                bar_data['value']= [round(np.sum(v)) for v in [*merge_sublist(principal), *merge_sublist(interest), *merge_sublist(residual)]]
                 bar_data['method'] = bar_data['method'] * int(len(bar_data['value']) / len(bar_data['method']))
                 bar_data['subsidy'] = bar_data['subsidy'] * int(len(bar_data['value']) / len(bar_data['subsidy']))
-                bar_data['items'] = sorted(bar_data['items'] * int(len(bar_data['value']) / len(bar_data['items'])))
-                fig= px.pie(
+                bar_data['value']= [round(np.sum(v)) for v in [*merge_sublist(principal), *merge_sublist(interest), *merge_sublist(residual)]]
+                bar_data['items'] =  merge_sublist([[item] * int(len(bar_data['value']) / len(bar_data['items'])) for item in bar_data['items']])
+
+                # fig= px.pie(
+                #     bar_data,
+                #     values='value',
+                #     names='items',
+                #     hole= 0.8,
+                #     opacity= 0.8,
+                #     color_discrete_sequence= px.colors.sequential.Teal,
+                #     template='seaborn',
+                #     facet_col= 'method',
+                # )
+                # fig.update_layout(
+                #     showlegend= True,
+                #     legend= dict(
+                #         orientation= 'v',
+                #         yanchor= 'bottom',
+                #         y= 1.02,
+                #         xanchor= 'right',
+                #         x= 1,
+                #     ),
+                #     margin= dict(l=20, r=10, t=35, b=40),
+                #     paper_bgcolor= 'rgba(0, 0, 0, 0)',
+                #     plot_bgcolor= 'rgba(0, 0, 0, 0)',
+                # )
+                # fig.update_traces(
+                #     texttemplate='%{percent:.2%}',
+                #     textposition='inside',
+                #     textinfo='percent+label',
+                #     hovertemplate= '%{label}: %{value:,}',
+                    
+                # )
+                fig= px.bar(
                     bar_data,
-                    values='value',
-                    names='items',
-                    hole= 0.8,
+                    x= 'method',
+                    y= 'value',
+                    text= 'items',
+                    text_auto= True,
+                    color= 'items',
+                    orientation= 'v',
                     opacity= 0.8,
-                    color_discrete_sequence= px.colors.sequential.Teal,
-                    template='seaborn',
-                    facet_col= 'method',
+                    color_discrete_map= {
+                        'principal': 'gold',
+                        'interest': 'royalblue',
+                        'residual': 'mediumturquoise',
+                    },
+                    template= 'seaborn',
                 )
                 fig.update_layout(
                     showlegend= True,
-                    legend= dict(
-                        orientation= 'v',
-                        yanchor= 'bottom',
-                        y= 1.02,
-                        xanchor= 'right',
-                        x= 1,
-                    ),
-                    margin= dict(l=20, r=10, t=35, b=40),
+                    margin= dict(l=10, r=10, t=10, b=10),
                     paper_bgcolor= 'rgba(0, 0, 0, 0)',
                     plot_bgcolor= 'rgba(0, 0, 0, 0)',
                 )
+                fig.update_xaxes(
+                    visible= True,
+                    showticklabels= True,
+                    title= None,
+                )
+                fig.update_yaxes(
+                    range= [0, sum(bar_data['value']) * 1.1 / 2],
+                    visible= False,
+                    showticklabels= False,
+                )
                 fig.update_traces(
-                    texttemplate='%{percent:.2%}',
-                    textposition='inside',
-                    textinfo='percent+label',
-                    hovertemplate= '%{label}: %{value:,}',
-                    
+                    texttemplate= '%{value:,}',
+                    width= 0.4,
+                    textangle= 0,
                 )
                 return fig
             else:
