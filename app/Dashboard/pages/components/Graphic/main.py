@@ -697,7 +697,13 @@ def graph():
                     paper_bgcolor= 'rgba(0, 0, 0, 0)',
                     plot_bgcolor= 'rgba(0, 0, 0, 0)',
                 )
-                # fig.for_each_annotation()
+                # fig.for_each_annotation(
+                    # fn,
+                    # selector (dict, function, int, str or None),
+                    # row,
+                    # col,
+                    # secondary_y,
+                )
                 fig.update_traces(
                     texttemplate='%{percent:.2%}',
                     textposition='inside',
