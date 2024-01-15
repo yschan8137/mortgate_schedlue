@@ -35,7 +35,9 @@ def create_table(df, **kwargs):
     ]
     rows = [
         html.Tr(
-            [html.Td(index, style= {'textAlign': 'center'})] + [html.Td(cell, style= style) for cell in row]) for index, row in zip(indexes, values)
+            [html.Td(index, style= {'textAlign': 'center'}
+                    )
+            ] + [html.Td(cell, style= style) for cell in row]) for index, row in zip(indexes, values)
     ]
     table = [html.Thead(header), html.Tbody(rows)]
     return table
@@ -75,7 +77,6 @@ def table():
     layout = html.Div(
         dmc.Stack(
             [
-                # dcc.Store(id= 'clientside_table', data= {}),
                 dmc.Group(
                     children= [
                         dmc.Stack(
@@ -85,7 +86,6 @@ def table():
                                         dmc.Checkbox(
                                             label= v, 
                                             value= v,
-                                            # className= 'mb-1',
                                         ) for v in [
                                             df_schema.level_2.PRINCIPAL,
                                             df_schema.level_2.INTEREST,
@@ -116,7 +116,11 @@ def table():
                             withBorder=True,
                             withColumnBorders=True,
                             verticalSpacing="xs",
-                            horizontalSpacing=10,                    
+                            horizontalSpacing=10,
+                            style= {
+                                'width': '100%',
+                                'whiteSpace': 'nowrap',
+                            },
                         ),
                         dmc.Space(h= 10),
                         dmc.Table(
@@ -129,9 +133,9 @@ def table():
                             verticalSpacing="xs",
                             horizontalSpacing=10,
                             style= {
-                                'overflow-x': 'scroll',
+                                'width': '100%',
+                                'whiteSpace': 'nowrap',
                             },
-                            className= 'custom-scrollbar',
                         ),
                         dmc.Space(h= 5),
                         dmc.Pagination(
@@ -156,18 +160,16 @@ def table():
             
         ),
         style= {
-            'width': '100%',
             'height': '100%',
-            'margin': 0,
-            'padding': 0,
+            'overflow-x': 'auto',
+            'padding-bottom': '10px',
         },
-        className= 'custom-scrollbar',
+        className= 'custom-section',
     )
 
 
     ## data table
     @callback(
-        # Output('clientside_table', 'data'),
             Output(DATATABLE.TABLE, 'children'),
             Output(DATATABLE.SUM, 'children'),
             Output('page_current', 'total'),
@@ -177,7 +179,6 @@ def table():
             Input('page_current', 'page'),
             Input(DATATABLE.PAGE.SIZE, 'value'),  # 調整列數
             Input(DATATABLE.COLUMN, 'value'),
-            # State('clientside_table', 'data'),
         ],
     )
     def update_datatable(
@@ -185,9 +186,7 @@ def table():
         page_current,
         page_size_editable,
         columns,
-        # memory,
         ):
-        table_time0= time.time()
         data= data['data']
         if df_schema.level_0.SUBSIDY in [col[0] for col in data['columns']]:
             data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[2] in columns or col[0] in columns], data['data'])]
@@ -204,31 +203,15 @@ def table():
             page_current = 1
         tb= create_table({k: (v if k not in ['data', 'index'] 
                    else (v[((page_current - 1) * page_size_editable) + 1: (page_current * page_size_editable) + 1] if len(v) > (page_current * page_size_editable) + 1 else v[((page_current - 1) * page_size_editable) + 1:-1])
-                ) for k, v in data.items()})
+                ) for k, v in data.items()}, style= {'textAlign': 'center', 'fontWeight': 'bold'})
         sum_tb= create_table(
             {k: (v if k not in ['data', 'index'] 
                    else [v[-1]]) for (k, v) in data.items()
-            }
+            },
+            style= {'textAlign': 'center', 'fontWeight': 'bold'}
         )
         return tb, sum_tb, pages, page_current
     
-    # clientside_callback(
-    #     """
-    #     function(data) {
-    #         if (data=== undefined) {
-    #             return;
-    #         }
-    #         return [data['table'], data['sum_table'], data['pages']];
-    #     };
-    #     """,
-    #      [
-    #          Output(DATATABLE.TABLE, 'children'),
-    #          Output(DATATABLE.SUM, 'children'),
-    #          Output('page_current', 'total'),
-    #      ],
-    #      Input('clientside_table', 'data'),
-    # )
-
     return layout
 
 # python app/Dashboard/pages/components/DataTable/table.py
@@ -246,17 +229,7 @@ if __name__ == "__main__":
 
     }
     # df= calculator(**default_kwargs)
-        # create_table(df),
-        # striped= True,
-        # highlightOnHover=True,
-        # withBorder=True,
-        # withColumnBorders=True,
-        # verticalSpacing="xs",
-        # horizontalSpacing=10,
-        # style= {
-            # 'height': '100vh',
-        # }
-    # )
+
     app.layout = dmc.MantineProvider(
         [
             panel.register(),

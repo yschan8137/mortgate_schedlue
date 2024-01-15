@@ -72,6 +72,7 @@ class panel():
                         return no_update, kwargs        
                 else:
                     patched_memory['data'] = calculator(**kwargs_apart_from_subsudy, thousand_sep= False)
+                    
                     return patched_memory, kwargs
                 
     

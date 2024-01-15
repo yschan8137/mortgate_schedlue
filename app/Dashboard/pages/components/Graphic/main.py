@@ -5,12 +5,7 @@ from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 import plotly.express as px
 import dash_mantine_components as dmc
-import numpy as np
-<<<<<<< HEAD
-from itertools import product, groupby
-=======
-from itertools import product
->>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
+from plotly.subplots import make_subplots
 
 import sys
 sys.path.append('./')
@@ -23,158 +18,32 @@ def graph():
     """Build the graph"""
     layout = html.Div(
         [
-            # dmc.Group(
-                # [
-                    # html.Div(
-                        # dmc.LoadingOverlay(
-                            # id= 'loading-overlay-for-general',
-                            # children= [],
-                            # loaderProps={
-                                # "variant": "oval",
-                                #  "color": "blue", 
-                                #  "size": "lg",
-                                #  'is_loading': True,
-                            # },
-                            # style= {
-                                # 'margin-top': '10px',
-                                # 'height': 130,
-                            # },
-                            # transitionDuration= 0.5,
-                        # ),
-                        # style={
-                            # 'border-radius': '5px',
-                            # 'border': '1px solid #ccc',
-                            # 'border-radius': '5px',
-                            # 'height': 150,
-                            # 'background-color': 'white',
-                        # },
-                    # ),
-                    # html.Div(
-                        # dmc.LoadingOverlay(
-                                # id= 'loading-overlay-for-details',
-                                # children= [],
-                            # loading_state= {
-                                # 'is_loading': False,
-                                # 'loading_type': 'overlay',
-                                # 'prop_name': 'children',
-                                # },
-                            # loaderProps={
-                                # "variant": "oval",
-                                #  "color": "blue", 
-                                #  "size": "lg",
-                                #  'is_loading': True,
-                            # },
-                            # style= {
-                                # 'margin-top': 'auto',
-                                # 'margin-dottom': 'auto',
-                                # 'height': 130,
-                                # 'fontweight': 'bold',
-                            # },
-                            # transitionDuration= 0.5,
-                        # ),
-                        # style={
-                            # 'border-radius': '5px',
-                            # 'border': '1px solid #ccc',
-                            # 'height': 150,
-                            # 'background-color': 'white',
-                        # },
-                    # ),
-                # ],
-                # grow=True,
-                # style= {
-                    # 'margin-top': '10px',
-                # }    
-            # ),
             html.Div(
+                id= 'information-dashboard',
                 children= [
-<<<<<<< HEAD
-                    html.Div(
-                        ['test'],
-                        style= {
-                            'width': '60%',
-                            'height': '100%',
-                            'justify-content': 'center',
-                            'background-color': 'white',
-                            'border-radius': '5px',
-                            'border': '1px solid gray',
-=======
-                    dcc.Graph(
-                        id= 'information-dashboard',
-                        animation_options= dict(
-                            frame= dict(
-                                duration= 10,
-                                redraw= True,
-                            ),
-                            transition= dict(
-                                duration= 10,
-                                easing= 'quad-in-out',
-                            )
-                        ),
-                        animate= True,
-                        style={
-                            'background-color': 'rgba(0, 0, 0, 0)',
-                            'width': '100%',
-                            'height': '100%', 
-                        },
-                        config={
-                            'displayModeBar': False,
-                            'doubleClick': 'reset+autosize',
-                            'autosizable': True,
-                            'editable': False,
-                            'scrollZoom': False,
-                            'staticPlot': False,
-                            'responsive': True,
->>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
-                        }
-                    ),
-                    html.Div(
-                        dcc.Graph(
-                            id= 'information-dashboard',
-                            animation_options= dict(
-                                frame= dict(
-                                    duration= 10,
-                                    redraw= True,
-                                ),
-                                transition= dict(
-                                    duration= 10,
-                                    easing= 'quad-in-out',
-                                )
-                            ),
-                            animate= True,
-                            config={
-                                'displayModeBar': False,
-                                'doubleClick': 'reset+autosize',
-                                'autosizable': False,
-                                'editable': False,
-                                'scrollZoom': False,
-                                'staticPlot': False,
-                                'responsive': True, 
-                            },
-                            style={
-                                'width': '100%',
-                                'height': '100%',
-                                'align-items': 'baseline',
-
-                            },
-
-                        ),
-                        style= {
-                            'width': '40%',
-                            'border-radius': '5px',
-                            'border': '1px solid gray',
-                        }
-                    ),
+                    # dmc.Stack(
+                    #     id= 'information-dashboard',
+                    #     spacing= 20,
+                    #     children= [
+                    #         dmc.Skeleton(
+                    #             height= 100,
+                    #             circle= True,
+                    #             children= [],
+                    #         ),
+                    #         dmc.Skeleton(height= 15, width="90%"),
+                    #         dmc.Skeleton(height= 15, width="90%"),
+                    #         dmc.Skeleton(height= 15, width="70%"),
+                    #     ],
+                    # )
                 ],
                 style= {
-                    'display': 'flex',
+                    # 'display': 'flex',
                     'height': '40%',
-                    'top': 'auto',
-                    # 'border-radius': '5px',
-                    # 'border': '1px solid #ccc',
                     'background-color': 'white',
                     'box-shadow': '0 0 5px #ccc',
-                    'justify-content': 'space-between',
-
+                    'border-radius': '5px',
+                    'border': '1px solid #ccc',
+                    'shadow': '0 0 5px #ccc',
                 },
             ),
             dmc.Space(h=10),
@@ -251,10 +120,6 @@ def graph():
                                 'toImageButtonOptions': {
                                     'format': 'svg',
                                     'filename': 'custom_image',
-<<<<<<< HEAD
-=======
-                                    # 'height': 'auto',
->>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
                                     'scale': 1,
                                 },
                             },
@@ -281,13 +146,10 @@ def graph():
             ),
         ],
         style={
-            'width': '90%',
+            'width': '100%',
             'height': '95dvh',
-<<<<<<< HEAD
             'margin-left': 'auto',
             'margin-right': 'auto',
-=======
->>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
         },
         className= 'custom-scrollbar',
     )
@@ -310,15 +172,15 @@ def graph():
         if df_schema.level_0.TOTAL in level_0:
             return [], {'display': 'none'}
         else:
-            columns_for_original_mortgate = [
+            method_for_original_mortgate = [
                 df_schema.level_2.PAYMENT,
                 df_schema.level_2.PRINCIPAL,
                 df_schema.level_2.INTEREST,
                 df_schema.level_2.RESIDUAL,
             ]
             if accum and accum == 'cumulative':
-                columns_for_original_mortgate = [
-                    v for v in columns_for_original_mortgate if v != df_schema.level_2.RESIDUAL]
+                method_for_original_mortgate = [
+                    v for v in method_for_original_mortgate if v != df_schema.level_2.RESIDUAL]
             dropdown = [
                 dmc.MenuItem(
                     column,
@@ -326,7 +188,7 @@ def graph():
                         'index': column,
                         'type': GRAPH.DROPDOWN.ITEM
                     },
-                ) for column in columns_for_original_mortgate if column != label
+                ) for column in method_for_original_mortgate if column != label
             ]  # avoid duplicate label
             return dropdown, {'display': 'block'}
 
@@ -409,442 +271,193 @@ def graph():
 
         return fig, chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL else {"from": "indigo", "to": "cyan"})
 
-#3 callback for updating the information from hoverData
-    # @callback(
-        # Output('loading-overlay-for-general', 'children'),
-        # Input(LOAN.RESULT.DATAFRAME, 'data'),
-    # )
-    # def update_general_info(
-        # memory,
-        # ):
-        # bar_layout= dict(
-            # showlegend= False,
-            # margin= dict(l=20, r=10, t=35, b=50),
-            # paper_bgcolor= 'rgba(0, 0, 0, 0)',
-            # plot_bgcolor= 'rgba(0, 0, 0, 0)',
-        # )
-        # if memory:
-            # bars_data = {
-                # 'columns': [],
-                # 'data': []
-            # }
-# 
-            # for col in memory['data']['columns']:
-                # if len(col) > 2 and col[0] == df_schema.level_0.TOTAL:
-                    # bars_data['columns'].append(" + ".join([co for co in col if co != df_schema.level_0.TOTAL]))
-                    # bars_data['data'].append(round(memory['data']['data'][-1][memory['data']['columns'].index(col)] / len(memory['data']['index'][1:-1])))
-                # else:
-                    # if col[1] == df_schema.level_2.PAYMENT:
-                        # bars_data['columns'].append(col[0])
-                        # bars_data['data'].append(round(memory['data']['data'][-1][memory['data']['columns'].index(col)] / len(memory['data']['index'][1:-1])))
-            # 
-            # if bars_data['columns'][0]:
-                # figure= px.bar(
-                    # bars_data,
-                    # x= 'data',
-                    # y= 'columns',
-                    # text= 'data',
-                    # text_auto= True,                
-                    # color= 'columns',
-                    # height= 180,
-                    # title= '<b>Average Payment</b>',
-                    # color_discrete_map= {
-                        # df_schema.level_1.ETP: '#0C82DF',
-                        # df_schema.level_1.EPP: '#F7DC6F',
-                    # },
-                    # hover_data= {
-                        # 'columns': False,
-                        # 'data': True,
-                    # },
-                    # hover_name= 'columns',
-                # )
-                # figure.update_layout(bar_layout)
-                # figure.update_yaxes(
-                    # visible= False,
-                    # showticklabels= False,
-                # )
-                # figure.update_xaxes(
-                    # range= [0, max(bars_data['data']) * 1.1],
-                    # visible= False,
-                    # showticklabels= False,
-                # )
-                # figure.update_traces(
-                    # texttemplate='%{text:,}',
-# 
-                # )
-            # else:
-                # figure= px.bar()
-                # figure.update_layout(bar_layout)
-                # figure.update_yaxes(
-                    # visible= False,
-                    # showticklabels= False,
-                # )
-                # figure.update_xaxes(
-                    # visible= False,
-                    # showticklabels= False,
-                # )
-            # return dcc.Graph(
-                    # figure= figure,
-                    # animate= True,
-                    # style={
-                        # 'background-color': 'rgba(0, 0, 0, 0)',
-                        # 'margin-top': '10px',
-                        # 'width': '100%',
-                    # },
-                    # config={
-                        # 'displayModeBar': False,
-                        # 'doubleClick': 'reset+autosize',
-                        # 'autosizable': True,
-                        # 'editable': False,
-                        # 'scrollZoom': False,
-                        # 'staticPlot': False,
-                    # }
-            # )
-        # else:
-            # raise PreventUpdate
-
-#4 callback for updating the detail information from hoverData
-    # @callback(
-        # Output('loading-overlay-for-details', 'children'),
-        # Input(GRAPH.LINE, 'hoverData'),
-        # State(LOAN.RESULT.DATAFRAME, 'data'),
-        # State('menu-target', 'children')
-    # )
-    # def hover_data(
-        # hover_data,
-        # memory,
-        # chosen_figure,
-        # ):
-        # bar_layout= dict(
-            # showlegend= False,
-            # margin= dict(l=20, r=10, t=35, b=40),
-            # paper_bgcolor= 'rgba(0, 0, 0, 0)',
-            # plot_bgcolor= 'rgba(0, 0, 0, 0)',
-        # )
-        # if memory:
-            # timepoint= hover_data['points'][0]['x']
-            # 
-            # if timepoint != '0':
-                # hovered_figure= hover_data['points'][0]['hovertext']
-                # bar_data = {
-                    # 'method': hovered_figure,
-                    # 'items': ['principal', 'interest', 'residual'],
-                    # 'data': [],
-                    # 'index': 0,
-                # }
-                # principal = round(
-                            # np.sum(
-                                    # [
-                                        # [da for col, da in zip(memory['data']['columns'], data) 
-                                        #  if (
-                                            #  (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.PRINCIPAL) or
-                                            #  (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.PRINCIPAL)
-                                            #  if len(col) > 2
-                                            #  else col[0] == hovered_figure and col[1] == df_schema.level_2.PRINCIPAL
-                                            # ) 
-                                        #  ] 
-                                        #  for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
-                                    # ]
-                                # )
-                            # )
-                # interest = round(
-                            # np.sum(
-                                    # [
-                                        # [da for col, da in zip(memory['data']['columns'], data) 
-                                        #  if (
-                                            #  (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST) or
-                                            #  (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.INTEREST)
-                                            #  if len(col) > 2
-                                            #  else col[0] == hovered_figure and col[1] == df_schema.level_2.INTEREST
-                                            # )
-                                        #  ] 
-                                        #  for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
-                                    # ]
-                                # )
-                            # )
-                # residual = round(
-                    # np.sum(
-                        # [
-                            # data 
-                            # for col, data in zip(
-                                # memory['data']['columns'], 
-                                # memory['data']['data'][memory['data']['index'].index(timepoint)]
-                                # ) if (
-                                        # (col[0]== df_schema.level_0.ORIGINAL and col[1]== hovered_figure.split(' + ')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL) or
-                                        # (col[0]== df_schema.level_0.SUBSIDY and col[1]== hovered_figure.split('+')[0].split('(')[0] and col[2]== df_schema.level_2.RESIDUAL)                                        
-                                        # if len(col) > 2
-                                        # else col[0] == hovered_figure and col[1] == df_schema.level_2.RESIDUAL
-                                    # )
-                        # ]
-                    # )
-                # )
-                # 
-                # bar_data['data']= [principal, interest, residual]
-# 
-                # fig= px.bar(
-                    # bar_data,
-                    # x= 'data',
-                    # y= 'index',
-                    # text= 'data',
-                    # text_auto= True,                
-                    # color= 'items',
-                    ## height= 180,
-                    # orientation= 'h',
-                    # title= '<b>Payment Breakdown</b>',
-                    # color_discrete_map= {
-                        # 'principal': '#FF7F50',
-                        # 'interest': '#F7DC6F',
-                        # 'residual': '#6495ED',
-                    # },
-                    # hover_data= {
-                        # 'items': False,
-                        # 'index': False,
-                        # 'data': True,
-                    # },
-                    # hover_name= 'items',
-                # )
-                # fig.update_layout(bar_layout)
-                # fig.update_yaxes(
-                    # visible= False,
-                    # showticklabels= False,
-                # )
-                # fig.update_xaxes(
-                    # range= [0, sum(bar_data['data']) * 1.1],
-                    # visible= False,
-                    # showticklabels= False,
-                # )
-                # fig.update_traces(
-                    # texttemplate='%{text:,}',
-                    # width= 0.5,
-                # )
-                # return dcc.Graph(
-                        # figure= fig,
-                        # animate= True,
-                        # style={
-                            # 'background-color': 'rgba(0, 0, 0, 0)',
-                            # 'margin-top': '10px',
-                            # 'width': '100%', 
-                        # },
-                        # config={
-                            # 'displayModeBar': False,
-                            # 'doubleClick': 'reset+autosize',
-                            # 'autosizable': True,
-                            # 'editable': False,
-                            # 'scrollZoom': False,
-                            # 'staticPlot': False,
-                        # }
-                # )
-            # else:
-                # return dmc.Center(
-                        # dmc.Text(
-                        # 'Tap the graph for more details', 
-                        # weight='bold', 
-                        # variant="gradient",
-                        # gradient={"from": "red", "to": "yellow", "deg": 45},
-                        # style={
-                            # 'width': '100%',
-                            # 'height': '100%',
-                            # "fontSize": 30,
-                            # 'textAlign': 'center',
-                            # 'margin-top': '50px',
-                            # }, 
-                    # )
-                # )
-        # else:
-            # raise PreventUpdate
     @callback(
-        Output('information-dashboard', 'figure'),
-        Input(GRAPH.LINE, 'hoverData'),
-        State(LOAN.RESULT.DATAFRAME, 'data'),
-        State('menu-target', 'children')
+        Output('information-dashboard', 'children'),
+        # Input(GRAPH.LINE, 'hoverData'),
+        Input(LOAN.RESULT.DATAFRAME, 'data'),
+        # State('menu-target', 'children')
     )
     def update_info(
-        hover_data, 
         memory, 
-        chosen_figure
         ):
         if memory:
-            timepoint= hover_data['points'][0]['x']  
-            if timepoint != '0':
-                hovered_figure= hover_data['points'][0]['hovertext']
-                bar_data = {
-                    'method': [df_schema.level_1.EPP, df_schema.level_1.ETP],
-                    'subsidy': [df_schema.level_1.EPP, df_schema.level_1.ETP],
-                    'items': ['principal', 'interest', 'residual'],
-                    'value': [],
-                    'index': 0,
+            memory = memory['data']
+            demostrated_items= [df_schema.level_2.PAYMENT, df_schema.level_2.PRINCIPAL, df_schema.level_2.INTEREST]
+            pie_data = {
+                df_schema.level_1.EPP: {
+                    'labels': [],
+                    'values': []
+                },
+                df_schema.level_1.ETP: {
+                    'labels': [],
+                    'values': []
+                },
+                df_schema.level_2.PAYMENT: {
+                    df_schema.level_1.EPP: [],
+                    df_schema.level_1.ETP: []
+                },
+            }
+
+            for key, value in {k: round(v) for k, v in zip(map(lambda x: tuple(x), memory['columns']), memory['data'][-1]) if k[-1] in demostrated_items}.items():
+                if key[-1] != df_schema.level_2.PAYMENT:
+                    if len(key) > 2:
+                        if 'names' not in pie_data[key[-2]]: # avoid errors raised by the restriction regarding the same length of arrays in composing the pie chart.
+                            pie_data[key[-2]].update({'names': [key[0]]})
+                        else:
+                            pie_data[key[-2]]['names'].append(key[0])
+                    pie_data[key[-2]]['labels'].append(key[-1])
+                    pie_data[key[-2]]['values'].append(value)
+                elif key[-1] == df_schema.level_2.PAYMENT:
+                    pie_data[key[-1]][key[-2]].append(value)
+                    summary = sum(pie_data[key[-1]][key[-2]])
+                    pie_data[key[-1]][key[-2]] = [summary]
+
+            fig = make_subplots(rows=1, cols=len({k for k in pie_data.keys() if k != df_schema.level_2.PAYMENT}), specs=[[{'type':'domain'}, {'type':'domain'}]])
+
+            for col, name in enumerate({k for k in pie_data.keys() if k != df_schema.level_2.PAYMENT}):
+                for label in pie_data[name]['labels']:
+                    fig.add_trace(
+                        px.pie(
+                            pie_data[name], 
+                            values='values', 
+                            names='labels', 
+                            title=name, 
+                            opacity= .8,
+                            color= 'labels',
+                            color_discrete_sequence= px.colors.qualitative.D3,
+                            ).data[0], 
+                            1, 
+                            col + 1,
+                    )
+            fig.update_traces(
+                hole= .7,
+                hoverinfo="label+percent+name"
+            )
+            fig.update_layout(
+                title_text="<b>Total Payment</b>", 
+                template= 'seaborn',
+                annotations=[
+                    dict(
+                        text= f"""
+                                <b>{round(pie_data[df_schema.level_2.PAYMENT][name][0] // len(memory['data'])): ,}</b>
+                                 <br><b>{name}</b><br>
+                        """,
+                        align='center', 
+                        x= 0.08 + 0.84 * n,
+                        y=0.4, 
+                        xref='paper', # [paper, x, x2, x3]
+                        font_size=20, 
+                        showarrow=False,
+                        ax=0,
+                        ay=0
+                        ) 
+                        for n, name in enumerate([k for k in pie_data.keys() if k != df_schema.level_2.PAYMENT])
+                ] + [dict(
+                        text= """<b>平均償還金額:</b><br>""",
+                        x= 0.195 + 0.615 * n,
+                        y=0.58,
+                        font_size=13,
+                        showarrow=False,
+                        ax=0,
+                        ay=0,
+                        font_color= px.colors.qualitative.D3[9],
+                    ) for n in range(len([k for k in pie_data.keys() if k != df_schema.level_2.PAYMENT]))],
+                # showlegend=False
+            )
+            # fig= px.pie(
+            #     pie_data,
+            #     values='value',
+            #     names='items',
+            #     hole= 0.8,
+            #     opacity= 0.8,
+            #     color_discrete_sequence= px.colors.sequential.RdBu,
+            #     template='seaborn',
+            #     facet_col= 'repay_method',
+            # )
+            # fig.update_layout(
+            #     showlegend= True,
+            #     legend= dict(
+            #         orientation= 'v',
+            #         yanchor= 'bottom',
+            #         y= 1.02,
+            #         xanchor= 'right',
+            #         x= 1,
+            #     ),
+            #     margin= dict(l=20, r=10, t=35, b=40),
+            #     paper_bgcolor= 'rgba(0, 0, 0, 0)',
+            #     plot_bgcolor= 'rgba(0, 0, 0, 0)',
+            # )
+            # fig.update_traces(
+            #     texttemplate='%{percent:.2%}',
+            #     textposition='inside',
+            #     textinfo='percent+label',
+            #     hovertemplate= '%{label}: %{value:,}',
+            # )
+            # fig= px.bar(
+            #     pie_data,
+            #     x= 'method',
+            #     y= 'value',
+            #     text= 'items',
+            #     text_auto= True,
+            #     color= 'items',
+            #     orientation= 'v',
+            #     opacity= 0.8,
+            #     color_discrete_map= {
+            #         'principal': 'gold',
+            #         'interest': 'royalblue',
+            #         'residual': 'mediumturquoise',
+            #     },
+            #     template= 'seaborn',
+            # )
+            # fig.update_layout(
+            #     showlegend= True,
+            #     margin= dict(l=10, r=10, t=10, b=10),
+            #     paper_bgcolor= 'rgba(0, 0, 0, 0)',
+            #     plot_bgcolor= 'rgba(0, 0, 0, 0)',
+            # )
+            # fig.update_xaxes(
+            #     visible= True,
+            #     showticklabels= True,
+            #     title= None,
+            # )
+            # fig.update_yaxes(
+            #     range= [0, sum(pie_data['value']) * 1.1 / 2],
+            #     visible= False,
+            #     showticklabels= False,
+            # )
+            # fig.update_traces(
+            #     texttemplate= '%{value:,}',
+            #     width= 0.4,
+            #     textangle= 0,
+            # )
+            return dcc.Graph(
+                figure= fig,
+                animation_options= dict(
+                    frame= dict(
+                        duration= 10,
+                        redraw= True,
+                    ),
+                    transition= dict(
+                        duration= 10,
+                        easing= 'quad-in-out',
+                    )
+                ),
+                animate= True,
+                style={
+                    'background-color': 'rgba(0, 0, 0, 0)',
+                    'width': '100%',
+                    'height': '100%', 
+                },
+                config={
+                    'displayModeBar': False,
+                    'doubleClick': 'reset+autosize',
+                    'autosizable': True,
+                    'editable': False,
+                    'scrollZoom': False,
+                    'staticPlot': False,
+                    'responsive': True,
                 }
-<<<<<<< HEAD
-                # bar_data['method']= [col[1] if len(col) > 2 else col[0] for col in memory['data']['columns']]
-                # bar_data['subsidy']= [col[1] if len(col) > 2 else None for col in memory['data']['columns']]
-=======
->>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
-                # principal= [
-                #         [
-                #             [
-                #                 da for col, da in zip(memory['data']['columns'], data) 
-                #                 if (
-                #                     (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.PRINCIPAL) and
-                #                     (col[0] == df_schema.level_0.SUBSIDY and col[1] == subsidy_name and col[2] == df_schema.level_2.PRINCIPAL)
-                #                     if len(col) > 2
-                #                     else col[0] == name and col[1] == df_schema.level_2.PRINCIPAL
-                #                 )
-                #             ][0] 
-                #             for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
-                #         ] for name in bar_data['method']
-                # ]
-                principal= [
-                    [
-                        [
-                            data[n] for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
-                         ] 
-                         for n, col in enumerate(memory['data']['columns']) if (
-                             (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.PRINCIPAL) and
-                             (col[0] == df_schema.level_0.SUBSIDY and col[1] == subsidy_name and col[2] == df_schema.level_2.PRINCIPAL)
-                             if len(col) > 2
-                             else (col[0] == name and col[1] == df_schema.level_2.PRINCIPAL 
-                                   if name == subsidy_name else False
-                                   )
-                            )
-                    ] for name, subsidy_name in product(bar_data['method'], bar_data['subsidy'])
-                ]
-                interest= [
-                    [
-                        [
-                            data[n] for data in memory['data']['data'][1:memory['data']['index'].index(timepoint)+1]
-                         ] 
-                         for n, col in enumerate(memory['data']['columns']) if (
-                             (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.INTEREST) and
-                             (col[0] == df_schema.level_0.SUBSIDY and col[1] == subsidy_name and col[2] == df_schema.level_2.INTEREST)
-                             if len(col) > 2
-                             else (col[0] == name and col[1] == df_schema.level_2.INTEREST 
-                                   if name == subsidy_name else False
-                                   )
-                            )
-                    ] for name, subsidy_name in product(bar_data['method'], bar_data['subsidy'])
-                ]
-                residual= [
-                    [
-                        data 
-                        for col, data in zip(
-                            memory['data']['columns'], 
-                            memory['data']['data'][memory['data']['index'].index(timepoint)]
-                            ) if (
-                                    (col[0] == df_schema.level_0.ORIGINAL and col[1] == name and col[2] == df_schema.level_2.RESIDUAL) and
-                                    (col[0] == df_schema.level_0.SUBSIDY and col[1] == subsidy_name and col[2] == df_schema.level_2.RESIDUAL for subsidy_name in bar_data['subsidy'])
-                                if len(col) > 2
-                                else (col[0] == name and col[1] == df_schema.level_2.RESIDUAL
-                                      if name == subsidy_name else False
-                                      )
-                            )
-                    ] for name, subsidy_name in product(bar_data['method'], bar_data['subsidy'])
-                ]
-
-<<<<<<< HEAD
-                bar_data['method'] = bar_data['method'] * int(len(bar_data['value']) / len(bar_data['method']))
-                bar_data['subsidy'] = bar_data['subsidy'] * int(len(bar_data['value']) / len(bar_data['subsidy']))
-                bar_data['value']= [round(np.sum(v)) for v in [*merge_sublist(principal), *merge_sublist(interest), *merge_sublist(residual)]]
-                bar_data['items'] =  merge_sublist([[item] * int(len(bar_data['value']) / len(bar_data['items'])) for item in bar_data['items']])
-
-                # fig= px.pie(
-                #     bar_data,
-                #     values='value',
-                #     names='items',
-                #     hole= 0.8,
-                #     opacity= 0.8,
-                #     color_discrete_sequence= px.colors.sequential.Teal,
-                #     template='seaborn',
-                #     facet_col= 'method',
-                # )
-                # fig.update_layout(
-                #     showlegend= True,
-                #     legend= dict(
-                #         orientation= 'v',
-                #         yanchor= 'bottom',
-                #         y= 1.02,
-                #         xanchor= 'right',
-                #         x= 1,
-                #     ),
-                #     margin= dict(l=20, r=10, t=35, b=40),
-                #     paper_bgcolor= 'rgba(0, 0, 0, 0)',
-                #     plot_bgcolor= 'rgba(0, 0, 0, 0)',
-                # )
-                # fig.update_traces(
-                #     texttemplate='%{percent:.2%}',
-                #     textposition='inside',
-                #     textinfo='percent+label',
-                #     hovertemplate= '%{label}: %{value:,}',
-                    
-                # )
-                fig= px.bar(
-=======
-                bar_data['value']= [round(np.sum(v)) for v in [*merge_sublist(principal), *merge_sublist(interest), *merge_sublist(residual)]]
-                bar_data['method'] = bar_data['method'] * int(len(bar_data['value']) / len(bar_data['method']))
-                bar_data['subsidy'] = bar_data['subsidy'] * int(len(bar_data['value']) / len(bar_data['subsidy']))
-                bar_data['items'] = sorted(bar_data['items'] * int(len(bar_data['value']) / len(bar_data['items'])))
-                fig= px.pie(
->>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
-                    bar_data,
-                    x= 'method',
-                    y= 'value',
-                    text= 'items',
-                    text_auto= True,
-                    color= 'items',
-                    orientation= 'v',
-                    opacity= 0.8,
-<<<<<<< HEAD
-                    color_discrete_map= {
-                        'principal': 'gold',
-                        'interest': 'royalblue',
-                        'residual': 'mediumturquoise',
-                    },
-                    template= 'seaborn',
-=======
-                    color_discrete_sequence= px.colors.sequential.Teal,
-                    template='seaborn',
-                    facet_col= 'method',
->>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
-                )
-                fig.update_layout(
-                    showlegend= True,
-                    margin= dict(l=10, r=10, t=10, b=10),
-                    paper_bgcolor= 'rgba(0, 0, 0, 0)',
-                    plot_bgcolor= 'rgba(0, 0, 0, 0)',
-                )
-<<<<<<< HEAD
-                fig.update_xaxes(
-                    visible= True,
-                    showticklabels= True,
-                    title= None,
-                )
-                fig.update_yaxes(
-                    range= [0, sum(bar_data['value']) * 1.1 / 2],
-                    visible= False,
-                    showticklabels= False,
-                )
-=======
-                # fig.for_each_annotation(
-                    # fn,
-                    # selector (dict, function, int, str or None),
-                    # row,
-                    # col,
-                    # secondary_y,
-                # )
-                # fig.add_annotation(
-                #     arg,
-                #     row,
-                #     col,
-                #     exclude_empty_subplots= True,
-                # )
->>>>>>> dec621527e8f8f225e6d1f9f903c5b759d3dee38
-                fig.update_traces(
-                    texttemplate= '%{value:,}',
-                    width= 0.4,
-                    textangle= 0,
-                )
-                return fig
-            else:
-                return {}
+            ),
         else:
             raise PreventUpdate
 

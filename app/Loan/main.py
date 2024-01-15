@@ -556,12 +556,12 @@ def async_calculator( # slower at most of the time.
 # py -m app.Loan.main
 if __name__ == "__main__":
     import time
-    default_kwargs['subsidy_arr']= example_for_subsidy_arr
+    # default_kwargs['subsidy_arr']= example_for_subsidy_arr
     # default_kwargs['method'] = []
     # default_kwargs['start_date']= '2021-01-01'
-    default_kwargs['result_type']= 'df'
+    # default_kwargs['result_type']= 'df'
     t0 = time.time()
-    result = calculator(**default_kwargs)
+    result = calculator(**default_kwargs, thousand_sep= False)
     print(
         result
     )
