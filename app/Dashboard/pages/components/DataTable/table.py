@@ -1,4 +1,3 @@
-# pylint: disable=C0114
 import math
 from dash import Dash, html, Input, Output, callback
 import dash_mantine_components as dmc
