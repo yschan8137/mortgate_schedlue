@@ -155,6 +155,7 @@ def table():
             'height': '100%',
             'overflow-x': 'auto',
             'padding-bottom': '10px',
+            'justify-content': 'center',
         },
         className= 'custom-section',
     )
