@@ -19,7 +19,13 @@ def create_table(df, **kwargs):
     indexes, columns, values = df['index'], df['columns'], df['data']
     header = [html.Tr(
         [
-            html.Th(value, rowSpan= (len(columns[0]) if value == Index_name else 1), colSpan= len([*col]), loading_state= {}) 
+            html.Th(
+                value, 
+                rowSpan= (len(columns[0]) if value == Index_name else 1), 
+                colSpan= len([*col]), 
+                loading_state= {},
+                style= {**header_style},
+                ) 
             for value, col in (groupby([Index_name] + [v[i] for v in columns]) if i== 0 else groupby([v[i] for v in columns]))
             ]
         ) 
@@ -27,11 +33,12 @@ def create_table(df, **kwargs):
     ]
     rows = [
         html.Tr(
-            [html.Td(index, style= {'textAlign': 'center'}
+            [html.Td(index, style= {'textAlign': 'center', 'fontWeight': 'bold'}
                     )
-            ] + [html.Td(cell.replace('(', '<br />('), style= cell_style) for cell in row]) for index, row in zip(indexes, values)
+            ] + [html.Td(cell, style= {**cell_style}) for cell in row]) for index, row in zip(indexes, values)
     ]
-    table = [html.Thead(header, style= header_style), html.Tbody(rows, style= tbody_style)]
+    
+    table = [html.Thead(header), html.Tbody(rows)]
     return table
 
 
@@ -200,7 +207,7 @@ def table():
                       if len(v) > (page_current * page_size_editable) + 1 
                       else v[((page_current - 1) * page_size_editable) + 1:-1])
                ) for k, v in data.items()}, styles= {
-            "header": {"textAlign": "center", "fontWeight": "bold"},
+            "header": {'textAlign': 'center', "fontWeight": "bold"},
             "cell": {"textAlign": "right", "fontWeight": "bold"}
         }
             )
@@ -209,7 +216,7 @@ def table():
                    else [v[-1]]) for (k, v) in data.items()
             },
             styles= {
-            "header": {"textAlign": "center", "fontWeight": "bold"},
+            "header": {'textAlign': 'center', "fontWeight": "bold"},
             "cell": {"textAlign": "right", "fontWeight": "bold"}
         }
         )

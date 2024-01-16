@@ -232,13 +232,9 @@ def calculator(
             subsidy_prepay_time = _time_#(
             subsidy_prepay_time.subsidy_time= subsidy_subsidy_time
             subsidy_prepay_time.prepay_time= kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', [0])
-                # subsidy_time=subsidy_subsidy_time,
-                # tenure=tenure,
-                # prepay_arr={'time': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)})
 
             subsidy_prepay_amount = _amount_(
                 subsidy_time=subsidy_subsidy_time,
-                # tenure=tenure,
                 subsidy_amount=subsidy_subsidy_amount,  # type: ignore
                 prepay_arr={
                     'amount': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('amount', 0),
@@ -370,13 +366,7 @@ def async_calculator( # slower at most of the time.
         prepay_time = _time_#(
         prepay_time.subsidy_time= subsidy_time
         prepay_time.prepay_time= ensure_list_type(kwargs.get('prepay_arr', {}).get('time', [0]))
-            # subsidy_time=subsidy_time,
-            # tenure=tenure,
-            # prepay_arr={
-                # 'time': kwargs.get('prepay_arr', {}).get('time', 0)}
-        # )
         prepay_amount = _amount_(
-            # tenure=tenure,
             subsidy_time=subsidy_time,
             subsidy_amount=subsidy_amount,  # type: ignore
             prepay_arr={
@@ -451,9 +441,6 @@ def async_calculator( # slower at most of the time.
             subsidy_prepay_time = _time_#(
             subsidy_prepay_time.subsidy_time= subsidy_subsidy_time
             subsidy_prepay_time.prepay_time= ensure_list_type(kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', [0]))
-                # subsidy_time=subsidy_subsidy_time,
-                # tenure=tenure,
-                # prepay_arr={'time': kwargs.get('subsidy_arr', {}).get('prepay_arr', {}).get('time', 0)})
             
             subsidy_prepay_amount = _amount_(
                 subsidy_time=subsidy_subsidy_time,
@@ -467,7 +454,7 @@ def async_calculator( # slower at most of the time.
                 'interest': kwargs.get('subsidy_arr', {}).get('interest_arr', {}).get('interest', [0]),
                 'time': kwargs.get('subsidy_arr', {}).get('interest_arr', {}).get('time', [])
             }
-            method_applied_to_subsidy=[v for v in method_applied_to_subsidy_loan if v in amortization_methods.keys()],
+            # method_applied_to_subsidy=[v for v in method_applied_to_subsidy_loan if v in amortization_methods.keys()],
             kwargs_for_subsidy = {
                 "tenure": subsidy_tenure,
                 "loan_amount": subsidy_amount,

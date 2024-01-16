@@ -13,37 +13,38 @@ sys.path.append('./')
 from app.Dashboard.assets.ids import GRAPH, LOAN
 from app.Loan import df_schema, merge_sublist
 
+# TODO:
+# 1. add a button to download the graph as a svg file
+# 2. adjust the size of the pie charts
+# 3. add subgroup for subsidy
+# 
 
 def graph():
     """Build the graph"""
     layout = html.Div(
         [
-            html.Div(
-                id= 'information-dashboard',
-                children= [
-                    # dmc.Stack(
-                    #     id= 'information-dashboard',
-                    #     spacing= 20,
-                    #     children= [
-                    #         dmc.Skeleton(
-                    #             height= 100,
-                    #             circle= True,
-                    #             children= [],
-                    #         ),
-                    #         dmc.Skeleton(height= 15, width="90%"),
-                    #         dmc.Skeleton(height= 15, width="90%"),
-                    #         dmc.Skeleton(height= 15, width="70%"),
-                    #     ],
-                    # )
-                ],
+            dmc.LoadingOverlay(    
+                html.Div(
+                    id= 'information-dashboard',
+                    children= [],
+                    style= {
+                        'height': '100%',
+                        'background-color': 'white',
+                        'box-shadow': '0 0 5px #ccc',
+                        'border-radius': '5px',
+                        'border': '1px solid #ccc',
+                        'shadow': '0 0 5px #ccc',
+                    },
+                ),
+                loaderProps={"variant": "dots",
+                             "color": "blue", 
+                             "size": "lg",
+                             'is_loading': True,
+                             },
+                transitionDuration= 0.5,
                 style= {
-                    # 'display': 'flex',
                     'height': '40%',
-                    'background-color': 'white',
-                    'box-shadow': '0 0 5px #ccc',
-                    'border-radius': '5px',
-                    'border': '1px solid #ccc',
-                    'shadow': '0 0 5px #ccc',
+                    'width': '100%',
                 },
             ),
             dmc.Space(h=10),
@@ -107,35 +108,17 @@ def graph():
                 }
             ),
             dmc.Space(h=10),
-            html.Div(
-                dmc.LoadingOverlay(
-                    children= [
-                        dcc.Graph(
-                            id=GRAPH.LINE,
-                            hoverData= {'points': [{'x': '0', 'hovertext': 'ETP'}]},
-                            config={
-                                'displayModeBar': False,
-                                'responsive': True,
-                                'doubleClick': 'reset+autosize',
-                                'toImageButtonOptions': {
-                                    'format': 'svg',
-                                    'filename': 'custom_image',
-                                    'scale': 1,
-                                },
-                            },
-                            style={
-                                'width': '100%',
-                                'height': '100%',
-                            },
-                        )
-                    ],
-                    loaderProps={"variant": "oval",
-                                 "color": "blue", 
-                                 "size": "lg",
-                                 'is_loading': True,
-                                 },
-                    transitionDuration= 0.5,
+            dmc.LoadingOverlay(
+                html.Div(
+                    children= [],
+                    id= GRAPH.LINE,
                 ),
+                loaderProps={"variant": "dots",
+                             "color": "blue", 
+                             "size": "lg",
+                             'is_loading': True,
+                             },
+                transitionDuration= 0.5,
                 style={
                     'height': 460,
                     'border-radius': '5px',
@@ -194,7 +177,7 @@ def graph():
 
 #2 update the main graph
     @callback(
-        Output(GRAPH.LINE, 'figure'),
+        Output(GRAPH.LINE, 'children'),
         Output('menu-target', 'children'),
         Output('menu-target', 'rightIcon'),
         Output('menu-target', 'loading'),
@@ -269,7 +252,25 @@ def graph():
         )
         fig.update_layout(showlegend= False)
 
-        return fig, chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL else {"from": "indigo", "to": "cyan"})
+        return dcc.Graph(
+            figure= fig,
+            # id=GRAPH.LINE,
+            hoverData= {'points': [{'x': '0', 'hovertext': 'ETP'}]},
+            config={
+                'displayModeBar': False,
+                'responsive': True,
+                'doubleClick': 'reset+autosize',
+                'toImageButtonOptions': {
+                    'format': 'svg',
+                    'filename': 'custom_image',
+                    'scale': 1,
+                },
+            },
+            style={
+                'width': '100%',
+                'height': '100%',
+            },
+        ), chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL else {"from": "indigo", "to": "cyan"})
 
     @callback(
         Output('information-dashboard', 'children'),
@@ -336,14 +337,37 @@ def graph():
             fig.update_layout(
                 title_text="<b>Total Payment</b>", 
                 template= 'seaborn',
+                margin=dict(l=0, r=0, t=60, b=30),
                 annotations=[
                     dict(
+                        text= """<b>平均償還金額:</b><br>""",
+                        x= 0.19 + 0.62 * n,
+                        y=0.58,
+                        font_size=13,
+                        showarrow=False,
+                        ax=0,
+                        ay=0,
+                        font_color= px.colors.qualitative.D3[9],
+                    ) for n in range(len([k for k in pie_data.keys() if k != df_schema.level_2.PAYMENT]))
+                ] + [dict(
                         text= f"""
                                 <b>{round(pie_data[df_schema.level_2.PAYMENT][name][0] // len(memory['data'])): ,}</b>
-                                 <br><b>{name}</b><br>
                         """,
-                        align='center', 
-                        x= 0.08 + 0.84 * n,
+                        align='center',
+                        x= 0 + 0.955 * n,
+                        y=0.5, 
+                        xref='paper', # [paper, x, x2, x3]
+                        font_size=20, 
+                        showarrow=False,
+                        ax=0,
+                        ay=0
+                        ) 
+                        for n, name in enumerate([k for k in pie_data.keys() if k != df_schema.level_2.PAYMENT])
+                ] + [
+                    dict(
+                        text= f"""<br><b>{name}</b>""",
+                        align='center',
+                        x= 0.18 + 0.64 * n,
                         y=0.4, 
                         xref='paper', # [paper, x, x2, x3]
                         font_size=20, 
@@ -352,84 +376,9 @@ def graph():
                         ay=0
                         ) 
                         for n, name in enumerate([k for k in pie_data.keys() if k != df_schema.level_2.PAYMENT])
-                ] + [dict(
-                        text= """<b>平均償還金額:</b><br>""",
-                        x= 0.195 + 0.615 * n,
-                        y=0.58,
-                        font_size=13,
-                        showarrow=False,
-                        ax=0,
-                        ay=0,
-                        font_color= px.colors.qualitative.D3[9],
-                    ) for n in range(len([k for k in pie_data.keys() if k != df_schema.level_2.PAYMENT]))],
+                ],
                 # showlegend=False
             )
-            # fig= px.pie(
-            #     pie_data,
-            #     values='value',
-            #     names='items',
-            #     hole= 0.8,
-            #     opacity= 0.8,
-            #     color_discrete_sequence= px.colors.sequential.RdBu,
-            #     template='seaborn',
-            #     facet_col= 'repay_method',
-            # )
-            # fig.update_layout(
-            #     showlegend= True,
-            #     legend= dict(
-            #         orientation= 'v',
-            #         yanchor= 'bottom',
-            #         y= 1.02,
-            #         xanchor= 'right',
-            #         x= 1,
-            #     ),
-            #     margin= dict(l=20, r=10, t=35, b=40),
-            #     paper_bgcolor= 'rgba(0, 0, 0, 0)',
-            #     plot_bgcolor= 'rgba(0, 0, 0, 0)',
-            # )
-            # fig.update_traces(
-            #     texttemplate='%{percent:.2%}',
-            #     textposition='inside',
-            #     textinfo='percent+label',
-            #     hovertemplate= '%{label}: %{value:,}',
-            # )
-            # fig= px.bar(
-            #     pie_data,
-            #     x= 'method',
-            #     y= 'value',
-            #     text= 'items',
-            #     text_auto= True,
-            #     color= 'items',
-            #     orientation= 'v',
-            #     opacity= 0.8,
-            #     color_discrete_map= {
-            #         'principal': 'gold',
-            #         'interest': 'royalblue',
-            #         'residual': 'mediumturquoise',
-            #     },
-            #     template= 'seaborn',
-            # )
-            # fig.update_layout(
-            #     showlegend= True,
-            #     margin= dict(l=10, r=10, t=10, b=10),
-            #     paper_bgcolor= 'rgba(0, 0, 0, 0)',
-            #     plot_bgcolor= 'rgba(0, 0, 0, 0)',
-            # )
-            # fig.update_xaxes(
-            #     visible= True,
-            #     showticklabels= True,
-            #     title= None,
-            # )
-            # fig.update_yaxes(
-            #     range= [0, sum(pie_data['value']) * 1.1 / 2],
-            #     visible= False,
-            #     showticklabels= False,
-            # )
-            # fig.update_traces(
-            #     texttemplate= '%{value:,}',
-            #     width= 0.4,
-            #     textangle= 0,
-            # )
             return dcc.Graph(
                 figure= fig,
                 animation_options= dict(

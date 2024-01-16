@@ -139,11 +139,11 @@ app.layout = dmc.MantineProvider(
                         'font-size': '20px',
                         'font-weight': 'bold',
                         'color': '#333',
-                        'overflow-y': 'scroll',
-                        'overflow-x': 'scroll',
+                        'overflow-y': 'auto',
+                        'overflow-x': 'auto',
                         'radius': '5px',
                     },
-                    className= 'custom-scrollbar',
+                    className= 'custom-section',
                 ),
                 html.Div(
                     children= [
@@ -175,7 +175,6 @@ app.layout = dmc.MantineProvider(
                         'margin-left': 20,
                     }
                 ),
-                
             ],
             fluid= True,
             style= {
@@ -190,13 +189,14 @@ app.layout = dmc.MantineProvider(
                 'padding-left': 20,
                 'padding-right': 20,
                 'margin': 'auto',
+                'overflow-y': 'auto',
             },
-            className= 'custom-scrollbar',
         ),
         
     ],
     withGlobalStyles= True,
     withCSSVariables= True,
+    
 )
 
 @app.callback(
