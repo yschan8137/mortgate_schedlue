@@ -30,7 +30,7 @@ def create_table(df, **kwargs):
         html.Tr(
             [html.Td(index, style= {'textAlign': 'center'}
                     )
-            ] + [html.Td(cell.replace('(', '<br />('), style= cell_style) for cell in row]) for index, row in zip(indexes, values)
+            ] + [html.Td(cell.replace('\n', '<br />'), style= cell_style) for cell in row]) for index, row in zip(indexes, values)
     ]
     table = [html.Thead(header, style= header_style), html.Tbody(rows, style= tbody_style)]
     return table
