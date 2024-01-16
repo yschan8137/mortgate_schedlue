@@ -11,26 +11,16 @@ from app.Dashboard.pages.components.Controls.panels import panel
 from app.Dashboard.assets import specs
 
 
-app = Dash(
-    __name__, 
-    external_stylesheets=[
-        "https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;900&display=swap",
-        "app/Dashboard/assets/style.css",
-    ],
-    suppress_callback_exceptions=True)
-
-
 def create_table(df, **kwargs): 
     header_style = kwargs.get('styles', {}).get('header', {})
     cell_style= kwargs.get('styles', {}).get('cell', {})
     tbody_style= kwargs.get('styles', {}).get('body', {})
     
-    style['textAlign'] = 'center'
-    Index_name = kwargs.get('index', {}).get('name', 'Index')
+    Index_name = kwargs.get('index', {}).get('name', 'Time')
     indexes, columns, values = df['index'], df['columns'], df['data']
     header = [html.Tr(
         [
-            html.Th(value, rowSpan= (len(columns[0]) if value == Index_name else 1), colSpan= len([*col]), loading_state= {}, style= style) 
+            html.Th(value, rowSpan= (len(columns[0]) if value == Index_name else 1), colSpan= len([*col]), loading_state= {}) 
             for value, col in (groupby([Index_name] + [v[i] for v in columns]) if i== 0 else groupby([v[i] for v in columns]))
             ]
         ) 
@@ -40,7 +30,7 @@ def create_table(df, **kwargs):
         html.Tr(
             [html.Td(index, style= {'textAlign': 'center'}
                     )
-            ] + [html.Td(cell, style= cell_style) for cell in row]) for index, row in zip(indexes, values)
+            ] + [html.Td(cell.replace('(', '<br />('), style= cell_style) for cell in row]) for index, row in zip(indexes, values)
     ]
     table = [html.Thead(header, style= header_style), html.Tbody(rows, style= tbody_style)]
     return table
@@ -204,14 +194,24 @@ def table():
             page_current = pages
         elif page_current == 0:
             page_current = 1
-        tb= create_table({k: (v if k not in ['data', 'index'] 
-                   else (v[((page_current - 1) * page_size_editable) + 1: (page_current * page_size_editable) + 1] if len(v) > (page_current * page_size_editable) + 1 else v[((page_current - 1) * page_size_editable) + 1:-1])
-                ) for k, v in data.items()}, style= {'textAlign': 'center', 'fontWeight': 'bold'})
+        tb= create_table({
+            k: (v if k not in ['data', 'index'] 
+                else (v[((page_current - 1) * page_size_editable) + 1: (page_current * page_size_editable) + 1] 
+                      if len(v) > (page_current * page_size_editable) + 1 
+                      else v[((page_current - 1) * page_size_editable) + 1:-1])
+               ) for k, v in data.items()}, styles= {
+            "header": {"textAlign": "center", "fontWeight": "bold"},
+            "cell": {"textAlign": "right", "fontWeight": "bold"}
+        }
+            )
         sum_tb= create_table(
             {k: (v if k not in ['data', 'index'] 
                    else [v[-1]]) for (k, v) in data.items()
             },
-            style= {'textAlign': 'center', 'fontWeight': 'bold'}
+            styles= {
+            "header": {"textAlign": "center", "fontWeight": "bold"},
+            "cell": {"textAlign": "right", "fontWeight": "bold"}
+        }
         )
         return tb, sum_tb, pages, page_current
     
@@ -220,6 +220,14 @@ def table():
 # python app/Dashboard/pages/components/DataTable/table.py
 # py -m app.Dashboard.pages.components.DataTable.table
 if __name__ == "__main__":
+    app = Dash(
+    __name__, 
+    external_stylesheets=[
+        "https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;900&display=swap",
+        "app/Dashboard/assets/style.css",
+    ],
+    suppress_callback_exceptions=True)
+    
     from app.Loan import calculator, default_kwargs
     default_kwargs['subsidy_arr'] = {
         'interest_arr': {'interest': [1, 1.33], 'time': [10]},
