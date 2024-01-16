@@ -21,7 +21,10 @@ app = Dash(
 
 
 def create_table(df, **kwargs): 
-    style = kwargs.get('style', {})
+    header_style = kwargs.get('styles', {}).get('header', {})
+    cell_style= kwargs.get('styles', {}).get('cell', {})
+    tbody_style= kwargs.get('styles', {}).get('body', {})
+    
     style['textAlign'] = 'center'
     Index_name = kwargs.get('index', {}).get('name', 'Index')
     indexes, columns, values = df['index'], df['columns'], df['data']
@@ -37,9 +40,9 @@ def create_table(df, **kwargs):
         html.Tr(
             [html.Td(index, style= {'textAlign': 'center'}
                     )
-            ] + [html.Td(cell, style= style) for cell in row]) for index, row in zip(indexes, values)
+            ] + [html.Td(cell, style= cell_style) for cell in row]) for index, row in zip(indexes, values)
     ]
-    table = [html.Thead(header), html.Tbody(rows)]
+    table = [html.Thead(header, style= header_style), html.Tbody(rows, style= tbody_style)]
     return table
 
 
