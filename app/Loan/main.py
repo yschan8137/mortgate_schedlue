@@ -292,7 +292,7 @@ def calculator(
             
             # 欄位加總
             for id in idx:
-                df['columns'].append((df_schema.level_0.TOTAL, id[0][1] + "\n (" + df_schema.level_0.ORIGINAL + ")", id[1][1] + "\n (" + df_schema.level_0.SUBSIDY + ")"))
+                df['columns'].append((df_schema.level_0.TOTAL, id[0][1] + "(" + df_schema.level_0.ORIGINAL + ")", id[1][1] + "(" + df_schema.level_0.SUBSIDY + ")"))
                 df['data']= [*map(lambda x: x + [sum([x[n] for (n, i) in enumerate(df['columns']) if (i in id)])], df['data'])]
  
             # 計算各期清償總和，並扣除重複計算的租金補貼貸款
