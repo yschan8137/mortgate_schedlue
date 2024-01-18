@@ -30,10 +30,9 @@ def graph():
                     style= {
                         'height': '100%',
                         'background-color': 'white',
-                        'box-shadow': '0 0 5px #ccc',
                         'border-radius': '5px',
                         'border': '1px solid #ccc',
-                        'shadow': '0 0 5px #ccc',
+                        'box-shadow': '0 0 5px #ccc',
                     },
                 ),
                 loaderProps={"variant": "dots",
@@ -44,7 +43,7 @@ def graph():
                 transitionDuration= 0.5,
                 style= {
                     'height': '40%',
-                    'width': '100%',
+                    # 'width': '100%',
                 },
             ),
             dmc.Space(h=10),
@@ -337,7 +336,7 @@ def graph():
             fig.update_layout(
                 title_text="<b>Total Payment</b>", 
                 template= 'seaborn',
-                margin=dict(l=0, r=0, t=60, b=30),
+                margin=dict(l=25, r=25, t=60, b=30),
                 annotations=[
                     dict(
                         text= """<b>平均償還金額:</b><br>""",
@@ -366,7 +365,7 @@ def graph():
                 ] + [
                     dict(
                         text= f"""<br><b>{name}</b>""",
-                        align='center',
+                        # align='left',
                         x= 0.18 + 0.64 * n,
                         y=0.4, 
                         xref='paper', # [paper, x, x2, x3]
@@ -381,21 +380,22 @@ def graph():
             )
             return dcc.Graph(
                 figure= fig,
+                animate= True,
                 animation_options= dict(
                     frame= dict(
                         duration= 10,
                         redraw= True,
                     ),
                     transition= dict(
-                        duration= 10,
+                        duration= 5,
                         easing= 'quad-in-out',
                     )
                 ),
-                animate= True,
                 style={
                     'background-color': 'rgba(0, 0, 0, 0)',
-                    'width': '100%',
+                    'width': '50%',
                     'height': '100%', 
+                    'display': 'inline-block',
                 },
                 config={
                     'displayModeBar': False,
