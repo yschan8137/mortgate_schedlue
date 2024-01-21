@@ -134,10 +134,8 @@ def graph():
                 transitionDuration= 0.5,
                 style={
                     'height': 460,
-                    'border-radius': '5px',
-                    'border': '1px solid #ccc',
                     'background-color': 'white',
-                    'box-shadow': '0 0 5px #ccc',
+                    
                 },
             ),
         ],
@@ -470,7 +468,7 @@ def graph():
                         'width': '100%',
                         'height': '100%',
                         'border-radius': '5px',
-                        'border': '1px solid #6E90B2',
+                        'border': '1px solid #ccc',
                     },
                     config={
                         'displayModeBar': False,
