@@ -18,7 +18,7 @@ from app.Loan import df_schema, merge_sublist
 # 1. add a button to download the graph as a svg file
 # 2. adjust the size of the pie charts
 # 3. add subgroup for subsidy
-# 
+
 
 def graph():
     """Build the graph"""
@@ -30,12 +30,16 @@ def graph():
                     children= [],
                     style= {
                         'display': 'flex',
+                        'flex-direction': 'row',
                         'width': '100%',
                         'height': '100%',
                         'background-color': 'white',
                         'border-radius': '5px',
                         'border': '1px solid #ccc',
                         'box-shadow': '0 0 5px #ccc',
+                        'margin-left': 'auto',
+                        'margin-right': 'auto',
+                        'justify-content': 'center',
                     },
                 ),
                 loaderProps={"variant": "dots",
@@ -113,6 +117,14 @@ def graph():
                 html.Div(
                     children= [],
                     id= GRAPH.LINE,
+                    style={
+                        'width': '100%',
+                        'height': '100%',
+                        'background-color': 'white',
+                        'border-radius': '5px',
+                        'border': '1px solid #ccc',
+                        'box-shadow': '0 0 5px #ccc',
+                    },
                 ),
                 loaderProps={"variant": "dots",
                              "color": "blue", 
@@ -132,8 +144,6 @@ def graph():
         style={
             'width': '100%',
             'height': '95dvh',
-            'margin-left': 'auto',
-            'margin-right': 'auto',
         },
         className= 'custom-scrollbar',
     )
@@ -149,11 +159,11 @@ def graph():
     def update_toggle_items(
         accum,
         label,
-        data,
+        memory,
     ):
-        data = data['data']
-        level_0 = {c[0] for c in data['columns']}
-        if df_schema.level_0.TOTAL in level_0:
+        memory = memory['data']
+        level_0 = {c[0] for c in memory['columns'] if c[0] != ''}
+        if df_schema.level_0.TOTAL in level_0 or not level_0:
             return [], {'display': 'none'}
         else:
             method_for_original_mortgate = [
@@ -190,18 +200,17 @@ def graph():
     )
     def update_graph(
         accum,
-        data,
+        memory,
         _,
         label,
     ):
         ctx = callback_context
-        data = data['data']
-        
+        memory = memory['data']
         if isinstance(ctx.triggered_id, dict):
             chosen_figure = ctx.triggered_id['index']
         else:
             # type: ignore
-            if df_schema.level_0.TOTAL not in [col[0] for col in data['columns']]:
+            if df_schema.level_0.TOTAL not in [col[0] for col in memory['columns']]:
                 if accum == 'cumulative':
                     if label == df_schema.level_2.RESIDUAL:
                         chosen_figure = df_schema.level_2.PAYMENT
@@ -212,29 +221,28 @@ def graph():
                         label if label != df_schema.level_0.TOTAL else df_schema.level_2.PAYMENT)
             else:
                 chosen_figure = df_schema.level_0.TOTAL # 總計
-        
-        ns, cols = zip(*[(n, col) for n, col in enumerate(data['columns']) if chosen_figure in col])
-        x_axis_value = data['index'][1:-1]
-        
+
+        ns, cols = zip(*[(n, col) for n, col in enumerate(memory['columns']) if chosen_figure in col])
+        x_axis_value = memory['index'][1:-1]
+
         # construct the data frame for the graph
         data_frame_for_loan_timeSeries= {
             'Time': [],
             'Amount': [],
             'methods': [],
         }
-
         for n, col in zip(ns, cols): # n: index of the column; col: column name
-            dff = [data[n] for data in data['data'][1:-1]]
+            dff = [data[n] for data in memory['data'][1:-1]]
             method = (" + ".join([co for co in col if co != chosen_figure]) if len(col) > 2 else col[0])
 
             if accum == 'cumulative':
                 dff = [*accumulate(dff)]
             dff = [*map(lambda x: f"{round(x):,}", dff)]
-            
+
             data_frame_for_loan_timeSeries['Time'].extend(x_axis_value)
             data_frame_for_loan_timeSeries['Amount'].extend(dff)
             data_frame_for_loan_timeSeries['methods'].extend([method] * len(x_axis_value))
-            
+
         fig = px.line(
             data_frame_for_loan_timeSeries,
             x= "Time", 
@@ -255,7 +263,6 @@ def graph():
 
         return dcc.Graph(
             figure= fig,
-            # id=GRAPH.LINE,
             hoverData= {'points': [{'x': '0', 'hovertext': 'ETP'}]},
             config={
                 'displayModeBar': False,
@@ -273,6 +280,7 @@ def graph():
             },
         ), chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL else {"from": "indigo", "to": "cyan"})
 
+
     @callback(
         Output('information-dashboard', 'children'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
@@ -280,77 +288,123 @@ def graph():
     def update_info(
         memory, 
         ):
-        if memory:
-            memory = memory['data']
-
-            demostrated_items= [df_schema.level_2.PAYMENT, df_schema.level_2.PRINCIPAL, df_schema.level_2.INTEREST]
+        print('memory', memory['data']['columns'])
+        memory = memory['data']
+        if [c for c in memory['columns'] if c[0] != '']:
+            # Group the data by the method of repayment which includes [Equal total payment, Equal principal payment]. 
             pie_data = {}
             payment= {}
-            for key, value in {k: round(v) for k, v in zip(map(lambda x: tuple(x), memory['columns']), memory['data'][-1]) if k[-1] in demostrated_items}.items():
-                if key[-2] not in pie_data.keys():
-                    pie_data.update({key[-2]: {'labels': [], 'values': [], 'names': []}}) # initialize the dictionary
-                if key[-1] == df_schema.level_2.PAYMENT:
-                    if key[-2] not in payment.keys():
-                        payment.update({key[-2]: {'labels': [], 'values': [], 'names': []}}) # initialize the dictionary
-                    payment[key[-2]]['labels'].append(key[-1])
-                    payment[key[-2]]['values'].append(value)
-                    payment[key[-2]]['names'].append((key[0] if key[0] != key[-2] else None))
-                else:
-                    pie_data[key[-2]]['labels'].append(key[-1])
-                    pie_data[key[-2]]['values'].append(value)
-                    pie_data[key[-2]]['names'].append((key[0] if key[0] != key[-2] else None))
-
+            target= [df_schema.level_2.PAYMENT, df_schema.level_2.PRINCIPAL, df_schema.level_2.INTEREST]
+            for n, col in enumerate(memory['columns']):
+                if col[-1] in target:
+                    if col[-1] != df_schema.level_2.PAYMENT:
+                        if col[-2] not in pie_data.keys():
+                            pie_data.update({col[-2]: {'labels': [], 'values': {}, 'names': []}}) # initialize the dictionary
+                        if (col[0] if col[0] != col[-2] else None) not in pie_data[col[-2]]['names']:
+                            pie_data[col[-2]]['names'].append((col[0] if col[0] != col[-2] else None))
+                        if len(col) > 2:
+                            if col[-3] not in pie_data[col[-2]]['values'].keys():
+                                pie_data[col[-2]]['values'].update({col[-3]: []}) 
+                            if col[-3]== df_schema.level_0.ORIGINAL:
+                                if col[-1]== df_schema.level_2.PRINCIPAL:
+                                    pie_data[col[-2]]['values'][col[0]].append(
+                                        round(
+                                            sum(
+                                                [*map(lambda x, y: (x-y if x-y > 0 else 0), 
+                                                      [
+                                                          *map(lambda x: [x[n] for n, c in enumerate(memory['columns']) 
+                                                                          if c[-3] == df_schema.level_0.ORIGINAL and 
+                                                                            c[-2] == col[-2] and 
+                                                                            c[-1] == df_schema.level_2.PRINCIPAL][0], memory['data'][1:-1])
+                                                      ], 
+                                                      [
+                                                          *map(lambda x: [(x[n] if x[n-1] == 0 else 0) for n, c in enumerate(memory['columns']) 
+                                                                          if c[-3] == df_schema.level_0.SUBSIDY and 
+                                                                            c[-2] == col[-2] and 
+                                                                            c[-1] == df_schema.level_2.RESIDUAL][0], memory['data'][1:-1])
+                                                      ],
+                                                    )
+                                                ]
+                                            )
+                                        )
+                                    )
+                                else:
+                                    pie_data[col[-2]]['values'][col[0]].append(round(memory['data'][-1][n]))
+                            else:
+                               pie_data[col[-2]]['values'][col[0]].append(round(memory['data'][-1][n])) 
+                        else:
+                            if 0 not in pie_data[col[-2]]['values'].keys():
+                                pie_data[col[-2]]['values'].update({0: []})
+                            pie_data[col[-2]]['values'][0].append(round(memory['data'][-1][n]))
+                        pie_data[col[-2]]['labels'].append(col[-1])
+                    else:
+                        if col[-2] not in payment.keys():
+                            payment.update({col[-2]: {'labels': [], 'values': {}, 'names': []}})
+                        if (col[0] if col[0] != col[-2] else None) not in payment[col[-2]]['names']:
+                            payment[col[-2]]['names'].append((col[0] if col[0] != col[-2] else None))
+                        else:
+                            payment[col[-2]]['values'].append(round(memory['data'][-1][n]))
+                        if len(col) > 2:
+                            if col[-3] not in payment[col[-2]]['values'].keys():
+                                payment[col[-2]]['values'].update({col[-3]: []})
+                            payment[col[-2]]['values'][col[-3]].append(sum(pie_data[col[-2]]['values'][col[-3]]))
+                        else:
+                            if 0 not in payment[col[-2]]['values'].keys():
+                                payment[col[-2]]['values'].update({0: []})
+                            payment[col[-2]]['values'][0].append(round(memory['data'][-1][n]))
+                        payment[col[-2]]['labels'].append(col[-1])
+            # generate the pie charts by the method of repayment
             fig = None
             fig_main= None
             fig_sub= None
             for col, method in enumerate(pie_data.keys()):
-                if len(pie_data[method]['names']) == 2:
-                    if not fig:
-                        fig = make_subplots(rows=1, cols=len(pie_data.keys()), specs=[[{'type':'domain'}, {'type':'domain'}]])
-                    fig.add_trace(
-                        go.Pie(
-                            labels= pie_data[method]['labels'],
-                            values= pie_data[method]['values'],
-                            title= f"""<b>{method}</b><br>{round(payment[method]['values'][0] // len(memory['data'][1:-1])): ,}/月""",
-                            name= "",
-                            titlefont= dict(size= 20, color= 'dark grey'),
-                            marker= dict(colors= px.colors.qualitative.D3),
-                            textfont= dict(size= 15),
-                            textinfo= 'percent',
-                            textposition= 'inside',
-                            hoverinfo= 'label+value',
-                            hovertemplate= '%{label}: %{value:,.0f}',
-                            showlegend= False,
+                for name in pie_data[method]['names']:
+                    # without the subsidy loan
+                    if name == None:
+                        if not fig:
+                            fig = make_subplots(rows=1, cols=len(pie_data.keys()), specs=[[{'type':'domain'}]* len(pie_data.keys())])
+                        fig.add_trace(
+                            go.Pie(
+                                labels= pie_data[method]['labels'],
+                                values= pie_data[method]['values'][0], #note 0 is a key for the dictionary.
+                                title= f"""<b>{method}</b><br>{round(payment[method]['values'][0][0] // len(memory['data'][1:-1])): ,}/月""",
+                                name= "",
+                                titlefont= dict(size= 20, color= 'dark grey'),
+                                marker= dict(colors= px.colors.qualitative.Pastel1),
+                                textfont= dict(size= 15),
+                                textinfo= 'percent',
+                                textposition= 'inside',
+                                hoverinfo= 'label+value',
+                                hovertemplate= '%{label}: %{value:,.0f}',
+                                showlegend= False,
+                                hole= .7,
+                            ),
+                                1, 
+                                col + 1,
+                        )
+                        fig.update_traces(
                             hole= .7,
-
-                        ),
-                            1, 
-                            col + 1,
-                    )
-                    fig.update_traces(
-                        hole= .7,
-                        hoverinfo="label+percent+name",
-                    )
-                    fig.update_layout(
-                        title_text="<b>Total Payment</b>", 
-                        title_font_size= 20,
-                        title_x= 0.5,
-                        margin=dict(l=20, r=20, t=60, b=30),
-                    )
-
-                else:
-                    for name in pie_data[method]['names']:
+                            hoverinfo="label+percent+name",
+                        )
+                        fig.update_layout(
+                            title_text="<b>Total Payment</b>", 
+                            title_font_size= 20,
+                            title_x= 0.5,
+                            margin=dict(l=20, r=20, t=60, b=30),
+                        )
+                    # with the subsidy loan
+                    else:
                         if name == df_schema.level_0.ORIGINAL:
                             if not fig_main:
                                 fig_main = make_subplots(rows=1, cols=len(pie_data.keys()), specs=[[{'type':'domain'}, {'type':'domain'}]])
                             fig_main.add_trace(
                                 go.Pie(
                                     labels= pie_data[method]['labels'],
-                                    values= pie_data[method]['values'],
-                                    title= f"""<b>{method}</b><br>{round([v for c, v in zip(zip(payment[method]['labels'], payment[method]['names']), payment[method]['values'])  if c[0] == df_schema.level_2.PAYMENT and c[1] == name][0] // len(memory['data'][1:-1])): ,}/月""",
-                                    name= "",
+                                    values= pie_data[method]['values'][name],
+                                    title= f"""<b>{method}</b><br>{round(payment[method]['values'][name][0] // len(memory['data'])): ,}/月""",
+                                    name= "",   
                                     titlefont= dict(size= 20, color= 'dark grey'),
-                                    marker= dict(colors= px.colors.qualitative.D3),
+                                    marker= dict(colors= px.colors.qualitative.Pastel1),
                                     textfont= dict(size= 15),
                                     textinfo= 'percent',
                                     textposition= 'inside',
@@ -373,15 +427,21 @@ def graph():
                             )
                         elif name == df_schema.level_0.SUBSIDY:
                             if not fig_sub:
-                                fig_sub = make_subplots(rows=1, cols=len(pie_data.keys()), specs=[[{'type':'domain'}, {'type':'domain'}]])
+                                fig_sub = make_subplots(rows=1, cols=len(pie_data.keys()), specs=[[{'type':'domain'}]* len(pie_data.keys())])
                             fig_sub.add_trace(
                                 go.Pie(
                                     labels= pie_data[method]['labels'],
-                                    values= pie_data[method]['values'],
-                                    title= f"""<b>{method}</b><br>{round([v for c, v in zip(zip(payment[method]['labels'], payment[method]['names']), payment[method]['values']) if c[0] == df_schema.level_2.PAYMENT and c[1] == name][0] // len([v for v in map(lambda x: [x[n] > 0 for n, c in enumerate(memory['columns']) if c[-3] == name and c[-2] == method and c[-1] == df_schema.level_2.PAYMENT][0], memory['data'][1:-1]) if v])): ,}/月""",
+                                    values= pie_data[method]['values'][name],
+                                    title= f"""<b>{method}</b><br>{round(payment[method]['values'][name][0] // len(
+                                        [v for v in map(lambda x: [
+                                            x[n] > 0 for n, c in enumerate(memory['columns']) 
+                                            if c[-3] == name and 
+                                            c[-2] == method and 
+                                            c[-1] == df_schema.level_2.PAYMENT][0], 
+                                            memory['data'][1:-1]) if v])): ,}/月""",
                                     name= "",
                                     titlefont= dict(size= 20, color= 'dark grey'),
-                                    marker= dict(colors= px.colors.carto.Antique),
+                                    marker= dict(colors= px.colors.qualitative.Pastel1[-2:-1]),
                                     textfont= dict(size= 15),
                                     textinfo= 'percent',
                                     textposition= 'inside',
@@ -409,6 +469,8 @@ def graph():
                         'background-color': 'rgba(0, 0, 0, 0)',
                         'width': '100%',
                         'height': '100%',
+                        'border-radius': '5px',
+                        'border': '1px solid #6E90B2',
                     },
                     config={
                         'displayModeBar': False,
@@ -422,9 +484,18 @@ def graph():
                 ) for fig in [f for f in[fig, fig_main, fig_sub] if f]
             ]
         else:
-            raise PreventUpdate
-
-       
+            return dmc.Center(
+                      children=[
+                          dmc.Text(
+                              "No Data Available.",
+                              variant="gradient",
+                              gradient={"from": "red", "to": "yellow", "deg": 45},
+                              style={
+                                  "fontSize": 40,
+                                  },
+                          )
+                      ]
+                  )
     return layout
 
 # python app/Dashboard/pages/components/Graphic/main.py
