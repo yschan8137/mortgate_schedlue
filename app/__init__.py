@@ -1,1 +1,1 @@
-from app.Loan.main import calculator
+from Loan.main import calculator
