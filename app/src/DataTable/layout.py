@@ -3,7 +3,7 @@ import dash_bootstrap_components as dbc
 from app.src.Controls.widgets import refreshable_dropdown
 from app.assets.ids import LOAN
 from app.src import amortization_types
-
+import i18n
 
 def main_items():
     layout = [

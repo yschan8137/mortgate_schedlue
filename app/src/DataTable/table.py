@@ -3,11 +3,13 @@ from dash import Dash, html, Input, Output, callback
 import dash_mantine_components as dmc
 import time
 from itertools import groupby
+import i18n
 
 from app.assets.ids import LOAN, DATATABLE
 from Loan import df_schema
 from app.src.Controls.panels import panel
 from app.assets import specs
+
 
 
 def create_table(df, **kwargs): 
@@ -236,7 +238,7 @@ if __name__ == "__main__":
     ],
     suppress_callback_exceptions=True)
     
-    from app.Loan import calculator, default_kwargs
+    from Loan import calculator, default_kwargs
     default_kwargs['subsidy_arr'] = {
         'interest_arr': {'interest': [1, 1.33], 'time': [10]},
         'start': 2,

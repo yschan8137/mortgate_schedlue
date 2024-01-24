@@ -7,17 +7,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 import dash_mantine_components as dmc
 from plotly.subplots import make_subplots
+import i18n
 
 import sys
 sys.path.append('./')
 
 from app.assets.ids import GRAPH, LOAN
-from Loan import df_schema, merge_sublist
-
-# TODO:
-# 1. add a button to download the graph as a svg file
-# 2. adjust the size of the pie charts
-# 3. add subgroup for subsidy
+from Loan import df_schema
 
 
 def graph():
@@ -499,7 +495,7 @@ def graph():
 # py -m app.Dashboard.pages.components.Graphic.app
 if __name__ == '__main__':
     import dash_bootstrap_components as dbc
-    from app.Dashboard.pages.components.Controls.panels import panel
+    from app.src.Controls.panels import panel
     app = Dash(
         __name__,
         external_stylesheets=[

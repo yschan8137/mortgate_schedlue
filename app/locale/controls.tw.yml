@@ -1,0 +1,28 @@
+tw:
+  components:
+    mortgage_amount: 貸款金額
+    down_payment_rate: 頭期款比例
+    tenure: 貸款年限
+    grace_period: 寬限期
+    grace_period_description: 寬限期年限
+    interest_rate: 貸款利率
+    select_date: 選擇日期
+    start_date: 開始日期
+    the_start_time_of_the_repayment: 還款開始日期
+    payment_methods: 還款方式
+    key_in_an_interest_rate: 輸入利率
+    prepay_arrangement: 提前還款規畫
+    subsidy_arrangement: 優惠貸款規畫
+    reset: 重置
+    start_timepoint: 開始時間
+    subsidy_amount: 優惠貸款金額
+    subsidy_tenure: 優惠貸款期限
+    subsidy_grace_period: 優惠貸款寬限期
+    subsidy_payment_methods: 優惠貸款還款方式
+  widgets:
+    time: 時間
+    choose_methods_of_the_payment: 選擇還款方式
+    select_method_for_repayment: 選擇還款方式
+    prepay: 提前還款
+    repayment_methods: 還款方式
+    refresh: 重新整理

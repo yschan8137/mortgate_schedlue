@@ -1,12 +1,11 @@
 # This file is for the tailor-made widgets for controls including OPTIONS dropdown, addon function for generating a dict for the combined input of payment arrangement.
 from dash import Dash
-from distutils.log import debug
-from re import A, S
 from dash import dcc, html, Input, Output, State, callback_context, MATCH, ALL, ALLSMALLER, Patch, callback
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
+import i18n
 
 from app.src.toolkit import to_dropdown_options, suffix_for_type
 from app.assets.ids import *
@@ -63,19 +62,16 @@ def addon(
                                 # size= 'md',
                                 style= {
                                     'width': '35%',
-                                    # 'display': 'inline'
                                 },
                                 clearable= True,
-                                placeholder= 'Time',
+                                placeholder= i18n.t('controls.widgets.time'),
                     ),
                     dmc.NumberInput(
                        id= {"index": index, "type": suffix_for_type(ADDON.INPUT, type)},
                        style={
                            "width": '50%',
-                            # 'display': 'inline',
                            },
                        value= 0,
-                    #    size= 'md',
                        step= (0.01 if input_type == 'float' else 1),
                        min= 0,
                        max= (100 if input_type == 'float' else None),
@@ -101,13 +97,11 @@ def addon(
                                 gradient={"from": "grape", "to": "pink", "deg": 35},
                                 children= DashIconify(icon= 'tabler:trash'),
                                 disabled= disabled,
-                                # size= 'md',
                             )
                         ],
                     )
                 ],
                 style= {
-                    # 'width': '100%',
                     'display': 'flex',
                 },
             ),
@@ -120,8 +114,6 @@ def addon(
                         style= {
                             'width': '100%',
                             'height': '150px',
-                            # 'radius': '10px',
-                            # 'borderRadius': '10px',
                         },
                         className= 'custom-scrollbar',
                     )
@@ -133,19 +125,6 @@ def addon(
             ),
         ],
     )
-
-
-# ##1 Control the disabled status of the input and the add button.
-#     @callback(
-#         Output({"index": MATCH, "type": suffix_for_type(ADDON.INPUT, type)}, 'disabled', allow_duplicate= True),
-#         Output({"index": MATCH, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)}, 'disabled', allow_duplicate= True),
-#         Output({"index": MATCH, "type": suffix_for_type(ADDON.ADD, type)}, 'disabled', allow_duplicate= True),
-#         Output({"index": MATCH, "type": suffix_for_type(ADDON.DELETE, type)}, 'disabled', allow_duplicate= True),
-#         Input({"index": MATCH, "type": suffix_for_type(ADDON.DISABLED, type)}, 'data'),
-#         prevent_initial_call=True
-#     )
-#     def control_disabled(disabled):
-#         return disabled, disabled, disabled, disabled
 
 ##2 update the data in dmc.Select
     @callback(
@@ -283,7 +262,6 @@ def new_checklist_item(triggered_index, type, result):
                     },
                 },
                 size= 'sm',
-                # mb=10
             ),
         ],
         style={
@@ -296,8 +274,8 @@ def new_checklist_item(triggered_index, type, result):
 def refreshable_dropdown(
         label: str,
         # ['prepay', 'subsidy'] Consider the case of duplicate ids.
-        type: str = 'prepay',
-        placeholder: str = 'Choose methods of the payment',
+        type: str = i18n.t('controls.widgets.prepay'),
+        placeholder: str = i18n.t('controls.widgets.choose_methods_of_the_payment'),
         value: list = [*amortization_types],
         options: dict = amortization_types,
         disabled: bool = False,
@@ -315,9 +293,9 @@ def refreshable_dropdown(
             html.Div(
                 [
                     dmc.MultiSelect(
-                        label="Repayment methods",
+                        label= i18n.t('controls.widgets.repayment_methods'),
                         id={"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type)},
-                        placeholder="Select method for repayment",
+                        placeholder= i18n.t('controls.widgets.select_method_for_repayment'),
                         value= value,
                         data=[*options],
                         size= 'sm',
@@ -327,7 +305,7 @@ def refreshable_dropdown(
                         },
                     ),
                     dmc.Button(
-                        children="Refresh",
+                        children= i18n.t('controls.widgets.refresh'),
                         id={"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.BUTTON, type)},
                         variant="gradient",
                         gradient={"from": "teal", "to": "blue", "deg": 60},
