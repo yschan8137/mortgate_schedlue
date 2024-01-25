@@ -12,11 +12,6 @@ from app.src.Graphic.main import graph
 from app.src.DataTable import table as dataframe
 from app.assets import ids
 
-LOCALE= 'tw'
-
-# set locale
-i18n.set('locale', LOCALE)
-i18n.load_path.append('app/locale')
 
 # NAVBAR = create_navbar()
 FA621 = "https://use.fontawesome.com/releases/v6.2.1/css/all.css"
@@ -236,10 +231,16 @@ def toggle_modal(_, opened):
     if _:
         return not opened
 
-@app.callback(
-    Output(),
-    Input("language-switch", "checked")
-)
+# @app.callback(
+#     Output('locale', 'data'),
+#     Input("language-switch", "checked")
+# )
+# update_locale(checked):
+#     LOCALE= 'tw'
+
+#     # set locale    
+#     i18n.set('locale', LOCALE)
+#     i18n.load_path.append('app/locale')
     
 
 # python app/main.py
