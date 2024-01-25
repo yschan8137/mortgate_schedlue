@@ -162,6 +162,11 @@ app.layout = dmc.MantineProvider(
                     },
                     className= 'custom-section',
                 ),
+                # dmc.Switch(
+                #     offLabel=DashIconify(icon="radix-icons:moon", width=20),
+                #     onLabel=DashIconify(icon="radix-icons:sun", width=20),
+                #     size="xl",
+                # ),
                 html.Div(
                     children= [
                         panel_tabs,
