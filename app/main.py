@@ -162,7 +162,12 @@ app.layout = dmc.MantineProvider(
                     },
                     className= 'custom-section',
                 ),
+                # dcc.Store(
+                #     id= 'locale',
+                #     data= 'en',
+                # )
                 # dmc.Switch(
+                #     id= "language-switch",
                 #     offLabel=DashIconify(icon="radix-icons:moon", width=20),
                 #     onLabel=DashIconify(icon="radix-icons:sun", width=20),
                 #     size="xl",
@@ -229,7 +234,13 @@ app.layout = dmc.MantineProvider(
 )
 def toggle_modal(_, opened):
     if _:
-        return not opened 
+        return not opened
+
+@app.callback(
+    Output(),
+    Input("language-switch", "checked")
+)
+    
 
 # python app/main.py
 # py -m app.Dashboard.tabs
