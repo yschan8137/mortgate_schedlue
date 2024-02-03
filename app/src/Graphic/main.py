@@ -1,7 +1,6 @@
 """Build a graph for the loan"""
 from itertools import accumulate
 from dash import Dash, dcc, callback, Output, Input, State, ALL, callback_context, html
-from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 import plotly.express as px
 import plotly.graph_objects as go
@@ -307,13 +306,13 @@ def graph():
                                                       [
                                                           *map(lambda x: [x[n] for n, c in enumerate(memory['columns']) 
                                                                           if c[-3] == df_schema.level_0.ORIGINAL and 
-                                                                            c[-2] == col[-2] and 
+                                                                            c[-2] == col[-2] and #type: ignore
                                                                             c[-1] == df_schema.level_2.PRINCIPAL][0], memory['data'][1:-1])
                                                       ], 
                                                       [
                                                           *map(lambda x: [(x[n] if x[n-1] == 0 else 0) for n, c in enumerate(memory['columns']) 
                                                                           if c[-3] == df_schema.level_0.SUBSIDY and 
-                                                                            c[-2] == col[-2] and 
+                                                                            c[-2] == col[-2] and #type: ignore
                                                                             c[-1] == df_schema.level_2.RESIDUAL][0], memory['data'][1:-1])
                                                       ],
                                                     )
