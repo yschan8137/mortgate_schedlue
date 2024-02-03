@@ -1,1 +1,0 @@
-from Loan.computation.categories import amortization as amortization_types

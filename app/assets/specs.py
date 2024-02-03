@@ -104,7 +104,7 @@ class COMPONENTS:
                 SIZE= 'md'
         class INTEREST:
             class TEXT:
-                SIZE= 'lg'
+                SIZE= 'md'
                 WEIGHT= 500
             class SEGMENT:
                 VALUE= 'fixed'

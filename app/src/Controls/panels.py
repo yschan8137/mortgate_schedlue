@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 
 from app.assets import ids, specs
+from app.assets.locale import lan
 from app.src.Controls.components import MortgageOptions, AdvancedOptions
 from app.src.Controls.widgets import new_checklist_item
 from app.src.toolkit import suffix_for_type
@@ -54,26 +55,27 @@ class panel():
             kwargs, 
             cache,
             ):
-            # It is neccessary that all the sufficient parameters are given.
             patched_memory= Patch()
-            condition_1 = ((subsidy_start:= kwargs['subsidy_arr']['start'] > 0) and subsidy_start <= 24)
-            condition_2 = (kwargs['subsidy_arr']['amount'] > 0)
-            condition_3 = (kwargs['subsidy_arr']['tenure'] > 0) 
-            condition_4 = (len([c for c in kwargs['subsidy_arr']['interest_arr']['interest'] if c]) > 0)
-            kwargs_apart_from_subsudy = {k: v for (k, v) in kwargs.items() if k != 'subsidy_arr'}    
-            if (condition_1 or condition_2 or condition_3 or condition_4):
-                if (condition_1 and condition_2 and condition_3 and condition_4):
-                    patched_memory['data'] = calculator(**kwargs, thousand_sep= False)
-                    return patched_memory, no_update
-                else:
-                    raise PreventUpdate()
+            if kwargs== cache:
+                raise PreventUpdate()
             else:
-                if len(cache)> 0 and (kwargs['subsidy_arr']['method'] != cache['subsidy_arr']['method']):
-                        return no_update, kwargs        
+                condition_1 = ((subsidy_start:= kwargs['subsidy_arr']['start'] > 0) and subsidy_start <= 24)
+                condition_2 = (kwargs['subsidy_arr']['amount'] > 0)
+                condition_3 = (kwargs['subsidy_arr']['tenure'] > 0) 
+                condition_4 = (len([c for c in kwargs['subsidy_arr']['interest_arr']['interest'] if c]) > 0)
+                kwargs_apart_from_subsudy = {k: v for (k, v) in kwargs.items() if k != 'subsidy_arr'}    
+                if (condition_1 or condition_2 or condition_3 or condition_4):
+                    if (condition_1 and condition_2 and condition_3 and condition_4):
+                        patched_memory['data'] = calculator(**kwargs, thousand_sep= False)
+                        return patched_memory, no_update
+                    else:
+                        raise PreventUpdate()
                 else:
-                    patched_memory['data'] = calculator(**kwargs_apart_from_subsudy, thousand_sep= False)
-                    
-                    return patched_memory, kwargs
+                    if len(cache)> 0 and (kwargs['subsidy_arr']['method'] != cache['subsidy_arr']['method']):
+                            return no_update, kwargs        
+                    else:
+                        patched_memory['data'] = calculator(**kwargs_apart_from_subsudy, thousand_sep= False)
+                        return patched_memory, kwargs
                 
     
         @callback(
@@ -99,7 +101,6 @@ class panel():
                     Input(ids.LOAN.SUBSIDY.START, 'value'),
                     Input(ids.LOAN.SUBSIDY.TENURE, 'value'),
                 ],
-                Input('Reset', 'n_clicks'),
         )
         def update_kwargs(
             total_amount,
@@ -109,7 +110,7 @@ class panel():
             start_date,
             repayment_methods,
             interest,
-            arr,
+            interest_arr,
             prepay_arr,
             subsidy_amount,
             subsidy_grace_period,
@@ -119,8 +120,6 @@ class panel():
             subsidy_arr,
             subsidy_start,
             subsidy_tenure,
-            reset,
-            # memory,
             ):
             patched_memory= Patch()
             if isinstance(triggered_id := callback_context.triggered_id, dict):
@@ -144,8 +143,10 @@ class panel():
                         patched_memory['interest_arr']['interest']= [interest]
                         patched_memory['interest_arr']['time']= []
                 elif triggered_id['type'] == suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.TYPE):
-                        patched_memory['interest_arr']['interest']= [patched_memory['interest_arr']['interest'][0], *arr.values()]
-                        patched_memory['interest_arr']['time']= [int(v) for v in arr.keys()]
+                        print('111111', interest_arr)
+
+                        patched_memory['interest_arr']['interest']= [interest, *interest_arr.values()]
+                        patched_memory['interest_arr']['time']= [int(v) for v in interest_arr.keys()]
                 elif triggered_id['type'] == suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.PREPAY.TYPE):
                     patched_memory['prepay_arr'] = {
                             'amount': [*prepay_arr.values()],
@@ -166,7 +167,7 @@ class panel():
                         patched_memory['subsidy_arr']['interest_arr']['interest']= [subsidy_interest]
                         patched_memory['subsidy_arr']['interest_arr']['time']= []
                 elif triggered_id['type'] == suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.SUBSIDY.TYPE):
-                    patched_memory['subsidy_arr']['interest_arr']['interest']= [patched_memory['subsidy_arr']['interest_arr']['interest'][0], *subsidy_arr.values()]
+                    patched_memory['subsidy_arr']['interest_arr']['interest']= [subsidy_interest, *subsidy_arr.values()]
                     patched_memory['subsidy_arr']['interest_arr']['time']= [int(v) for v in subsidy_arr.keys()]
             else:
                 if callback_context.triggered_id == ids.LOAN.SUBSIDY.START:
@@ -199,7 +200,6 @@ class panel():
                 Output(ids.LOAN.SUBSIDY.START, 'value', allow_duplicate=True),
                 Output(ids.LOAN.SUBSIDY.TENURE, 'value', allow_duplicate=True),
                 Output({"index": cls.index, "type": suffix_for_type(ids.LOAN.GRACE, ids.LOAN.SUBSIDY.TYPE)}, 'value'),
-                # Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.DROPDOWN.OPTIONS, ids.LOAN.SUBSIDY.TYPE)}, 'value', allow_duplicate=True),
                 Output({"index": cls.index, "type": suffix_for_type(ids.LOAN.INTEREST, ids.LOAN.SUBSIDY.TYPE)}, 'value', allow_duplicate=True),
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.SUBSIDY.TYPE)}, 'data', allow_duplicate=True),
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.SUBSIDY.PREPAY.TYPE)}, 'data', allow_duplicate=True),
@@ -217,6 +217,74 @@ class panel():
             else:
                 raise PreventUpdate
 
+        @callback(
+            [
+                Output({"index": cls.index, "type": suffix_for_type(ids.LOAN.AMOUNT, ids.LOAN.TYPE)}, "label"),
+                Output({"index": cls.index, "type": ids.LOAN.DOWNPAYMENT}, "label"),
+                Output({"index": cls.index, "type": 'title_for_tenure'}, "children"),
+                Output({"index": cls.index, "type": suffix_for_type(ids.LOAN.GRACE, ids.LOAN.TYPE)}, "label"),
+                Output({"index": cls.index, "type": ids.LOAN.DATE}, "label"),
+                Output({"index": cls.index, "type": ids.LOAN.DATE}, "description"),
+                Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.DROPDOWN.OPTIONS, ids.LOAN.TYPE)}, "label"),
+                Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.DROPDOWN.BUTTON, ids.LOAN.TYPE)}, "children"),
+                Output({"index": cls.index, "type": suffix_for_type('title_for_interest_rate', ids.LOAN.TYPE)}, "children"),
+                Output({"index": cls.index, "type": 'title_for_prepay'}, "children"),
+                Output('Reset', 'children'),
+                Output({"index": cls.index, "type": suffix_for_type('label_for_start_point_of_subsidy', ids.LOAN.SUBSIDY.TYPE)}, "children"),
+                Output({"index": cls.index, "type": suffix_for_type('label_for_amount_of_subsidy', ids.LOAN.SUBSIDY.TYPE)}, "children"),
+                Output({"index": cls.index, "type": suffix_for_type('label_for_tenure_of_subsidy', ids.LOAN.SUBSIDY.TYPE)}, "children"),
+                Output({"index": cls.index, "type": suffix_for_type('label_for_grace_period_of_subsidy', ids.LOAN.SUBSIDY.TYPE)}, "children"),
+                Output(ids.LOAN.SUBSIDY.PREPAY.OPTION, "label"),
+                Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.DROPDOWN.OPTIONS, ids.LOAN.SUBSIDY.TYPE)}, "label"),
+                Output({"index": cls.index, "type": suffix_for_type('title_for_interest_rate', ids.LOAN.SUBSIDY.TYPE)}, "children"),
+            ],
+            Input("language-switch", "checked"),
+        )
+        def switch_language(checked):
+            if checked:
+                return [
+                    lan['tw']['controls']['components']['mortgage_amount'],
+                    lan['tw']['controls']['components']['down_payment_rate'],
+                    lan['tw']['controls']['components']['tenure'],
+                    lan['tw']['controls']['components']['grace_period'],
+                    lan['tw']['controls']['components']['select_date'],
+                    lan['tw']['controls']['components']['the_start_time_of_the_repayment'],
+                    lan['tw']['controls']['widgets']['repayment_methods'],
+                    lan['tw']['controls']['widgets']['refresh'],
+                    lan['tw']['controls']['components']['interest_rate'],
+                    lan['tw']['controls']['components']['prepay_arrangement'],
+                    lan['tw']['controls']['components']['reset'],
+                    lan['tw']['controls']['components']['start_timepoint'],
+                    lan['tw']['controls']['components']['subsidy_amount'],
+                    lan['tw']['controls']['components']['subsidy_tenure'],
+                    lan['tw']['controls']['components']['subsidy_grace_period'],
+                    lan['tw']['controls']['components']['subsidy_prepayment'],
+                    lan['tw']['controls']['widgets']['repayment_methods'],
+                    lan['tw']['controls']['components']['interest_rate'],
+                ]
+
+            else:
+                return [
+                    lan['en']['controls']['components']['mortgage_amount'],
+                    lan['en']['controls']['components']['down_payment_rate'],
+                    lan['en']['controls']['components']['tenure'],
+                    lan['en']['controls']['components']['grace_period'],
+                    lan['en']['controls']['components']['select_date'],
+                    lan['en']['controls']['components']['the_start_time_of_the_repayment'],
+                    lan['en']['controls']['widgets']['repayment_methods'],
+                    lan['en']['controls']['widgets']['refresh'],
+                    lan['en']['controls']['components']['interest_rate'],
+                    lan['en']['controls']['components']['prepay_arrangement'],
+                    lan['en']['controls']['components']['reset'],
+                    lan['en']['controls']['components']['start_timepoint'],
+                    lan['en']['controls']['components']['subsidy_amount'],
+                    lan['en']['controls']['components']['subsidy_tenure'],
+                    lan['en']['controls']['components']['subsidy_grace_period'],
+                    lan['en']['controls']['components']['subsidy_prepayment'],
+                    lan['en']['controls']['widgets']['repayment_methods'],
+                    lan['en']['controls']['components']['interest_rate'],
+
+                ]
         return layout
     
     

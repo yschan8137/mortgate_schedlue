@@ -1,16 +1,15 @@
 # This file is for the tailor-made widgets for controls including OPTIONS dropdown, addon function for generating a dict for the combined input of payment arrangement.
 from dash import Dash
-from dash import dcc, html, Input, Output, State, callback_context, MATCH, ALL, ALLSMALLER, Patch, callback
+from dash import dcc, html, Input, Output, State, callback_context, MATCH, ALL, Patch, callback
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
-import i18n
 
+from app import amortization_methods
+from app.assets.locale import lan
 from app.src.toolkit import to_dropdown_options, suffix_for_type
 from app.assets.ids import *
-from app.src import amortization_types
-import json
 
 
 # Addons function for the payment arrangement.
@@ -57,14 +56,13 @@ def addon(
                 children= [
                     dmc.Select(
                                 data= [],
-                                id={"index": index, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)},
+                                id= {"index": index, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)},
                                 disabled=disabled,
-                                # size= 'md',
                                 style= {
                                     'width': '35%',
                                 },
                                 clearable= True,
-                                placeholder= i18n.t('controls.widgets.time'),
+                                placeholder= lan['en']['controls']['widgets']['time'],
                     ),
                     dmc.NumberInput(
                        id= {"index": index, "type": suffix_for_type(ADDON.INPUT, type)},
@@ -274,13 +272,10 @@ def new_checklist_item(triggered_index, type, result):
 def refreshable_dropdown(
         label: str,
         # ['prepay', 'subsidy'] Consider the case of duplicate ids.
-        type: str = i18n.t('controls.widgets.prepay'),
-        placeholder: str = i18n.t('controls.widgets.choose_methods_of_the_payment'),
-        value: list = [*amortization_types],
-        options: dict = amortization_types,
-        disabled: bool = False,
+        type: str = lan['en']['controls']['widgets']['prepay'], 
+        value: list = [*amortization_methods],
+        options: dict = amortization_methods,
         index= "",
-        width= 280,
         **kwargs
 ):
     """
@@ -293,20 +288,27 @@ def refreshable_dropdown(
             html.Div(
                 [
                     dmc.MultiSelect(
-                        label= i18n.t('controls.widgets.repayment_methods'),
-                        id={"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type)},
-                        placeholder= i18n.t('controls.widgets.select_method_for_repayment'),
+                        label= lan['en']['controls']['widgets']['repayment_methods'], 
+                        id= {"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type)},
+                        placeholder= lan['en']['controls']['widgets']['select_method_for_repayment'],
                         value= value,
                         data=[*options],
                         size= 'sm',
                         style={
-                            # "width": '100%', 
                             "marginBottom": 5,
+                        },
+                        styles= {
+                            'label': {
+                                'font-weight': 'bold',
+                                'font-size': 16,
+                                'margin-bottom': 5,
+                                'margin-top': 5
+                            },
                         },
                     ),
                     dmc.Button(
-                        children= i18n.t('controls.widgets.refresh'),
-                        id={"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.BUTTON, type)},
+                        children= lan['en']['controls']['widgets']['refresh'],
+                        id= {"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.BUTTON, type)},
                         variant="gradient",
                         gradient={"from": "teal", "to": "blue", "deg": 60},
                         n_clicks= 0,

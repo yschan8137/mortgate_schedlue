@@ -1,5 +1,4 @@
 import pandas as pd
-from itertools import product
 
 # Convert to form of the options in dcc.dropdown
 def to_dropdown_options(values: list[str]) -> list[dict[str, str]]:

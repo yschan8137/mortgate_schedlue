@@ -6,7 +6,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import dash_mantine_components as dmc
 from plotly.subplots import make_subplots
-import i18n
 
 import sys
 sys.path.append('./')
@@ -136,7 +135,7 @@ def graph():
         ],
         style={
             'width': '100%',
-            'height': '95dvh',
+            'height': '90dvh',
         },
         className= 'custom-scrollbar',
     )

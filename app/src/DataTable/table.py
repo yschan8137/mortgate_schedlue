@@ -1,9 +1,7 @@
 import math
 from dash import Dash, html, Input, Output, callback
 import dash_mantine_components as dmc
-import time
 from itertools import groupby
-import i18n
 
 from app.assets.ids import LOAN, DATATABLE
 from Loan import df_schema
@@ -158,7 +156,7 @@ def table():
                     transitionDuration= 0.5,
                 )
             ],
-            
+            className= 'custom-section',
         ),
         style= {
             'height': '100%',
