@@ -50,6 +50,7 @@ class panel():
             Output('cache', 'data'),
             Input(ids.LOAN.RESULT.KWARGS, 'data'),
             State('cache', 'data'),
+            prevent_initial_call=True
             )
         def update_data_frame(
             kwargs, 
@@ -123,7 +124,6 @@ class panel():
             ):
             patched_memory= Patch()
             if isinstance(triggered_id := callback_context.triggered_id, dict):
-                print('000000', triggered_id['type'])
                 if triggered_id['type'] == suffix_for_type(ids.LOAN.AMOUNT, ids.LOAN.TYPE):
                     patched_memory['total_amount'] = (total_amount if total_amount else 0)
                 elif triggered_id['type'] == ids.LOAN.DOWNPAYMENT:
@@ -237,8 +237,11 @@ class panel():
                 Output(ids.LOAN.SUBSIDY.PREPAY.OPTION, "label"),
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.DROPDOWN.OPTIONS, ids.LOAN.SUBSIDY.TYPE)}, "label"),
                 Output({"index": cls.index, "type": suffix_for_type('title_for_interest_rate', ids.LOAN.SUBSIDY.TYPE)}, "children"),
+                Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.TOGGLE.BUTTON, ids.LOAN.TYPE)}, 'data'),
+                Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.TOGGLE.BUTTON, ids.LOAN.SUBSIDY.TYPE)}, 'data'),
             ],
             Input("language-switch", "checked"),
+            prevent_initial_call=True
         )
         def switch_language(checked):
             if checked:
@@ -261,6 +264,14 @@ class panel():
                     lan['tw']['controls']['components']['subsidy_prepayment'],
                     lan['tw']['controls']['widgets']['repayment_methods'],
                     lan['tw']['controls']['components']['interest_rate'],
+                    [
+                        {"value": "fixed", "label": lan['tw']['controls']['components']['segmentcontrol']['fixed']},
+                        {"value": "multiple", "label": lan['tw']['controls']['components']['segmentcontrol']['multi_stages']},
+                    ],
+                    [
+                        {"value": "fixed", "label": lan['tw']['controls']['components']['segmentcontrol']['fixed']},
+                        {"value": "multiple", "label": lan['tw']['controls']['components']['segmentcontrol']['multi_stages']},
+                    ]
                 ]
 
             else:
@@ -283,6 +294,14 @@ class panel():
                     lan['en']['controls']['components']['subsidy_prepayment'],
                     lan['en']['controls']['widgets']['repayment_methods'],
                     lan['en']['controls']['components']['interest_rate'],
+                    [
+                        {"value": "fixed", "label": lan['en']['controls']['components']['segmentcontrol']['fixed']},
+                        {"value": "multiple", "label": lan['en']['controls']['components']['segmentcontrol']['multi_stages']},
+                    ],
+                    [
+                        {"value": "fixed", "label": lan['en']['controls']['components']['segmentcontrol']['fixed']},
+                        {"value": "multiple", "label": lan['en']['controls']['components']['segmentcontrol']['multi_stages']},
+                    ]
 
                 ]
         return layout
@@ -302,16 +321,17 @@ class panel():
                         cls.mortgage.grace(),
                         cls.mortgage.start_date(),
                         cls.mortgage.repayment_methods(),
+                        cls.advanced.prepayment(),
                     ],
                     style= {
-                        'width': '80%',
-                        'margin-left': '10%',
-                        'margin-right': '10%',
+                        'width': '85%',
+                        'height': 'auto',
+                        'margin-left': 'auto',
+                        'margin-right': 'auto',
                     },
                     className= 'custom-scrollbar',
                 )
         # cls.synchronize(index)
-
         return layout
 
     @classmethod
@@ -330,19 +350,19 @@ class panel():
                             },
                         } for title, children, icon in zip(
                             [
-                                ids.LOAN.PREPAY.TYPE, 
+                                # ids.LOAN.PREPAY.TYPE, 
                                 ids.LOAN.SUBSIDY.TYPE
                             ],
                             [
-                                cls.advanced.prepayment(), 
+                                # cls.advanced.prepayment(), 
                                 cls.advanced.subsidy()
                             ],
                             [
-                                DashIconify(
-                                    icon="streamline:money-cash-coins-stack-accounting-billing-payment-stack-cash-coins-currency-money-finance",
-                                    color=dmc.theme.DEFAULT_COLORS["blue"][6],
+                                # DashIconify(
+                                    # icon="streamline:money-cash-coins-stack-accounting-billing-payment-stack-cash-coins-currency-money-finance",
+                                    # color=dmc.theme.DEFAULT_COLORS["blue"][6],
                                 
-                                ),
+                                # ),
                                 DashIconify(
                                     icon="tabler:user",
                                     color=dmc.theme.DEFAULT_COLORS["red"][6],
@@ -352,8 +372,6 @@ class panel():
                     ]
                 )
             ],
-            style= {
-            },
             className= 'custom-scrollbar',
         )
 

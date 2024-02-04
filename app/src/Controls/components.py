@@ -100,7 +100,13 @@ class MortgageOptions:
                     lan['en']['controls']['components']['tenure'],
                     id= {"index": cls.index, "type": 'title_for_tenure'},
                     order= 4,
-                    className= 'mb-2',
+                    style= {
+                        'font-weight': 'bold',
+                        'font-size': '16px',
+                        'margin-bottom': 5,
+                        'margin-top': 5,
+                    },
+                    # className= 'mb-2, mt-2',
                 ),
                 dmc.Slider(
                     id= {"index": cls.index, "type": ids.LOAN.TENURE},
@@ -192,7 +198,13 @@ class MortgageOptions:
                              index= cls.index,
                              value= cls.kwargs_schema['method'],
                          )
-                     ]
+                     ],
+                     style= {
+                        'font-weight': 'bold',
+                        'font-size': '16px',
+                        'margin-top': 5,
+                        'margin-bottom': 5,
+                     }
                  )
         return layout
 
@@ -209,6 +221,12 @@ class MortgageOptions:
                     id= {"index": cls.index, "type": suffix_for_type('title_for_interest_rate', type)},
                     children= lan['en']['controls']['components']['interest_rate'],
                     order= 4,
+                    style= {
+                        'font-weight': 'bold',
+                        'font-size': '16px',
+                        'margin-bottom': 5,
+                        'margin-top': 5,
+                    },
                 ),
                 html.Div(
                     [
@@ -217,8 +235,8 @@ class MortgageOptions:
                                 id= {"index": cls.index, "type": suffix_for_type(ids.ADVANCED.TOGGLE.BUTTON, type)},
                                 value="fixed",
                                 data=[
-                                    {"value": "fixed", "label": "Fixed"},
-                                    {"value": "multiple", "label": "Multistages"},
+                                    {"value": "fixed", "label": lan['en']['controls']['components']['segmentcontrol']['fixed']},
+                                    {"value": "multiple", "label": lan['en']['controls']['components']['segmentcontrol']['multi_stages']},
                                 ],
                                 color= 'purple',
                                 radius= 4,
@@ -327,7 +345,6 @@ class AdvancedOptions(MortgageOptions):
                                     },
                                 ),
                                 dmc.AccordionPanel(children),
-
                             ],
                             value= title,
                             id='accordion-{}'.format(title),
@@ -336,6 +353,7 @@ class AdvancedOptions(MortgageOptions):
                                 'justify-content': 'left',
                                 'width': '100%',
                             },
+                            className= 'custom-scrollbar',
                         ) for title, children, icon, name in zip(titles, childrens, icon, name)
                     ],
                     style=style,
@@ -355,7 +373,12 @@ class AdvancedOptions(MortgageOptions):
                     lan['en']['controls']['components']['prepay_arrangement'],
                     id= {"index": cls.index, "type": 'title_for_prepay'},
                     order= 4,
-                    className= 'mb-2',
+                    style= {
+                        'font-weight': 'bold',
+                        'font-size': '16px',
+                        'margin-bottom': 5,
+                        'margin-top': 5,
+                    },
                 ),
                 addon(
                     type=type,
@@ -387,6 +410,10 @@ class AdvancedOptions(MortgageOptions):
                             variant= specs.COMPONENTS.ADVANCEDOPTIONS.SUBSIDY.VARIANT,
                             gradient= specs.COMPONENTS.ADVANCEDOPTIONS.SUBSIDY.GRADIENT,
                             n_clicks= 0,
+                            style= {
+                                'margin-bottom': 5,
+                                'margin-top': 5,
+                            },
                         )
                     ]
                 ),
@@ -396,7 +423,13 @@ class AdvancedOptions(MortgageOptions):
                             lan['en']['controls']['components']['start_timepoint'],
                             id= {"index": cls.index, "type": suffix_for_type('label_for_start_point_of_subsidy', type)},
                             order= 4,
-                            className= 'mb-2',
+                            style= {
+                                'font-weight': 'bold',
+                                'font-size': '16px',
+                                'margin-bottom': 5,
+                                'margin-top': 5,
+                            },
+                            # className= 'mb-2, mt-2',
                         ),
                         dbc.Input(
                             id=ids.LOAN.SUBSIDY.START,
@@ -414,7 +447,13 @@ class AdvancedOptions(MortgageOptions):
                             lan['en']['controls']['components']['subsidy_amount'],
                             id= {"index": cls.index, "type": suffix_for_type('label_for_amount_of_subsidy', type)},
                             order= 4,
-                            className= 'mb-2',
+                            style= {
+                                'font-weight': 'bold',
+                                'font-size': '16px',
+                                'margin-bottom': 5,
+                                'margin-top': 5,
+                            },
+                            # className= 'mb-2, mt-2',
                         ),  # 優惠貸款金額
                         dbc.Input(
                             id={"index": cls.index ,"type": suffix_for_type(ids.LOAN.AMOUNT, type)},
@@ -431,7 +470,13 @@ class AdvancedOptions(MortgageOptions):
                             lan['en']['controls']['components']['subsidy_tenure'],
                             id= {"index": cls.index, "type": suffix_for_type('label_for_tenure_of_subsidy', type)},
                             order= 4,
-                            className= 'mb-2',
+                            style= {
+                                'font-weight': 'bold',
+                                'font-size': '16px',
+                                'margin-bottom': 5,
+                                'margin-top': 5,
+                            },
+                            # className= 'mb-2, mt-2',
                         ),
                         dbc.Input(
                             id=ids.LOAN.SUBSIDY.TENURE,
@@ -452,7 +497,12 @@ class AdvancedOptions(MortgageOptions):
                             lan['en']['controls']['components']['subsidy_grace_period'],
                             id= {"index": cls.index, "type": suffix_for_type('label_for_grace_period_of_subsidy', type)},
                             order= 4,
-                            className= 'mb-2',
+                            style= {
+                                'font-weight': 'bold',
+                                'font-size': '16px',
+                                'margin-bottom': 5,
+                                'margin-top': 5,
+                            },
                         ),
                         dbc.Input(
                             id={"index": cls.index, "type": suffix_for_type(ids.LOAN.GRACE, type)},
@@ -503,7 +553,15 @@ class AdvancedOptions(MortgageOptions):
                     ],
                 ),
             ],
-            style= specs.COMPONENTS.ADVANCEDOPTIONS.STYLE,
+            style= {
+                'width': '100%',
+                'display': 'flex',
+                'flex-direction': 'column',
+                'background-color': 'transparent',
+                'align-items': 'left',
+                'margin-top': 10,
+                'margin-bottom': 10,
+            },
         )
 
         @callback(

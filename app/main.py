@@ -65,7 +65,7 @@ panel_tabs= dmc.Tabs(
                           },
                         ),
                     dmc.Tab(
-                        children= 'Advanced',
+                        children= 'Subsidy',
                         id= 'advanced-options',
                         value= 'Advanced',
                         icon=DashIconify(icon="tabler:settings"),
@@ -78,30 +78,39 @@ panel_tabs= dmc.Tabs(
             ),
             dmc.TabsPanel(
                 html.Div(
-                    panel.front(),
+                    [
+                        panel.front(),
+                    ],
                     className= 'custom-scrollbar',
                     style= {
                         'width': '100%',
-                        'height': '80dvh',
+                        'height': '85dvh',
                         'overflow-y': 'auto',
                         'color': '#333',
                         'background-color': 'white',
+                        'padding': '5px 5px 5px 5px',
+                        'justify-content': 'center',
+                        'align-items': 'center',
                     },
                 ), 
                 value= 'Main'
             ),
             dmc.TabsPanel(
                 html.Div(
-                    panel._advancedoptions(),
-                    className= 'custom-scrollbar',
+                    # panel._advancedoptions(),
+                    panel.advanced.subsidy(),
                     style= {
-                        'width': '100%',
-                        'height': '80dvh',
-                        'overflow-y': 'auto',
+                        'width': '83%',
+                        'height': '85dvh',
                         'color': '#333',
                         'background-color': 'white',
+                        'padding': '5px 5px 5px 5px',
+                        'justify-content': 'center',
+                        'align-items': 'center',
+                        'margin': 'auto',
                     },
-                ), 
+                ),
+                className= 'custom-scrollbar', 
                 value= 'Advanced',
             ),
         ],
@@ -151,80 +160,99 @@ app.layout = dmc.MantineProvider(
                 ),
                 html.Div(
                     [
-                        dmc.Modal(
-                            title="Details",
-                            id="show-table",
-                            centered=True,
-                            zIndex=10000,
-                            size= "100%",
-                            overlayOpacity= 0.5,
-                            overlayBlur= 5,
-                            withCloseButton= True,
-                            children=[dataframe.table()],
-                            lockScroll= False,
-                            style= {
-                                'height': '98dvh',
-                                'font-size': '20px',
-                                'font-weight': 'bold',
-                                'color': '#333',
-                                'overflow-y': 'auto',
-                                'overflow-x': 'auto',
-                                'radius': '5px',
-                            },
-                        ),
                         html.Div(
-                            children= [
-                                panel_tabs,
-                            ],
-                            className= 'custom-scrollbar',
+                            html.Div(
+                                children= [
+                                    panel_tabs,
+                                ],
+                                style= {
+                                    'width': 'auto',
+                                    'height': 'auto',
+                                    'border': '1px solid #ccc',
+                                    'border-radius': '10px',
+                                    'font-size': '20px',
+                                    'font-weight': 'bold',
+                                    'color': '#333',
+                                    'background-color': 'white',
+                                    'margin-bottom': 5,
+                                },
+                            ),
                             style= {
                                 'width': '25dvw',
-                                'height': '90dvh',
-                                'border': '1px solid #ccc',
-                                'border-radius': '5px',
-                                'font-size': '20px',
-                                'font-weight': 'bold',
-                                'color': '#333',
-                                'background-color': 'white',
-                                'overflow-y': 'hidden', # [auto, hidden, scroll, visible]
+                                'height': '100dvh',
+                                'overflow-y': 'scroll',
+                                'overflow-x': 'hidden',
                             },
+                            className= 'custom-scrollbar',
                         ),
                         html.Div(
                             [
-                                graph(),
+                                dmc.Modal(
+                                    title="Details",
+                                    id="show-table",
+                                    centered=True,
+                                    zIndex=10000,
+                                    size= "100%",
+                                    overlayOpacity= 0.5,
+                                    overlayBlur= 5,
+                                    withCloseButton= True,
+                                    children=[dataframe.table()],
+                                    lockScroll= False,
+                                    style= {
+                                        'height': '98dvh',
+                                        'font-size': '20px',
+                                        'font-weight': 'bold',
+                                        'color': '#333',
+                                        'overflow-y': 'auto',
+                                        'overflow-x': 'auto',
+                                        'radius': '5px',
+                                    },
+                                ),
+                                html.Div(
+                                    [
+                                        graph(),
+                                    ],
+                                    className= 'custom-scrollbar',
+                                    style= {
+                                        'width': 'auto',
+                                        'height': '95dvh',
+                                        'overflow-y': 'hidden',
+                                        'overflow-y': 'auto',
+                                        'margin-left': 15,
+                                    }
+                                )
                             ],
-                            className= 'custom-scrollbar',
                             style= {
-                                'width': '90dvw',
+                                'width': '75dvw',
                                 'height': '95dvh',
                                 'overflow-y': 'hidden',
-                                'scrollbar-color': '#0C82DF #E2E2E2',
-                                'overflow-y': 'auto',
+                                'overflow-x': 'hidden',
                                 'margin-left': 20,
-                            }
-                        )
+                            },
+                            className= 'custom-scrollbar',
+                        ),
                     ],
                     style= {
                     'display': 'flex',
                     'flex-direction': 'row',
-                    'justify-content': 'space-between',
+                    # 'justify-content': 'space-between',
                     'align-items': 'flex-start',
-                    'padding-left': 20,
-                    'padding-right': 20,
-                    'margin': 'auto',
-                    'overflow-y': 'hidden', # [auto, hidden, scroll, visible]
+                    'padding-left': 5,
+                    'padding-right': 5,
+                    'margin': 10,
+                    'overflow-y': 'auto', # [auto, hidden, scroll, visible]
                     'overflow-x': 'hidden',
                     },
-                    className= 'custom-section',
+                    className= 'custom-scrollbar',
                 ),
             ],
             fluid= True,
             style= {
                 'background-color': 'rgba(246,248,250,255)',
                 'width': '100vw',
-                'height': '100vh',
+                'height': '100dvh',
                 'margin': 'auto',
-                'overflow-y': 'auto', # [auto, hidden, scroll, visible]
+                'overflow-y': 'hidden', # [auto, hidden, scroll, visible]
                 'overflow-x': 'hidden',
             },
             className= 'custom-section',

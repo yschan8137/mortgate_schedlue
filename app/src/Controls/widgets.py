@@ -111,7 +111,7 @@ def addon(
                         children= [dbc.CardBody(id= {"index": index, "type": suffix_for_type(ADDON.NEW, type)})],
                         style= {
                             'width': '100%',
-                            'height': '150px',
+                            'height': 'auto',
                         },
                         className= 'custom-scrollbar',
                     )
@@ -147,17 +147,18 @@ def addon(
 ##4 callback for add button.
     @callback(
         [
-            Output({"index": MATCH, "type": suffix_for_type(ADDON.NEW, type)}, 'children', allow_duplicate= True),
-            Output({"index": MATCH, "type": suffix_for_type(ADDON.INPUT, type)}, 'value', allow_duplicate= True),
-            Output({"index": MATCH, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)}, 'value', allow_duplicate= True),
-            Output({"index": MATCH, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data', allow_duplicate= True),
+            Output({"index": index, "type": suffix_for_type(ADDON.NEW, type)}, 'children', allow_duplicate= True),
+            Output({"index": index, "type": suffix_for_type(ADDON.INPUT, type)}, 'value', allow_duplicate= True),
+            Output({"index": index, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)}, 'value', allow_duplicate= True),
+            Output({"index": index, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data', allow_duplicate= True),
         ],
-        Input({"index": MATCH, "type": suffix_for_type(ADDON.ADD, type)}, 'n_clicks'),
+        Input({"index": index, "type": suffix_for_type(ADDON.ADD, type)}, 'n_clicks'),
         [
-            State({"index": MATCH, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)}, 'value'),
-            State({"index": MATCH, "type": suffix_for_type(ADDON.INPUT, type)}, 'value'),
-            State({"index": MATCH, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
+            State({"index": index, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)}, 'value'),
+            State({"index": index, "type": suffix_for_type(ADDON.INPUT, type)}, 'value'),
+            State({"index": index, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
         ],
+        Input({'index': ALL, 'type': suffix_for_type('done', type)}, 'checked'),
         prevent_initial_call=True
     )
     def add_items(
@@ -165,38 +166,18 @@ def addon(
         selected_time,
         current_input,
         memory,
+        checked
     ):
         patched_item = Patch()
         if selected_time and current_input:
             memory[str(selected_time)] = float(current_input)
-            sorted_memory= {}
-            for k in [str(sorted_key) for sorted_key in sorted([int(key) for key in [v for v in memory.keys()]])]: 
-                sorted_memory[k]= memory[k]
-            patched_item= [new_checklist_item(_, type= type, result= {k: v}) for (k, v) in sorted_memory.items()]
-            return patched_item, 0, 0, memory
-        else:
-            raise PreventUpdate
+        checked_items= {k[0]: (f'{round(k[1]):,}', v) for k, v in zip(memory.items(), checked + [False])}
+        sorted_memory= dict(sorted(checked_items.items(), key= lambda x: int(x[0])))
+        patched_item= [new_checklist_item(_, type= type, result= {k: v[0]}, checked= v[1]) for (k, v) in sorted_memory.items()]
+        return patched_item, 0, 0, memory
         
-    # mark the done items
-    @callback(
-        Output({"index": MATCH, "type": suffix_for_type('done', type)}, "styles"),
-        Input({"index": MATCH, "type": suffix_for_type('done', type)}, "checked"),
-    )
-    def mark_done(state):
-        if state:
-            styles = {
-                'label': {
-                    'fontSize': 18,
-                    'text-decoration': 'line-through',
-                    'text-decoration-color': '#888',
-                    'color': '#888',
-                },
-            }
-            return styles#[styles if do else {'label': {'fontSize': 18}} for do in state]
-        else:
-            raise PreventUpdate
-
 ##5 callback for delete button
+    # 次序有問題
     @callback(
         Output({"index": index, "type": suffix_for_type(ADDON.NEW, type)}, 'children', allow_duplicate= True),
         Output({"index": index, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
@@ -207,13 +188,16 @@ def addon(
     )
     def delete_items(
         _, 
-        state, 
+        checked, 
         memory, 
         ):
         values_to_remove = []
         patched_item = Patch()
+        print('checked:', checked)
         if memory:
-            for i, value in enumerate([s for s in state if s]): # Errors occurred when multiple components were deployed and "None" were added in the state list. To address this problem, I filtered the state list to remove all instances of "None" and only kept the instances of "done".  
+            for i, value in enumerate(checked): 
+            # Errors occurred when multiple components were deployed and "None" were added in the state list. 
+            # To address this problem, I filtered the state list to remove all instances of "None" and only kept the instances of "done".  
                 if value:
                     values_to_remove.insert(0, i)
             for i in values_to_remove:
@@ -234,11 +218,10 @@ def addon(
             return False
         else:
             return True
-
     return layout
 
 
-def new_checklist_item(triggered_index, type, result):
+def new_checklist_item(triggered_index, type, result, checked= False):
     return html.Div(
         [
             dmc.Checkbox(
@@ -251,19 +234,26 @@ def new_checklist_item(triggered_index, type, result):
                      if len(c := [*result.keys()][-1]) == 1 
                      else ('st' if c[-1] == '1' else ('nd' if c[-1] == '2' else ('rd' if c[-1] == '3' else 'th')))
                 ),
+                checked= checked,
                 style= {
                     'display': 'inline-block',
+                    'height': 'auto',
                 },
                 styles= {
-                    'label': {
-                        'fontSize': 18,
-                    },
+                    'label': (
+                        {
+                            'font-size': '16px'} if not checked else {
+                                'text-decoration': 'line-through',
+                                'font-size': '16px',
+                                'color': 'grey'
+                        }
+                    ),
                 },
-                size= 'sm',
             ),
         ],
         style={
-            'display': 'inline-block',
+            'height': 'auto',
+            'margin-bottom': '5px', 
         }
     )
 

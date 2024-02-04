@@ -24,6 +24,10 @@ lan= {
                 'subsidy_payment_methods': 'Subsidy Payment methods',
                 'grace_period_description': 'Term of grace period',
                 'subsidy_prepayment': 'Prepayment',
+                'segmentcontrol': {
+                    'fixed': 'Fixed',
+                    'multi_stages': 'Multistages'
+                } 
             },
             'widgets': {
                 'time': 'Time',
@@ -66,6 +70,10 @@ lan= {
                 'subsidy_grace_period': '補貼寬限期',
                 # 'subsidy_payment_methods': '補貼還款方式',
                 'subsidy_prepayment': '提前還款',
+                'segmentcontrol': {
+                    'fixed': '單一利率',
+                    'multi_stages': '多段利率',
+                } 
             },
             'widgets': {
                 'time': '時間',
