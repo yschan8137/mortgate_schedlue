@@ -1,10 +1,9 @@
-from dash import Dash, html, dcc, Input, Output, State, callback, Patch, callback_context, no_update
+from dash import Dash, html, dcc, Input, Output, State, callback, MATCH, Patch, callback_context, no_update
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 from dataclasses import dataclass
-
 
 from app.assets import ids, specs
 from app.assets.locale import lan
@@ -12,8 +11,9 @@ from app.src.Controls.components import MortgageOptions, AdvancedOptions
 from app.src.Controls.widgets import new_checklist_item
 from app.src.toolkit import suffix_for_type
 from Loan.main import calculator
+from app.src.DataTable import table as dataframe
+from app.src.Graphic.main import graph
         
-
 @dataclass
 class panel():
     index= ids.APP.INDEX.HOME
@@ -22,6 +22,7 @@ class panel():
     kwargs_schema= mortgage.kwargs_schema
     mortgage.update(index= index)
     advanced.update(index= index)
+    
     @classmethod
     def register(cls):
         """
@@ -49,34 +50,45 @@ class panel():
             Output(ids.LOAN.RESULT.DATAFRAME, 'data'),
             Output('cache', 'data'),
             Input(ids.LOAN.RESULT.KWARGS, 'data'),
+            Input({'index': cls.index, 'type': 'locale-config'}, 'data'),
             State('cache', 'data'),
             prevent_initial_call=True
             )
         def update_data_frame(
             kwargs, 
+            locale,
             cache,
             ):
             patched_memory= Patch()
-            if kwargs== cache:
-                raise PreventUpdate()
+            """
+            轉成繁體會導致information-dashboard無法顯示，轉換回英文兩個圖都無法顯示。
+            須找出kwargs及checked平行觸發的條件
+            """
+            ctx= callback_context.triggered_id
+            kwargs_apart_from_subsudy = {k: v for (k, v) in kwargs.items() if k != 'subsidy_arr'}  
+            if isinstance(ctx, dict) and ctx['type'] == 'locale-config':
+                patched_memory['data'] = calculator(**kwargs, thousand_sep= False, locale= locale)
+                return patched_memory, no_update
             else:
-                condition_1 = ((subsidy_start:= kwargs['subsidy_arr']['start'] > 0) and subsidy_start <= 24)
-                condition_2 = (kwargs['subsidy_arr']['amount'] > 0)
-                condition_3 = (kwargs['subsidy_arr']['tenure'] > 0) 
-                condition_4 = (len([c for c in kwargs['subsidy_arr']['interest_arr']['interest'] if c]) > 0)
-                kwargs_apart_from_subsudy = {k: v for (k, v) in kwargs.items() if k != 'subsidy_arr'}    
-                if (condition_1 or condition_2 or condition_3 or condition_4):
-                    if (condition_1 and condition_2 and condition_3 and condition_4):
-                        patched_memory['data'] = calculator(**kwargs, thousand_sep= False)
-                        return patched_memory, no_update
+                if kwargs== cache:
+                    raise PreventUpdate()
+                else:                
+                    condition_1 = ((subsidy_start:= kwargs['subsidy_arr']['start'] > 0) and subsidy_start <= 24)
+                    condition_2 = (kwargs['subsidy_arr']['amount'] > 0)
+                    condition_3 = (kwargs['subsidy_arr']['tenure'] > 0) 
+                    condition_4 = (len([c for c in kwargs['subsidy_arr']['interest_arr']['interest'] if c]) > 0)
+                    if (condition_1 or condition_2 or condition_3 or condition_4):
+                        if (condition_1 and condition_2 and condition_3 and condition_4):
+                            patched_memory['data'] = calculator(**kwargs, thousand_sep= False, locale= locale)
+                            return patched_memory, no_update
+                        else:
+                            raise PreventUpdate()
                     else:
-                        raise PreventUpdate()
-                else:
-                    if len(cache)> 0 and (kwargs['subsidy_arr']['method'] != cache['subsidy_arr']['method']):
-                            return no_update, kwargs        
-                    else:
-                        patched_memory['data'] = calculator(**kwargs_apart_from_subsudy, thousand_sep= False)
-                        return patched_memory, kwargs
+                        if len(cache)> 0 and (kwargs['subsidy_arr']['method'] != cache['subsidy_arr']['method']):
+                                return no_update, kwargs        
+                        else:
+                            patched_memory['data'] = calculator(**kwargs_apart_from_subsudy, thousand_sep= False, locale= locale)
+                            return patched_memory, kwargs
                 
     
         @callback(
@@ -143,8 +155,6 @@ class panel():
                         patched_memory['interest_arr']['interest']= [interest]
                         patched_memory['interest_arr']['time']= []
                 elif triggered_id['type'] == suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.TYPE):
-                        print('111111', interest_arr)
-
                         patched_memory['interest_arr']['interest']= [interest, *interest_arr.values()]
                         patched_memory['interest_arr']['time']= [int(v) for v in interest_arr.keys()]
                 elif triggered_id['type'] == suffix_for_type(ids.ADDON.MEMORY, ids.LOAN.PREPAY.TYPE):
@@ -192,8 +202,8 @@ class panel():
                         },
                     }  
             return patched_memory
-        
-        
+
+# reset inputs for subsidy loan.
         @callback(
             [
                 Output({"index": cls.index, "type": suffix_for_type(ids.LOAN.AMOUNT, ids.LOAN.SUBSIDY.TYPE)}, 'value', allow_duplicate=True),
@@ -216,7 +226,42 @@ class panel():
                 return [0, 0, 0, 0, 0, {}, {}, [], []]
             else:
                 raise PreventUpdate
-
+        return layout
+    
+    @classmethod
+    def locale_controller(cls):
+        layout= html.Div(
+            [
+                dmc.Switch(
+                    id= {'index': cls.index, 'type': "language-switch"},
+                    offLabel= "EN",
+                    onLabel= "繁",
+                    size="lg",
+                    checked= False, 
+                    color= "indigo",
+                    style= {
+                        'margin-left': '95%',
+                        'margin-top': 5,
+                        'margin-bottom': 5,
+                    },
+                ),
+                dcc.Store(
+                    id= {'index': cls.index, 'type': 'locale-config'},
+                    data= 'en'
+                )
+            ]
+        )
+        @callback(
+                Output({'index': MATCH, 'type': 'locale-config'}, 'data'),
+                Input({'index': MATCH, 'type': 'language-switch'}, 'checked'),
+        )
+        def update_locale_config(checked):
+            if checked== 1:
+                locale= 'zh_TW'
+            else:
+                locale= 'en'
+            return locale
+        
         @callback(
             [
                 Output({"index": cls.index, "type": suffix_for_type(ids.LOAN.AMOUNT, ids.LOAN.TYPE)}, "label"),
@@ -239,71 +284,47 @@ class panel():
                 Output({"index": cls.index, "type": suffix_for_type('title_for_interest_rate', ids.LOAN.SUBSIDY.TYPE)}, "children"),
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.TOGGLE.BUTTON, ids.LOAN.TYPE)}, 'data'),
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.TOGGLE.BUTTON, ids.LOAN.SUBSIDY.TYPE)}, 'data'),
+                Output('graph', 'children'),
+                Output('show-table', 'children'),
+                Output('main-options', 'children'),
+                Output('advanced-options', 'children'),
             ],
-            Input("language-switch", "checked"),
+            Input({'index': cls.index, 'type': 'locale-config'}, 'data'),
             prevent_initial_call=True
         )
-        def switch_language(checked):
-            if checked:
-                return [
-                    lan['tw']['controls']['components']['mortgage_amount'],
-                    lan['tw']['controls']['components']['down_payment_rate'],
-                    lan['tw']['controls']['components']['tenure'],
-                    lan['tw']['controls']['components']['grace_period'],
-                    lan['tw']['controls']['components']['select_date'],
-                    lan['tw']['controls']['components']['the_start_time_of_the_repayment'],
-                    lan['tw']['controls']['widgets']['repayment_methods'],
-                    lan['tw']['controls']['widgets']['refresh'],
-                    lan['tw']['controls']['components']['interest_rate'],
-                    lan['tw']['controls']['components']['prepay_arrangement'],
-                    lan['tw']['controls']['components']['reset'],
-                    lan['tw']['controls']['components']['start_timepoint'],
-                    lan['tw']['controls']['components']['subsidy_amount'],
-                    lan['tw']['controls']['components']['subsidy_tenure'],
-                    lan['tw']['controls']['components']['subsidy_grace_period'],
-                    lan['tw']['controls']['components']['subsidy_prepayment'],
-                    lan['tw']['controls']['widgets']['repayment_methods'],
-                    lan['tw']['controls']['components']['interest_rate'],
-                    [
-                        {"value": "fixed", "label": lan['tw']['controls']['components']['segmentcontrol']['fixed']},
-                        {"value": "multiple", "label": lan['tw']['controls']['components']['segmentcontrol']['multi_stages']},
-                    ],
-                    [
-                        {"value": "fixed", "label": lan['tw']['controls']['components']['segmentcontrol']['fixed']},
-                        {"value": "multiple", "label": lan['tw']['controls']['components']['segmentcontrol']['multi_stages']},
-                    ]
-                ]
-
-            else:
-                return [
-                    lan['en']['controls']['components']['mortgage_amount'],
-                    lan['en']['controls']['components']['down_payment_rate'],
-                    lan['en']['controls']['components']['tenure'],
-                    lan['en']['controls']['components']['grace_period'],
-                    lan['en']['controls']['components']['select_date'],
-                    lan['en']['controls']['components']['the_start_time_of_the_repayment'],
-                    lan['en']['controls']['widgets']['repayment_methods'],
-                    lan['en']['controls']['widgets']['refresh'],
-                    lan['en']['controls']['components']['interest_rate'],
-                    lan['en']['controls']['components']['prepay_arrangement'],
-                    lan['en']['controls']['components']['reset'],
-                    lan['en']['controls']['components']['start_timepoint'],
-                    lan['en']['controls']['components']['subsidy_amount'],
-                    lan['en']['controls']['components']['subsidy_tenure'],
-                    lan['en']['controls']['components']['subsidy_grace_period'],
-                    lan['en']['controls']['components']['subsidy_prepayment'],
-                    lan['en']['controls']['widgets']['repayment_methods'],
-                    lan['en']['controls']['components']['interest_rate'],
-                    [
-                        {"value": "fixed", "label": lan['en']['controls']['components']['segmentcontrol']['fixed']},
-                        {"value": "multiple", "label": lan['en']['controls']['components']['segmentcontrol']['multi_stages']},
-                    ],
-                    [
-                        {"value": "fixed", "label": lan['en']['controls']['components']['segmentcontrol']['fixed']},
-                        {"value": "multiple", "label": lan['en']['controls']['components']['segmentcontrol']['multi_stages']},
-                    ]
-
-                ]
+        def switch_language(locale):
+            return [
+                lan['controls']['components']['mortgage_amount'][locale],
+                lan['controls']['components']['down_payment_rate'][locale],
+                lan['controls']['components']['tenure'][locale],
+                lan['controls']['components']['grace_period'][locale],
+                lan['controls']['components']['select_date'][locale],
+                lan['controls']['components']['the_start_time_of_the_repayment'][locale],
+                lan['controls']['widgets']['repayment_methods'][locale],
+                lan['controls']['widgets']['refresh'][locale],
+                lan['controls']['components']['interest_rate'][locale],
+                lan['controls']['components']['prepay_arrangement'][locale],
+                lan['controls']['components']['reset'][locale],
+                lan['controls']['components']['start_timepoint'][locale],
+                lan['controls']['components']['subsidy_amount'][locale],
+                lan['controls']['components']['subsidy_tenure'][locale],
+                lan['controls']['components']['subsidy_grace_period'][locale],
+                lan['controls']['components']['subsidy_prepayment'][locale],
+                lan['controls']['widgets']['repayment_methods'][locale],
+                lan['controls']['components']['interest_rate'][locale],
+                [
+                    {"value": "fixed", "label": lan['controls']['components']['segmentcontrol']['fixed'][locale]},
+                    {"value": "multiple", "label": lan['controls']['components']['segmentcontrol']['multi_stages'][locale]},
+                ],
+                [
+                    {"value": "fixed", "label": lan['controls']['components']['segmentcontrol']['fixed'][locale]},
+                    {"value": "multiple", "label": lan['controls']['components']['segmentcontrol']['multi_stages'][locale]},
+                ],
+                graph(locale),
+                dataframe.table(locale),
+                lan['tablist']['Main'][locale],
+                lan['tablist']['Subsidy'][locale],
+            ]
         return layout
     
     

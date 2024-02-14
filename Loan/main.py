@@ -50,19 +50,19 @@ example_for_subsidy_arr= {
 
 class df_schema:
     class level_0:
-        ORIGINAL = '原始貸款'
-        SUBSIDY = '房貸補貼'
-        TOTAL = '總計'
+        ORIGINAL = {'zh_TW': '原始貸款', 'en': 'Original Loan'}
+        SUBSIDY = {'zh_TW': '房貸補貼', 'en': 'Subsidy Loan'}
+        TOTAL = {'zh_TW': '總計', 'en': 'Total'}
 
     class level_1:
-        ETP = '本息攤還法'  # Equal Total Payment
-        EPP = '本金攤還法'  # Equal Principal Payment
+        ETP = {'zh_TW': '本息攤還法', 'en': 'Equal Total Payment'}
+        EPP = {'zh_TW': '本金攤還法', 'en': 'Equal Prin. Payment'} 
 
     class level_2:
-        PRINCIPAL = '攤還本金'  # Principal
-        INTEREST = '應付利息'  # Interest
-        PAYMENT = '償還總額'  # Payment
-        RESIDUAL = '剩餘貸款'  # Residual
+        PRINCIPAL = {'zh_TW': '攤還本金', 'en': 'Principal'}
+        INTEREST = {'zh_TW': '應付利息', 'en': 'Interest'}
+        PAYMENT = {'zh_TW': '償還總額', 'en': 'Payment'}
+        RESIDUAL = {'zh_TW': '剩餘貸款', 'en': 'Residual'}
 
 
 def calculator(
@@ -75,6 +75,7 @@ def calculator(
     thousand_sep= True,
     start_date= None,
     result_type= 'dict', # 'dict' or 'df'
+    locale= 'en', # ['en', 'zh_TW']
     **kwargs: dict
     ):
     """
@@ -162,11 +163,6 @@ def calculator(
     prepay_time = _time_#(
     prepay_time.subsidy_time= subsidy_time
     prepay_time.prepay_time= kwargs.get('prepay_arr', {}).get('time', [0])
-        # subsidy_time=subsidy_time,
-        # tenure=tenure,
-        # prepay_arr={
-            # 'time': kwargs.get('prepay_arr', {}).get('time', 0)}
-    # )
 
     prepay_amount = _amount_(
         # tenure=tenure,
@@ -187,7 +183,7 @@ def calculator(
         suffix = ("_" + suffix if len(suffix) > 0 else suffix)
         dic= {
              'index': ([v for v in range(index_range[0], index_range[1])] if not date else [datetime.datetime.strptime(date, '%Y-%m-%d').date() + relativedelta(months=n) for n in range(index_range[0], index_range[1])]),
-             'columns': [f'攤還本金{suffix}', f'應付利息{suffix}', f'償還總額{suffix}', f'剩餘貸款{suffix}'],
+             'columns': [f'{df_schema.level_2.PRINCIPAL[locale]}{suffix}', f'{df_schema.level_2.INTEREST[locale]}{suffix}', f'{df_schema.level_2.PAYMENT[locale]}{suffix}', f'{df_schema.level_2.RESIDUAL[locale]}{suffix}'],
              'data': [*map(list, zip(*data))],
              'index_names': [None],
              'column_names': [None] + [None] * (len([name]) if name else 0),
@@ -211,7 +207,7 @@ def calculator(
         }
         df= _df_(
             data= [_ETP_arr_(**kwargs_for_loan) if 'EQUAL_TOTAL' in method else ()][0] + [_EPP_arr_(**kwargs_for_loan) if 'EQUAL_PRINCIPAL' in method else ()][0],
-            name= [amortization_methods[method_key] for method_key in method],
+            name= [amortization_methods[method_key][locale] for method_key in method],
             index_range=[0, tenure * 12 + 1],
             date= start_date,
         )    
@@ -258,7 +254,7 @@ def calculator(
 
             df_subsidy= _df_(
                 data= [_ETP_arr_(**kwargs_for_subsidy) if 'EQUAL_TOTAL' in method_applied_to_subsidy_loan else ()][0] + [_EPP_arr_(**kwargs_for_subsidy) if 'EQUAL_PRINCIPAL' in method_applied_to_subsidy_loan else ()][0],
-                name= [amortization_methods[method] for method in method_applied_to_subsidy_loan],
+                name= [amortization_methods[method][locale] for method in method_applied_to_subsidy_loan],
             )
             # Padding the data of subsidy loan to fit the length of the original loan.
             padding_from_the_begining = [[0] * len(df_subsidy['data'][0])] * (subsidy_time)
@@ -266,8 +262,8 @@ def calculator(
             df_subsidy['data']= padding_from_the_begining + df_subsidy['data'] + padding_to_the_end
 
             # Add the level_0 header to df if subsidy_arr is given.
-            df['columns']= [tuple([df_schema.level_0.ORIGINAL] + list(col)) for col in df['columns']]
-            df_subsidy['columns']= [tuple([df_schema.level_0.SUBSIDY] + list(col)) for col in df_subsidy['columns']]
+            df['columns']= [tuple([df_schema.level_0.ORIGINAL[locale]] + list(col)) for col in df['columns']]
+            df_subsidy['columns']= [tuple([df_schema.level_0.SUBSIDY[locale]] + list(col)) for col in df_subsidy['columns'][locale]]
 
             # Concatenate the dictionaries
             df= {
@@ -282,20 +278,20 @@ def calculator(
             # 將原始貸款選定的還款方式對應到房貸補貼對應的還款方式進行配對，以便篩出欄位加總
             idx = [
                 [args, args_subsidy]
-                for args in df['columns'] if args[0] == df_schema.level_0.ORIGINAL and args[2] == df_schema.level_2.PAYMENT
-                for args_subsidy in df_subsidy['columns'] if args_subsidy[0] == df_schema.level_0.SUBSIDY and args_subsidy[2] == df_schema.level_2.PAYMENT
+                for args in df['columns'] if args[0] == df_schema.level_0.ORIGINAL[locale] and args[2] == df_schema.level_2.PAYMENT[locale]
+                for args_subsidy in df_subsidy['columns'] if args_subsidy[0] == df_schema.level_0.SUBSIDY[locale] and args_subsidy[2] == df_schema.level_2.PAYMENT[locale]
             ]
             
             # 欄位加總
             for id in idx:
-                df['columns'].append((df_schema.level_0.TOTAL, id[0][1] + "(" + df_schema.level_0.ORIGINAL + ")", id[1][1] + "(" + df_schema.level_0.SUBSIDY + ")"))
+                df['columns'].append((df_schema.level_0.TOTAL[locale], id[0][1] + "(" + df_schema.level_0.ORIGINAL[locale] + ")", id[1][1] + "(" + df_schema.level_0.SUBSIDY[locale] + ")"))
                 df['data']= [*map(lambda x: x + [sum([x[n] for (n, i) in enumerate(df['columns']) if (i in id)])], df['data'])]
  
             # 計算各期清償總和，並扣除重複計算的租金補貼貸款
             df['index'].append('Sum')
             df['data'].append([sum([*map(lambda x: x[i], df['data'])]) for i in range(len(df['data'][0]))])
-            df['data'][-1]= [(data if n2 not in [n1 for (n1, (l0, l1, l2)) in enumerate(df['columns']) if l2 == df_schema.level_2.RESIDUAL] else df['data'][-2][n2]) for (n2, data) in enumerate(df['data'][-1])]
-            df['data'][-1] = [data - df['data'][-2][n2] if n2 in [n1 for (n1, (l0, l1, l2)) in enumerate(df['columns']) if l2 == df_schema.level_2.RESIDUAL] else data for (n2, data) in enumerate(df['data'][-1])]
+            df['data'][-1]= [(data if n2 not in [n1 for (n1, (l0, l1, l2)) in enumerate(df['columns']) if l2 == df_schema.level_2.RESIDUAL[locale]] else df['data'][-2][n2]) for (n2, data) in enumerate(df['data'][-1])]
+            df['data'][-1] = [data - df['data'][-2][n2] if n2 in [n1 for (n1, (l0, l1, l2)) in enumerate(df['columns']) if l2 == df_schema.level_2.RESIDUAL[locale]] else data for (n2, data) in enumerate(df['data'][-1])]
 # 
         else:
             df['index'].append('Sum')
@@ -311,7 +307,7 @@ def calculator(
     else: # when no method is specified
         df= {
              'index': ([v for v in range(0, 1)] if not start_date else [datetime.datetime.strptime(start_date, '%Y-%m-%d').date() + relativedelta(months=n) for n in range(0, 1)]),
-             'columns': [('', '攤還本金'), ('', '應付利息'), ('', '償還總額'), ('', '剩餘貸款')],
+             'columns': [('', df_schema.level_2.PRINCIPAL[locale]), ('', df_schema.level_2.INTEREST[locale]), ('', df_schema.level_2.PAYMENT[locale]), ('', df_schema.level_2.RESIDUAL[locale])],
              'data': [[0]* 4],
              'index_names': [None],
              'column_names': [None]*1,
@@ -327,7 +323,7 @@ if __name__ == "__main__":
     # default_kwargs['method'] = []
     # default_kwargs['start_date']= '2021-01-01'
     # default_kwargs['result_type']= 'df'
-    result = calculator(**default_kwargs, thousand_sep= False)
+    result = calculator(**default_kwargs, thousand_sep= False, locale= 'zh_TW')
     print(
         result
     )

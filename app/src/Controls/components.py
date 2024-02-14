@@ -33,7 +33,7 @@ class MortgageOptions:
         layout= html.Div(
                     [
                         dmc.NumberInput(
-                            label= lan['en']['controls']['components']['mortgage_amount'],
+                            label= lan['controls']['components']['mortgage_amount']['en'],
                             id= {"index": cls.index, "type": suffix_for_type(ids.LOAN.AMOUNT, cls.type)},
                             value= cls.kwargs_schema['total_amount'],
                             placeholder= 'Enter the loan amount',
@@ -67,7 +67,7 @@ class MortgageOptions:
                      [
                          dmc.NumberInput(
                             id= {"index": cls.index, "type": ids.LOAN.DOWNPAYMENT},
-                            label= lan['en']['controls']['components']['down_payment_rate'],
+                            label= lan['controls']['components']['down_payment_rate']['en'],
                             style={
                                 "width": cls.width
                             },
@@ -97,7 +97,7 @@ class MortgageOptions:
         layout= html.Div(
             [
                 dmc.Title(
-                    lan['en']['controls']['components']['tenure'],
+                    lan['controls']['components']['tenure']['en'],
                     id= {"index": cls.index, "type": 'title_for_tenure'},
                     order= 4,
                     style= {
@@ -137,7 +137,7 @@ class MortgageOptions:
                 [
                     dmc.NumberInput(
                        id= {"index": cls.index, "type": suffix_for_type(ids.LOAN.GRACE, cls.type)},
-                       label= lan['en']['controls']['components']['grace_period'],
+                       label= lan['controls']['components']['grace_period']['en'],
                        style={"width": cls.width},
                        styles= {
                             'label': {
@@ -163,9 +163,9 @@ class MortgageOptions:
             [
                 dmc.DatePicker(
                     id= {"index": cls.index, "type": ids.LOAN.DATE},
-                    placeholder= lan['en']['controls']['components']['select_date'],
-                    label= lan['en']['controls']['components']['start_date'],
-                    description= lan['en']['controls']['components']['the_start_time_of_the_repayment'],
+                    placeholder= lan['controls']['components']['select_date']['en'],
+                    label= lan['controls']['components']['start_date']['en'],
+                    description= lan['controls']['components']['the_start_time_of_the_repayment']['en'],
                     minDate= datetime.date(1992, 3, 7),
                     clearable= True,
                     size= 'md',
@@ -192,7 +192,7 @@ class MortgageOptions:
         layout = html.Div(
                      [
                          refreshable_dropdown(
-                             label= lan['en']['controls']['components']['payment_methods'],
+                             label= lan['controls']['components']['payment_methods']['en'],
                              type= ids.LOAN.TYPE,
                              options= amortization_methods,
                              index= cls.index,
@@ -213,13 +213,13 @@ class MortgageOptions:
         cls,
         # index: str = "", # To address the issue of heritance of MortgageOptions class
         type: str = None,  # type: ignore
-        placeholder= lan['en']['controls']['components']['key_in_an_interest_rate'],
+        placeholder= lan['controls']['components']['key_in_an_interest_rate']['en'],
     ):
         layout = html.Div(
             [
                 dmc.Title(
                     id= {"index": cls.index, "type": suffix_for_type('title_for_interest_rate', type)},
-                    children= lan['en']['controls']['components']['interest_rate'],
+                    children= lan['controls']['components']['interest_rate']['en'],
                     order= 4,
                     style= {
                         'font-weight': 'bold',
@@ -235,8 +235,8 @@ class MortgageOptions:
                                 id= {"index": cls.index, "type": suffix_for_type(ids.ADVANCED.TOGGLE.BUTTON, type)},
                                 value="fixed",
                                 data=[
-                                    {"value": "fixed", "label": lan['en']['controls']['components']['segmentcontrol']['fixed']},
-                                    {"value": "multiple", "label": lan['en']['controls']['components']['segmentcontrol']['multi_stages']},
+                                    {"value": "fixed", "label": lan['controls']['components']['segmentcontrol']['fixed']['en']},
+                                    {"value": "multiple", "label": lan['controls']['components']['segmentcontrol']['multi_stages']['en']},
                                 ],
                                 color= 'purple',
                                 radius= 4,
@@ -370,7 +370,7 @@ class AdvancedOptions(MortgageOptions):
         layout = html.Div(
             [
                 dmc.Title(
-                    lan['en']['controls']['components']['prepay_arrangement'],
+                    lan['controls']['components']['prepay_arrangement']['en'],
                     id= {"index": cls.index, "type": 'title_for_prepay'},
                     order= 4,
                     style= {
@@ -405,7 +405,7 @@ class AdvancedOptions(MortgageOptions):
                 html.Div(
                     [
                         dmc.Button(
-                            lan['en']['controls']['components']['reset'],
+                            lan['controls']['components']['reset']['en'],
                             id='Reset',
                             variant= specs.COMPONENTS.ADVANCEDOPTIONS.SUBSIDY.VARIANT,
                             gradient= specs.COMPONENTS.ADVANCEDOPTIONS.SUBSIDY.GRADIENT,
@@ -420,7 +420,7 @@ class AdvancedOptions(MortgageOptions):
                 html.Div(
                     [
                         dmc.Title(
-                            lan['en']['controls']['components']['start_timepoint'],
+                            lan['controls']['components']['start_timepoint']['en'],
                             id= {"index": cls.index, "type": suffix_for_type('label_for_start_point_of_subsidy', type)},
                             order= 4,
                             style= {
@@ -444,7 +444,7 @@ class AdvancedOptions(MortgageOptions):
                 html.Div(
                     [
                         dmc.Title(
-                            lan['en']['controls']['components']['subsidy_amount'],
+                            lan['controls']['components']['subsidy_amount']['en'],
                             id= {"index": cls.index, "type": suffix_for_type('label_for_amount_of_subsidy', type)},
                             order= 4,
                             style= {
@@ -467,7 +467,7 @@ class AdvancedOptions(MortgageOptions):
                 html.Div(
                     [
                         dmc.Title(
-                            lan['en']['controls']['components']['subsidy_tenure'],
+                            lan['controls']['components']['subsidy_tenure']['en'],
                             id= {"index": cls.index, "type": suffix_for_type('label_for_tenure_of_subsidy', type)},
                             order= 4,
                             style= {
@@ -494,7 +494,7 @@ class AdvancedOptions(MortgageOptions):
                 html.Div(
                     [
                         dmc.Title(
-                            lan['en']['controls']['components']['subsidy_grace_period'],
+                            lan['controls']['components']['subsidy_grace_period']['en'],
                             id= {"index": cls.index, "type": suffix_for_type('label_for_grace_period_of_subsidy', type)},
                             order= 4,
                             style= {
@@ -514,7 +514,7 @@ class AdvancedOptions(MortgageOptions):
                     ],
                 ),
                 refreshable_dropdown(
-                    label= lan['en']['controls']['components']['subsidy_payment_methods'],
+                    label= lan['controls']['components']['subsidy_payment_methods']['en'],
                     type= ids.LOAN.SUBSIDY.TYPE,
                     value= cls.kwargs_schema['subsidy_arr']['method'],
                     options= amortization_methods,
@@ -523,7 +523,7 @@ class AdvancedOptions(MortgageOptions):
                 html.Div(
                     [
                         dmc.Checkbox(
-                            label= lan['en']['controls']['components']['subsidy_prepayment'],
+                            label= lan['controls']['components']['subsidy_prepayment']['en'],
                             id=ids.LOAN.SUBSIDY.PREPAY.OPTION,
                             checked= False,
                             styles= {

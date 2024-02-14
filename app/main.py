@@ -97,7 +97,6 @@ panel_tabs= dmc.Tabs(
             ),
             dmc.TabsPanel(
                 html.Div(
-                    # panel._advancedoptions(),
                     panel.advanced.subsidy(),
                     style= {
                         'width': '83%',
@@ -145,19 +144,7 @@ app.layout = dmc.MantineProvider(
         panel.register(),
         dmc.Container(
             [
-                dmc.Switch(
-                    id= "language-switch",
-                    offLabel= "EN",
-                    onLabel= "TW",
-                    size="lg",
-                    checked= False, 
-                    color= "indigo",
-                    style= {
-                        'margin-left': '95%',
-                        'margin-top': 5,
-                        'margin-bottom': 5,
-                    },
-                ),
+                panel.locale_controller(),
                 html.Div(
                     [
                         html.Div(
@@ -209,9 +196,8 @@ app.layout = dmc.MantineProvider(
                                     },
                                 ),
                                 html.Div(
-                                    [
-                                        graph(),
-                                    ],
+                                    children=[graph()],
+                                    id= 'graph',
                                     className= 'custom-scrollbar',
                                     style= {
                                         'width': 'auto',
@@ -235,7 +221,6 @@ app.layout = dmc.MantineProvider(
                     style= {
                     'display': 'flex',
                     'flex-direction': 'row',
-                    # 'justify-content': 'space-between',
                     'align-items': 'flex-start',
                     'padding-left': 5,
                     'padding-right': 5,
@@ -251,7 +236,7 @@ app.layout = dmc.MantineProvider(
                 'background-color': 'rgba(246,248,250,255)',
                 'width': '100vw',
                 'height': '100dvh',
-                'margin': 'auto',
+                # 'margin': 'auto',
                 'overflow-y': 'hidden', # [auto, hidden, scroll, visible]
                 'overflow-x': 'hidden',
             },

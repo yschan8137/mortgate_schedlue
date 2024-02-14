@@ -7,15 +7,13 @@ BeautifulSoup4
 asyncio
 dataclasses
 lxml
-Babel
+# Babel
 dash
 dash-bootstrap-components
 pandas-stubs
 plotly
-pyyaml
-python-i18n[YAML]
-multiprocess
+# pyyaml
+# multiprocess
 dash-mantine-components
 dash-iconify
-icecream
-# gunicorn
+# icecream

@@ -16,7 +16,7 @@ from app.assets.ids import *
 # For further information, please refer to the documentation of the addon function in the file Amort\test\ADDON.py.
 # code of the color: https://useaxentix.com/docs/general/colors/
 
-# addon inputs function.
+# addon component.
 def addon(
         # Type need to be indicated within ['prepay', 'subsidy'] to distinguish the different dropdowns.
         type: str,
@@ -43,7 +43,6 @@ def addon(
         return term
 
     """
-
     layout = html.Div(
         [
             dcc.Store(id={"index": index, "type": suffix_for_type(ADDON.DROPDOWN.LIST, type)},
@@ -62,7 +61,7 @@ def addon(
                                     'width': '35%',
                                 },
                                 clearable= True,
-                                placeholder= lan['en']['controls']['widgets']['time'],
+                                placeholder= lan['controls']['widgets']['time']['en'],
                     ),
                     dmc.NumberInput(
                        id= {"index": index, "type": suffix_for_type(ADDON.INPUT, type)},
@@ -177,7 +176,6 @@ def addon(
         return patched_item, 0, 0, memory
         
 ##5 callback for delete button
-    # 次序有問題
     @callback(
         Output({"index": index, "type": suffix_for_type(ADDON.NEW, type)}, 'children', allow_duplicate= True),
         Output({"index": index, "type": suffix_for_type(ADDON.MEMORY, type)}, 'data'),
@@ -193,7 +191,6 @@ def addon(
         ):
         values_to_remove = []
         patched_item = Patch()
-        print('checked:', checked)
         if memory:
             for i, value in enumerate(checked): 
             # Errors occurred when multiple components were deployed and "None" were added in the state list. 
@@ -258,14 +255,15 @@ def new_checklist_item(triggered_index, type, result, checked= False):
     )
 
 
-# build a refeshable dropdown that can refresh the options when the refresh button is clicked.
+# build a dropdown with refresh bottom.
 def refreshable_dropdown(
         label: str,
         # ['prepay', 'subsidy'] Consider the case of duplicate ids.
-        type: str = lan['en']['controls']['widgets']['prepay'], 
+        type: str = lan['controls']['widgets']['prepay']['en'], 
         value: list = [*amortization_methods],
         options: dict = amortization_methods,
         index= "",
+        locale= 'en',
         **kwargs
 ):
     """
@@ -278,9 +276,9 @@ def refreshable_dropdown(
             html.Div(
                 [
                     dmc.MultiSelect(
-                        label= lan['en']['controls']['widgets']['repayment_methods'], 
+                        label= lan['controls']['widgets']['repayment_methods'][locale], 
                         id= {"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.OPTIONS, type)},
-                        placeholder= lan['en']['controls']['widgets']['select_method_for_repayment'],
+                        placeholder= lan['controls']['widgets']['select_method_for_repayment'][locale],
                         value= value,
                         data=[*options],
                         size= 'sm',
@@ -297,7 +295,7 @@ def refreshable_dropdown(
                         },
                     ),
                     dmc.Button(
-                        children= lan['en']['controls']['widgets']['refresh'],
+                        children= lan['controls']['widgets']['refresh'][locale],
                         id= {"index": index, "type": suffix_for_type(ADVANCED.DROPDOWN.BUTTON, type)},
                         variant="gradient",
                         gradient={"from": "teal", "to": "blue", "deg": 60},

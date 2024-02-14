@@ -1,6 +1,6 @@
 """Build a graph for the loan"""
 from itertools import accumulate
-from dash import Dash, dcc, callback, Output, Input, State, ALL, callback_context, html
+from dash import Dash, html, dcc, callback, Output, Input, State, ALL, callback_context
 from dash_iconify import DashIconify
 import plotly.express as px
 import plotly.graph_objects as go
@@ -11,11 +11,17 @@ import sys
 sys.path.append('./')
 
 from app.assets.ids import GRAPH, LOAN
-from Loan import df_schema
+from app import df_schema
 
 
-def graph():
-    """Build the graph"""
+def graph(locale= 'en'):
+    """
+    Build the graph
+    Args:
+        locale (str): The language of the graph. 
+        Available options are ['en', 'zh_TW'], which represents English and Tranditional Chinese respectively.
+    """
+
     layout = html.Div(
         [
             dmc.LoadingOverlay(    
@@ -56,7 +62,7 @@ def graph():
                                     dmc.MenuTarget(
                                         dmc.Button(
                                             id='menu-target',
-                                            children=df_schema.level_2.PAYMENT,
+                                            children=df_schema.level_2.PAYMENT[locale],
                                             variant="gradient",
                                             gradient={"from": "indigo", "to": "cyan"},
                                             loading={'loading_type': 'overlay'},
@@ -76,8 +82,8 @@ def graph():
                                 id=GRAPH.ACCUMULATION,
                                 value="regular",
                                 data=[
-                                    {"value": "regular", "label": "Regular"},
-                                    {"value": "cumulative", "label": "Cumulative"},
+                                    {"value": "regular", "label": {'en': "Regular", 'zh_TW': '一般'}[locale]},
+                                    {"value": "cumulative", "label": {'en': 'Cumulative', 'zh_TW': '累計'}[locale]},
                                 ],
                                 size='sm',
                                 style={
@@ -90,7 +96,7 @@ def graph():
                         position='left',
                     ),
                     dmc.Button(
-                        'spreadsheet', 
+                        {'en': 'spreadsheet', 'zh_TW': '試算表'}[locale], 
                         id= 'detailed-table', 
                         variant="gradient",
                         size='sm',
@@ -155,26 +161,30 @@ def graph():
         Input(GRAPH.ACCUMULATION, 'value'),
         Input('menu-target', 'children'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
+        Input({'index': ALL, 'type': 'locale-config'}, 'data'),
+        prevent_initial_call=True
     )
     def update_toggle_items(
         accum,
         label,
         memory,
+        locale,
     ):
         memory = memory['data']
+        locale= locale[-1]
         level_0 = {c[0] for c in memory['columns'] if c[0] != ''}
-        if df_schema.level_0.TOTAL in level_0 or not level_0:
+        if df_schema.level_0.TOTAL[locale] in level_0 or not level_0:
             return [], {'display': 'none'}
         else:
             method_for_original_mortgate = [
-                df_schema.level_2.PAYMENT,
-                df_schema.level_2.PRINCIPAL,
-                df_schema.level_2.INTEREST,
-                df_schema.level_2.RESIDUAL,
+                df_schema.level_2.PAYMENT[locale],
+                df_schema.level_2.PRINCIPAL[locale],
+                df_schema.level_2.INTEREST[locale],
+                df_schema.level_2.RESIDUAL[locale],
             ]
             if accum and accum == 'cumulative':
                 method_for_original_mortgate = [
-                    v for v in method_for_original_mortgate if v != df_schema.level_2.RESIDUAL]
+                    v for v in method_for_original_mortgate if v != df_schema.level_2.RESIDUAL[locale]]
             dropdown = [
                 dmc.MenuItem(
                     column,
@@ -196,40 +206,43 @@ def graph():
         Input(GRAPH.ACCUMULATION, 'value'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
         Input({'index': ALL, 'type': GRAPH.DROPDOWN.ITEM}, 'n_clicks'),
+        State({'index': ALL, 'type': 'locale-config'}, 'data'),
         State('menu-target', 'children'),
+        prevent_initial_call=True
     )
     def update_graph(
         accum,
         memory,
         _,
+        locale,
         label,
     ):
         ctx = callback_context
         memory = memory['data']
+        locale= locale[-1]
         if isinstance(ctx.triggered_id, dict):
             chosen_figure = ctx.triggered_id['index']
         else:
             # type: ignore
-            if df_schema.level_0.TOTAL not in [col[0] for col in memory['columns']]:
+            if df_schema.level_0.TOTAL[locale] not in [col[0] for col in memory['columns']]:
                 if accum == 'cumulative':
-                    if label == df_schema.level_2.RESIDUAL:
-                        chosen_figure = df_schema.level_2.PAYMENT
+                    if label == df_schema.level_2.RESIDUAL[locale]:
+                        chosen_figure = df_schema.level_2.PAYMENT[locale]
                     else:
                         chosen_figure = label
                 else:
                     chosen_figure = (
-                        label if label != df_schema.level_0.TOTAL else df_schema.level_2.PAYMENT)
+                        label if label != df_schema.level_0.TOTAL[locale] else df_schema.level_2.PAYMENT[locale])
             else:
-                chosen_figure = df_schema.level_0.TOTAL # 總計
+                chosen_figure = df_schema.level_0.TOTAL[locale] # 總計
 
         ns, cols = zip(*[(n, col) for n, col in enumerate(memory['columns']) if chosen_figure in col])
         x_axis_value = memory['index'][1:-1]
-
         # construct the data frame for the graph
         data_frame_for_loan_timeSeries= {
-            'Time': [],
-            'Amount': [],
-            'methods': [],
+            {'en': 'Time', 'zh_TW': '時間'}[locale]: [],
+            {'en': 'Amount', 'zh_TW': '金額'}[locale]: [],
+            {'en': 'methods', 'zh_TW': '方法'}[locale]: [],
         }
         for n, col in zip(ns, cols): # n: index of the column; col: column name
             dff = [data[n] for data in memory['data'][1:-1]]
@@ -239,24 +252,24 @@ def graph():
                 dff = [*accumulate(dff)]
             dff = [*map(lambda x: f"{round(x):,}", dff)]
 
-            data_frame_for_loan_timeSeries['Time'].extend(x_axis_value)
-            data_frame_for_loan_timeSeries['Amount'].extend(dff)
-            data_frame_for_loan_timeSeries['methods'].extend([method] * len(x_axis_value))
+            data_frame_for_loan_timeSeries[{'en': 'Time', 'zh_TW': '時間'}[locale]].extend(x_axis_value)
+            data_frame_for_loan_timeSeries[{'en': 'Amount', 'zh_TW': '金額'}[locale]].extend(dff)
+            data_frame_for_loan_timeSeries[{'en': 'methods', 'zh_TW': '方法'}[locale]].extend([method] * len(x_axis_value))
 
         fig = px.line(
             data_frame_for_loan_timeSeries,
-            x= "Time", 
-            y= "Amount", 
-            color="methods", 
-            title='<b>Life of Loan</b>', 
+            x= {"en": "Time", "zh_TW": "時間"}[locale], 
+            y= {"en": "Amount", "zh_TW": "金額"}[locale], 
+            color={'en': 'methods', 'zh_TW': '方法'}[locale], 
+            title='<b>{}</b>'.format({'en': 'Life of Loan', 'zh_TW': '時序圖'}[locale]), 
             log_y= True,
             line_shape="spline",
             render_mode="svg",
-            hover_name= "methods",
+            hover_name= {'en': 'methods', 'zh_TW': '方法'}[locale],
             template="plotly_white", # ["plotly", "plotly_white", "plotly_dark", "ggplot2", "seaborn", "simple_white", "none"]
             color_discrete_map= {
-                    df_schema.level_1.ETP: '#0C82DF',
-                    df_schema.level_1.EPP: '#F7DC6F',
+                    df_schema.level_1.ETP[locale]: '#0C82DF',
+                    df_schema.level_1.EPP[locale]: '#F7DC6F',
             },
         )
         fig.update_layout(showlegend= False)
@@ -278,25 +291,28 @@ def graph():
                 'width': '100%',
                 'height': '100%',
             },
-        ), chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL else {"from": "indigo", "to": "cyan"})
+        ), chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL[locale] else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL[locale] else {"from": "indigo", "to": "cyan"})
 
-
+# Information for avg payment.
     @callback(
         Output('information-dashboard', 'children'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
+        Input({'index': ALL, 'type': 'locale-config'}, 'data'),
     )
     def update_info(
         memory, 
+        locale,
         ):
         memory = memory['data']
+        locale= locale[-1]
         if [c for c in memory['columns'] if c[0] != '']:
             # Group the data by the method of repayment which includes [Equal total payment, Equal principal payment]. 
             pie_data = {}
             payment= {}
-            target= [df_schema.level_2.PAYMENT, df_schema.level_2.PRINCIPAL, df_schema.level_2.INTEREST]
+            target= [df_schema.level_2.PAYMENT[locale], df_schema.level_2.PRINCIPAL[locale], df_schema.level_2.INTEREST[locale]]
             for n, col in enumerate(memory['columns']):
                 if col[-1] in target:
-                    if col[-1] != df_schema.level_2.PAYMENT:
+                    if col[-1] != df_schema.level_2.PAYMENT[locale]:
                         if col[-2] not in pie_data.keys():
                             pie_data.update({col[-2]: {'labels': [], 'values': {}, 'names': []}}) # initialize the dictionary
                         if (col[0] if col[0] != col[-2] else None) not in pie_data[col[-2]]['names']:
@@ -304,23 +320,23 @@ def graph():
                         if len(col) > 2:
                             if col[-3] not in pie_data[col[-2]]['values'].keys():
                                 pie_data[col[-2]]['values'].update({col[-3]: []}) 
-                            if col[-3]== df_schema.level_0.ORIGINAL:
-                                if col[-1]== df_schema.level_2.PRINCIPAL:
+                            if col[-3]== df_schema.level_0.ORIGINAL[locale]:
+                                if col[-1]== df_schema.level_2.PRINCIPAL[locale]:
                                     pie_data[col[-2]]['values'][col[0]].append(
                                         round(
                                             sum(
                                                 [*map(lambda x, y: (x-y if x-y > 0 else 0), 
                                                       [
                                                           *map(lambda x: [x[n] for n, c in enumerate(memory['columns']) 
-                                                                          if c[-3] == df_schema.level_0.ORIGINAL and 
+                                                                          if c[-3] == df_schema.level_0.ORIGINAL[locale] and 
                                                                             c[-2] == col[-2] and #type: ignore
-                                                                            c[-1] == df_schema.level_2.PRINCIPAL][0], memory['data'][1:-1])
+                                                                            c[-1] == df_schema.level_2.PRINCIPAL[locale]][0], memory['data'][1:-1])
                                                       ], 
                                                       [
                                                           *map(lambda x: [(x[n] if x[n-1] == 0 else 0) for n, c in enumerate(memory['columns']) 
-                                                                          if c[-3] == df_schema.level_0.SUBSIDY and 
+                                                                          if c[-3] == df_schema.level_0.SUBSIDY[locale] and 
                                                                             c[-2] == col[-2] and #type: ignore
-                                                                            c[-1] == df_schema.level_2.RESIDUAL][0], memory['data'][1:-1])
+                                                                            c[-1] == df_schema.level_2.RESIDUAL[locale]][0], memory['data'][1:-1])
                                                       ],
                                                     )
                                                 ]
@@ -366,7 +382,7 @@ def graph():
                             go.Pie(
                                 labels= pie_data[method]['labels'],
                                 values= pie_data[method]['values'][0], #note 0 is a key for the dictionary.
-                                title= f"""<b>{method}</b><br>{round(payment[method]['values'][0][0] // len(memory['data'][1:-1])): ,}/月""",
+                                title= f"""<b>{method}</b><br>{round(payment[method]['values'][0][0] // len(memory['data'][1:-1])): ,}/""" + {'en': 'Month', 'zh_TW': '月'}[locale] ,
                                 name= "",
                                 titlefont= dict(size= 20, color= 'dark grey'),
                                 marker= dict(colors= px.colors.qualitative.Pastel1),
@@ -386,21 +402,21 @@ def graph():
                             hoverinfo="label+percent+name",
                         )
                         fig.update_layout(
-                            title_text="<b>Total Payment</b>", 
+                            title_text="<b>{}</b>".format({'en': 'Avg. Payment', 'zh_TW': '平均還款'}[locale]), 
                             title_font_size= 20,
                             title_x= 0.5,
                             margin=dict(l=20, r=20, t=60, b=30),
                         )
                     # with the subsidy loan
                     else:
-                        if name == df_schema.level_0.ORIGINAL:
+                        if name == df_schema.level_0.ORIGINAL[locale]:
                             if not fig_main:
                                 fig_main = make_subplots(rows=1, cols=len(pie_data.keys()), specs=[[{'type':'domain'}, {'type':'domain'}]])
                             fig_main.add_trace(
                                 go.Pie(
                                     labels= pie_data[method]['labels'],
                                     values= pie_data[method]['values'][name],
-                                    title= f"""<b>{method}</b><br>{round(payment[method]['values'][name][0] // len(memory['data'])): ,}/月""",
+                                    title= f"""<b>{method}</b><br>{round(payment[method]['values'][name][0] // len(memory['data'])): ,}/""" + {'en': 'Month', 'zh_TW': '月'}[locale] ,
                                     name= "",   
                                     titlefont= dict(size= 20, color= 'dark grey'),
                                     marker= dict(colors= px.colors.qualitative.Pastel1),
@@ -424,7 +440,7 @@ def graph():
                                 title_x= 0.5,
                                 margin=dict(l=20, r=20, t=60, b=30),
                             )
-                        elif name == df_schema.level_0.SUBSIDY:
+                        elif name == df_schema.level_0.SUBSIDY[locale]:
                             if not fig_sub:
                                 fig_sub = make_subplots(rows=1, cols=len(pie_data.keys()), specs=[[{'type':'domain'}]* len(pie_data.keys())])
                             fig_sub.add_trace(
@@ -436,7 +452,7 @@ def graph():
                                             x[n] > 0 for n, c in enumerate(memory['columns']) 
                                             if c[-3] == name and 
                                             c[-2] == method and 
-                                            c[-1] == df_schema.level_2.PAYMENT][0], 
+                                            c[-1] == df_schema.level_2.PAYMENT[locale]][0], 
                                             memory['data'][1:-1]) if v])): ,}/月""",
                                     name= "",
                                     titlefont= dict(size= 20, color= 'dark grey'),

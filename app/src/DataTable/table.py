@@ -5,12 +5,13 @@ from itertools import groupby
 
 from app.assets.ids import LOAN, DATATABLE
 from Loan import df_schema
-from app.src.Controls.panels import panel
+# from app.src.Controls.panels import panel
 from app.assets import specs
 
-
-
-def create_table(df, **kwargs): 
+def create_table(
+        df, 
+        **kwargs
+    ): 
     header_style = kwargs.get('styles', {}).get('header', {})
     cell_style= kwargs.get('styles', {}).get('cell', {})
     tbody_style= kwargs.get('styles', {}).get('body', {})
@@ -37,7 +38,6 @@ def create_table(df, **kwargs):
                     )
             ] + [html.Td(cell, style= {**cell_style}) for cell in row]) for index, row in zip(indexes, values)
     ]
-    
     table = [html.Thead(header), html.Tbody(rows)]
     return table
 
@@ -58,7 +58,7 @@ rows_per_page = html.Div(
             id=DATATABLE.PAGE.SIZE,
             value= specs.DATAFRAME.ROWS.SIZE,
             min=1,
-            max=481,
+            max= (12*40)+1,
             step=1,
             style={
                 # 'textAlign': 'center',
@@ -72,7 +72,7 @@ rows_per_page = html.Div(
 
 
 # data table
-def table():
+def table(locale= 'en'):
     layout = html.Div(
         dmc.Stack(
             [
@@ -86,16 +86,16 @@ def table():
                                             label= v, 
                                             value= v,
                                         ) for v in [
-                                            df_schema.level_2.PRINCIPAL,
-                                            df_schema.level_2.INTEREST,
-                                            df_schema.level_2.RESIDUAL
+                                            df_schema.level_2.PRINCIPAL[locale],
+                                            df_schema.level_2.INTEREST[locale],
+                                            df_schema.level_2.RESIDUAL[locale]
                                         ]
                                     ],
                                     value=[
-                                        df_schema.level_2.PRINCIPAL,
-                                        df_schema.level_2.INTEREST,
-                                        df_schema.level_2.PAYMENT,  # 每期貸款為預選欄位，不可刪除
-                                        df_schema.level_0.TOTAL
+                                        df_schema.level_2.PRINCIPAL[locale],
+                                        df_schema.level_2.INTEREST[locale],
+                                        df_schema.level_2.PAYMENT[locale],  # 每期貸款為預選欄位，不可刪除
+                                        df_schema.level_0.TOTAL[locale]
                                     ], 
                                     id= DATATABLE.COLUMN,
                                     style= specs.DATAFRAME.COLUMN_CHECKBOX.STYLE,
@@ -168,7 +168,6 @@ def table():
         className= 'custom-section',
     )
 
-
     ## data table
     @callback(
             Output(DATATABLE.TABLE, 'children'),
@@ -189,7 +188,7 @@ def table():
         columns,
         ):
         data= data['data']
-        if df_schema.level_0.SUBSIDY in [col[0] for col in data['columns']]:
+        if df_schema.level_0.SUBSIDY[locale] in [col[0] for col in data['columns']]:
             data['data'] = [*map(lambda x: [f"{round(x[n]):,}" for n, col in enumerate(data['columns']) if col[2] in columns or col[0] in columns], data['data'])]
             data['columns'] = [col for col in data['columns'] if col[2] in columns or col[0] in columns]
         else:
@@ -202,12 +201,14 @@ def table():
             page_current = pages
         elif page_current == 0:
             page_current = 1
-        tb= create_table({
-            k: (v if k not in ['data', 'index'] 
-                else (v[((page_current - 1) * page_size_editable) + 1: (page_current * page_size_editable) + 1] 
-                      if len(v) > (page_current * page_size_editable) + 1 
-                      else v[((page_current - 1) * page_size_editable) + 1:-1])
-               ) for k, v in data.items()}, styles= {
+        tb= create_table(
+            {
+                k: (v if k not in ['data', 'index'] 
+                    else (v[((page_current - 1) * page_size_editable) + 1: (page_current * page_size_editable) + 1] 
+                          if len(v) > (page_current * page_size_editable) + 1 
+                          else v[((page_current - 1) * page_size_editable) + 1:-1])
+                          ) for k, v in data.items()
+            }, styles= {
             "header": {'textAlign': 'center', "fontWeight": "bold"},
             "cell": {"textAlign": "right", "fontWeight": "bold"}
         }
@@ -251,9 +252,8 @@ if __name__ == "__main__":
 
     app.layout = dmc.MantineProvider(
         [
-            panel.register(),
+            # panel.register(),
             table()
         ]
     )
-    
     app.run_server(debug= True, threaded= True)
