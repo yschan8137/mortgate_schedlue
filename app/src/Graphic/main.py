@@ -161,8 +161,7 @@ def graph(locale= 'en'):
         Input(GRAPH.ACCUMULATION, 'value'),
         Input('menu-target', 'children'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
-        Input({'index': ALL, 'type': 'locale-config'}, 'data'),
-        prevent_initial_call=True
+        State({'index': ALL, 'type': 'locale-config'}, 'data'),
     )
     def update_toggle_items(
         accum,
@@ -208,7 +207,6 @@ def graph(locale= 'en'):
         Input({'index': ALL, 'type': GRAPH.DROPDOWN.ITEM}, 'n_clicks'),
         State({'index': ALL, 'type': 'locale-config'}, 'data'),
         State('menu-target', 'children'),
-        prevent_initial_call=True
     )
     def update_graph(
         accum,
@@ -297,7 +295,7 @@ def graph(locale= 'en'):
     @callback(
         Output('information-dashboard', 'children'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
-        Input({'index': ALL, 'type': 'locale-config'}, 'data'),
+        State({'index': ALL, 'type': 'locale-config'}, 'data'),
     )
     def update_info(
         memory, 
