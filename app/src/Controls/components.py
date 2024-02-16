@@ -429,7 +429,6 @@ class AdvancedOptions(MortgageOptions):
                                 'margin-bottom': 5,
                                 'margin-top': 5,
                             },
-                            # className= 'mb-2, mt-2',
                         ),
                         dbc.Input(
                             id=ids.LOAN.SUBSIDY.START,
@@ -453,7 +452,6 @@ class AdvancedOptions(MortgageOptions):
                                 'margin-bottom': 5,
                                 'margin-top': 5,
                             },
-                            # className= 'mb-2, mt-2',
                         ),  # 優惠貸款金額
                         dbc.Input(
                             id={"index": cls.index ,"type": suffix_for_type(ids.LOAN.AMOUNT, type)},
@@ -476,7 +474,6 @@ class AdvancedOptions(MortgageOptions):
                                 'margin-bottom': 5,
                                 'margin-top': 5,
                             },
-                            # className= 'mb-2, mt-2',
                         ),
                         dbc.Input(
                             id=ids.LOAN.SUBSIDY.TENURE,

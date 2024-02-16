@@ -347,6 +347,7 @@ class panel():
                         cls.mortgage.grace(),
                         cls.mortgage.start_date(),
                         cls.mortgage.repayment_methods(),
+                        dmc.Space(h= 5),
                         cls.advanced.prepayment(),
                     ],
                     style= {
@@ -376,17 +377,12 @@ class panel():
                             },
                         } for title, children, icon in zip(
                             [
-                                # ids.LOAN.PREPAY.TYPE, 
                                 ids.LOAN.SUBSIDY.TYPE
                             ],
                             [
-                                # cls.advanced.prepayment(), 
                                 cls.advanced.subsidy()
                             ],
                             [
-                                # DashIconify(
-                                    # icon="streamline:money-cash-coins-stack-accounting-billing-payment-stack-cash-coins-currency-money-finance",
-                                    # color=dmc.theme.DEFAULT_COLORS["blue"][6],
                                 
                                 # ),
                                 DashIconify(

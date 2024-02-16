@@ -99,7 +99,7 @@ panel_tabs= dmc.Tabs(
                 html.Div(
                     panel.advanced.subsidy(),
                     style= {
-                        'width': '83%',
+                        'width': '85%',
                         'height': '85dvh',
                         'color': '#333',
                         'background-color': 'white',
@@ -204,7 +204,7 @@ app.layout = dmc.MantineProvider(
                                         'height': '95dvh',
                                         'overflow-y': 'hidden',
                                         'overflow-y': 'auto',
-                                        'margin-left': 15,
+                                        'margin-left': 10,
                                     }
                                 )
                             ],
@@ -213,7 +213,7 @@ app.layout = dmc.MantineProvider(
                                 'height': '95dvh',
                                 'overflow-y': 'hidden',
                                 'overflow-x': 'hidden',
-                                'margin-left': 20,
+                                'margin-left': 10,
                             },
                             className= 'custom-scrollbar',
                         ),
@@ -261,7 +261,7 @@ def toggle_modal(_, opened):
 # py -m app.Dashboard.tabs
 if __name__ == "__main__":
     app.run_server(
-        debug=True,
+        # debug=True,
         # threaded=True, 
         # dev_tools_ui=True,
         # dev_tools_hot_reload= True,
