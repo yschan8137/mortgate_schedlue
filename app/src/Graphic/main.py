@@ -209,7 +209,7 @@ def graph():
                     },
                 ) for element in dropdown_elements
             ]  # avoid duplicate label
-            
+
             # filter the clicked item
             label_for_dropdown = [label for label, filter in zip(dropdown_elements, _) if filter]
             
@@ -230,10 +230,6 @@ def graph():
 #2 update the main graph
     @callback(
         Output(GRAPH.LINE, 'children'),
-        # Output('menu-locale', 'data'),
-        # Output('menu-target', 'children'),
-        # Output('menu-target', 'loading'),
-        # Output('menu-target', 'gradient'),
         Input(GRAPH.ACCUMULATION, 'value'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
         Input({'index': ALL, 'type': GRAPH.DROPDOWN.ITEM}, 'n_clicks'),
@@ -252,30 +248,9 @@ def graph():
         memory = memory['data']
         locale= locale[-1]
         
-        # if isinstance(ctx.triggered_id, dict) :
-        #     chosen_figure = ctx.triggered_id['index']
-        #     ns, cols = zip(*[(n, col) for n, col in enumerate(memory['columns']) if chosen_figure in col])
-        # else:
-        #     if df_schema.level_0.TOTAL[locale] not in [col[0] for col in memory['columns']]:
-        #         if accum == 'cumulative':
-        #             if menu_locale == df_schema.level_2.RESIDUAL:
-        #                 chosen_figure = df_schema.level_2.PAYMENT
-        #             else:
-        #                 chosen_figure = (menu_locale if menu_locale else df_schema.level_2.PAYMENT)
-        #                 # chosen_figure= label
-        #         else:
-        #             chosen_figure = (menu_locale if menu_locale and menu_locale != df_schema.level_0.TOTAL else df_schema.level_2.PAYMENT)
-        #             # chosen_figure = (label if label != df_schema.level_0.TOTAL[locale] else df_schema.level_2.PAYMENT[locale])
-        #     else:
-        #         chosen_figure = df_schema.level_0.TOTAL # 總計
         if not menu_locale:
             menu_locale = df_schema.level_2.PAYMENT
         ns, cols = zip(*[(n, col) for n, col in enumerate(memory['columns']) if menu_locale[locale] in col])
-        # """
-        # 重新設計dropdown menu的chidren
-
-        # """
-        
         x_axis_value = memory['index'][1:-1]
         # construct the data frame for the graph
         data_frame_for_loan_timeSeries= {
@@ -340,11 +315,6 @@ def graph():
                 'height': '100%',
             },
         )
-            # chosen_figure, 
-            # (chosen_figure[locale] if isinstance(chosen_figure, dict) else chosen_figure), 
-            # (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL[locale] else None), 
-            # False, 
-            # ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL[locale] else {"from": "indigo", "to": "cyan"})
     
 # Information for avg payment.
     @callback(
