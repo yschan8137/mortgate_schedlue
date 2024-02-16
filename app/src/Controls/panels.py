@@ -10,7 +10,7 @@ from app.assets.locale import lan
 from app.src.Controls.components import MortgageOptions, AdvancedOptions
 from app.src.Controls.widgets import new_checklist_item
 from app.src.toolkit import suffix_for_type
-from Loan.main import calculator
+from Loan.main import calculator, df_schema
 from app.src.DataTable import table as dataframe
 from app.src.Graphic.main import graph
         
@@ -284,10 +284,11 @@ class panel():
                 Output({"index": cls.index, "type": suffix_for_type('title_for_interest_rate', ids.LOAN.SUBSIDY.TYPE)}, "children"),
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.TOGGLE.BUTTON, ids.LOAN.TYPE)}, 'data'),
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.TOGGLE.BUTTON, ids.LOAN.SUBSIDY.TYPE)}, 'data'),
-                Output('graph', 'children'),
                 Output('show-table', 'children'),
                 Output('main-options', 'children'),
                 Output('advanced-options', 'children'),
+                Output(ids.GRAPH.ACCUMULATION, 'data'),
+                Output('detailed-table', 'children'),
             ],
             Input({'index': cls.index, 'type': 'locale-config'}, 'data'),
             prevent_initial_call=True
@@ -320,10 +321,14 @@ class panel():
                     {"value": "fixed", "label": lan['controls']['components']['segmentcontrol']['fixed'][locale]},
                     {"value": "multiple", "label": lan['controls']['components']['segmentcontrol']['multi_stages'][locale]},
                 ],
-                graph(locale),
                 dataframe.table(locale),
                 lan['tablist']['Main'][locale],
                 lan['tablist']['Subsidy'][locale],
+                [
+                    {"value": "regular", "label": {'en': "Regular", 'zh_TW': '一般'}[locale]},
+                    {"value": "cumulative", "label": {'en': 'Cumulative', 'zh_TW': '累計'}[locale]},
+                ],
+                {'en': 'spreadsheet', 'zh_TW': '試算表'}[locale]
             ]
         return layout
     

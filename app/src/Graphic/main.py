@@ -1,6 +1,6 @@
 """Build a graph for the loan"""
 from itertools import accumulate
-from dash import Dash, html, dcc, callback, Output, Input, State, ALL, callback_context
+from dash import Dash, html, dcc, callback, Output, Input, State, ALL, callback_context, Patch, no_update
 from dash_iconify import DashIconify
 import plotly.express as px
 import plotly.graph_objects as go
@@ -14,7 +14,7 @@ from app.assets.ids import GRAPH, LOAN
 from app import df_schema
 
 
-def graph(locale= 'en'):
+def graph():
     """
     Build the graph
     Args:
@@ -62,13 +62,15 @@ def graph(locale= 'en'):
                                     dmc.MenuTarget(
                                         dmc.Button(
                                             id='menu-target',
-                                            children=df_schema.level_2.PAYMENT[locale],
+                                            children= df_schema.level_2.PAYMENT['en'],
+                                            rightIcon= DashIconify(icon="raphael:arrowdown"),
                                             variant="gradient",
                                             gradient={"from": "indigo", "to": "cyan"},
                                             loading={'loading_type': 'overlay'},
                                             loaderPosition='center',
                                             loaderProps={"variant": "dots",
                                                          "color": "white", "size": "sm"},
+                                            n_clicks= 0,
                                         ),
                                     ),
                                     dmc.MenuDropdown(
@@ -78,12 +80,13 @@ def graph(locale= 'en'):
                                 ],
                                 id=GRAPH.DROPDOWN.MENU,
                             ),
+                            dcc.Store(id='menu-locale', data={}),
                             dmc.SegmentedControl(
                                 id=GRAPH.ACCUMULATION,
                                 value="regular",
                                 data=[
-                                    {"value": "regular", "label": {'en': "Regular", 'zh_TW': '一般'}[locale]},
-                                    {"value": "cumulative", "label": {'en': 'Cumulative', 'zh_TW': '累計'}[locale]},
+                                    {"value": "regular", "label": {'en': "Regular", 'zh_TW': '一般'}['en']},
+                                    {"value": "cumulative", "label": {'en': 'Cumulative', 'zh_TW': '累計'}['en']},
                                 ],
                                 size='sm',
                                 style={
@@ -96,7 +99,7 @@ def graph(locale= 'en'):
                         position='left',
                     ),
                     dmc.Button(
-                        {'en': 'spreadsheet', 'zh_TW': '試算表'}[locale], 
+                        {'en': 'spreadsheet', 'zh_TW': '試算表'}['en'], 
                         id= 'detailed-table', 
                         variant="gradient",
                         size='sm',
@@ -156,95 +159,140 @@ def graph(locale= 'en'):
 
 #1 options for dropdown menu of the main graph
     @callback(
-        Output('menu-dropdown', 'children'),
-        Output('menu-dropdown', 'style'),
-        Input(GRAPH.ACCUMULATION, 'value'),
-        Input('menu-target', 'children'),
-        Input(LOAN.RESULT.DATAFRAME, 'data'),
-        State({'index': ALL, 'type': 'locale-config'}, 'data'),
+            Output('menu-target', 'children'),
+            Output('menu-locale', 'data'),
+            Output('menu-target', 'rightIcon'),
+            Output('menu-target', 'loading'),
+            Output('menu-target', 'gradient'),
+            Output('menu-dropdown', 'children'),
+            Output('menu-dropdown', 'style'),
+            Input({'index': ALL, 'type': GRAPH.DROPDOWN.ITEM}, 'n_clicks'),
+            Input(GRAPH.ACCUMULATION, 'value'),
+            Input(LOAN.RESULT.DATAFRAME, 'data'),
+            State('menu-locale', 'data'),
+            State({'index': ALL, 'type': 'locale-config'}, 'data'),
     )
-    def update_toggle_items(
+    def update_dropdown_items(
+        _,
         accum,
-        label,
         memory,
+        menu_locale,
         locale,
     ):
         memory = memory['data']
         locale= locale[-1]
-        level_0 = {c[0] for c in memory['columns'] if c[0] != ''}
+        label_for_dropdown = Patch()
+        level_0 = {c[0] for c in memory['columns'] if c[0] != ''} # level_0: the first level of the column
+        if not menu_locale:
+            menu_locale = df_schema.level_2.PAYMENT
         if df_schema.level_0.TOTAL[locale] in level_0 or not level_0:
-            return [], {'display': 'none'}
+            return label_for_dropdown, no_update, no_update, False, no_update, [], {'display': 'none'}
         else:
             method_for_original_mortgate = [
-                df_schema.level_2.PAYMENT[locale],
-                df_schema.level_2.PRINCIPAL[locale],
-                df_schema.level_2.INTEREST[locale],
-                df_schema.level_2.RESIDUAL[locale],
+                df_schema.level_2.PAYMENT,
+                df_schema.level_2.PRINCIPAL,
+                df_schema.level_2.INTEREST,
+                df_schema.level_2.RESIDUAL,
             ]
             if accum and accum == 'cumulative':
                 method_for_original_mortgate = [
-                    v for v in method_for_original_mortgate if v != df_schema.level_2.RESIDUAL[locale]]
+                    v for v in method_for_original_mortgate if v != df_schema.level_2.RESIDUAL]
+            
+            dropdown_elements = [column for column in method_for_original_mortgate if column[locale] != menu_locale[locale]]
+            
             dropdown = [
                 dmc.MenuItem(
-                    column,
+                    element[locale],
                     id={
-                        'index': column,
+                        'index': element[locale],
                         'type': GRAPH.DROPDOWN.ITEM
                     },
-                ) for column in method_for_original_mortgate if column != label
+                ) for element in dropdown_elements
             ]  # avoid duplicate label
-            return dropdown, {'display': 'block'}
+            label_for_dropdown = [label for label, filter in zip(dropdown_elements, _) if filter]
+            
+            if len(label_for_dropdown) == 0:
+                label_for_dropdown = menu_locale
+            else:
+                label_for_dropdown = label_for_dropdown[0]
+            return [
+                label_for_dropdown[locale], 
+                label_for_dropdown,
+                (DashIconify(icon="raphael:arrowdown") if label_for_dropdown != df_schema.level_0.TOTAL else None),
+                False, 
+                ({"from": "teal", "to": "blue", "deg": 60} if label_for_dropdown == df_schema.level_0.TOTAL else {"from": "indigo", "to": "cyan"}),
+                dropdown, 
+                {'display': 'block'},
+            ]
 
 #2 update the main graph
     @callback(
         Output(GRAPH.LINE, 'children'),
-        Output('menu-target', 'children'),
-        Output('menu-target', 'rightIcon'),
-        Output('menu-target', 'loading'),
-        Output('menu-target', 'gradient'),
+        # Output('menu-locale', 'data'),
+        # Output('menu-target', 'children'),
+        # Output('menu-target', 'loading'),
+        # Output('menu-target', 'gradient'),
         Input(GRAPH.ACCUMULATION, 'value'),
         Input(LOAN.RESULT.DATAFRAME, 'data'),
         Input({'index': ALL, 'type': GRAPH.DROPDOWN.ITEM}, 'n_clicks'),
+        State('menu-locale', 'data'),
         State({'index': ALL, 'type': 'locale-config'}, 'data'),
-        State('menu-target', 'children'),
+        prevent_initial_call=True,
     )
     def update_graph(
         accum,
         memory,
         _,
+        menu_locale,
         locale,
-        label,
     ):
         ctx = callback_context
         memory = memory['data']
         locale= locale[-1]
-        if isinstance(ctx.triggered_id, dict):
-            chosen_figure = ctx.triggered_id['index']
-        else:
-            # type: ignore
-            if df_schema.level_0.TOTAL[locale] not in [col[0] for col in memory['columns']]:
-                if accum == 'cumulative':
-                    if label == df_schema.level_2.RESIDUAL[locale]:
-                        chosen_figure = df_schema.level_2.PAYMENT[locale]
-                    else:
-                        chosen_figure = label
-                else:
-                    chosen_figure = (
-                        label if label != df_schema.level_0.TOTAL[locale] else df_schema.level_2.PAYMENT[locale])
-            else:
-                chosen_figure = df_schema.level_0.TOTAL[locale] # 總計
+        
+        # if isinstance(ctx.triggered_id, dict) :
+        #     chosen_figure = ctx.triggered_id['index']
+        #     ns, cols = zip(*[(n, col) for n, col in enumerate(memory['columns']) if chosen_figure in col])
+        # else:
+        #     if df_schema.level_0.TOTAL[locale] not in [col[0] for col in memory['columns']]:
+        #         if accum == 'cumulative':
+        #             if menu_locale == df_schema.level_2.RESIDUAL:
+        #                 chosen_figure = df_schema.level_2.PAYMENT
+        #             else:
+        #                 chosen_figure = (menu_locale if menu_locale else df_schema.level_2.PAYMENT)
+        #                 # chosen_figure= label
+        #         else:
+        #             chosen_figure = (menu_locale if menu_locale and menu_locale != df_schema.level_0.TOTAL else df_schema.level_2.PAYMENT)
+        #             # chosen_figure = (label if label != df_schema.level_0.TOTAL[locale] else df_schema.level_2.PAYMENT[locale])
+        #     else:
+        #         chosen_figure = df_schema.level_0.TOTAL # 總計
+        if not menu_locale:
+            menu_locale = df_schema.level_2.PAYMENT
+        ns, cols = zip(*[(n, col) for n, col in enumerate(memory['columns']) if menu_locale[locale] in col])
+        # """
+        # 重新設計dropdown menu的chidren
 
-        ns, cols = zip(*[(n, col) for n, col in enumerate(memory['columns']) if chosen_figure in col])
+        # """
+        
         x_axis_value = memory['index'][1:-1]
         # construct the data frame for the graph
         data_frame_for_loan_timeSeries= {
             {'en': 'Time', 'zh_TW': '時間'}[locale]: [],
             {'en': 'Amount', 'zh_TW': '金額'}[locale]: [],
-            {'en': 'methods', 'zh_TW': '方法'}[locale]: [],
+            {'en': 'methods', 'zh_TW': '方式'}[locale]: [],
         }
         for n, col in zip(ns, cols): # n: index of the column; col: column name
             dff = [data[n] for data in memory['data'][1:-1]]
-            method = (" + ".join([co for co in col if co != chosen_figure]) if len(col) > 2 else col[0])
+            method = (" + ".join(
+                [
+                    co for co in col 
+                    if co != (
+                        menu_locale[locale] 
+                        if isinstance(menu_locale, dict) 
+                        else menu_locale
+                    )
+                ]
+            ) if len(col) > 2 else col[0])
 
             if accum == 'cumulative':
                 dff = [*accumulate(dff)]
@@ -252,19 +300,19 @@ def graph(locale= 'en'):
 
             data_frame_for_loan_timeSeries[{'en': 'Time', 'zh_TW': '時間'}[locale]].extend(x_axis_value)
             data_frame_for_loan_timeSeries[{'en': 'Amount', 'zh_TW': '金額'}[locale]].extend(dff)
-            data_frame_for_loan_timeSeries[{'en': 'methods', 'zh_TW': '方法'}[locale]].extend([method] * len(x_axis_value))
+            data_frame_for_loan_timeSeries[{'en': 'methods', 'zh_TW': '方式'}[locale]].extend([method] * len(x_axis_value))
 
         fig = px.line(
             data_frame_for_loan_timeSeries,
             x= {"en": "Time", "zh_TW": "時間"}[locale], 
-            y= {"en": "Amount", "zh_TW": "金額"}[locale], 
-            color={'en': 'methods', 'zh_TW': '方法'}[locale], 
+            y= {"en": "Amount", "zh_TW": "金額"}[locale],
+            color={'en': 'methods', 'zh_TW': '方式'}[locale], 
             title='<b>{}</b>'.format({'en': 'Life of Loan', 'zh_TW': '時序圖'}[locale]), 
             log_y= True,
             line_shape="spline",
             render_mode="svg",
-            hover_name= {'en': 'methods', 'zh_TW': '方法'}[locale],
-            template="plotly_white", # ["plotly", "plotly_white", "plotly_dark", "ggplot2", "seaborn", "simple_white", "none"]
+            hover_name= {'en': 'methods', 'zh_TW': '方式'}[locale],
+            template="plotly_white",
             color_discrete_map= {
                     df_schema.level_1.ETP[locale]: '#0C82DF',
                     df_schema.level_1.EPP[locale]: '#F7DC6F',
@@ -289,8 +337,13 @@ def graph(locale= 'en'):
                 'width': '100%',
                 'height': '100%',
             },
-        ), chosen_figure, (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL[locale] else None), False, ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL[locale] else {"from": "indigo", "to": "cyan"})
-
+        )
+            # chosen_figure, 
+            # (chosen_figure[locale] if isinstance(chosen_figure, dict) else chosen_figure), 
+            # (DashIconify(icon="raphael:arrowdown") if chosen_figure != df_schema.level_0.TOTAL[locale] else None), 
+            # False, 
+            # ({"from": "teal", "to": "blue", "deg": 60} if chosen_figure == df_schema.level_0.TOTAL[locale] else {"from": "indigo", "to": "cyan"})
+    
 # Information for avg payment.
     @callback(
         Output('information-dashboard', 'children'),

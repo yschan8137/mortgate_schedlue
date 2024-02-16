@@ -236,7 +236,6 @@ app.layout = dmc.MantineProvider(
                 'background-color': 'rgba(246,248,250,255)',
                 'width': '100vw',
                 'height': '100dvh',
-                # 'margin': 'auto',
                 'overflow-y': 'hidden', # [auto, hidden, scroll, visible]
                 'overflow-x': 'hidden',
             },
@@ -262,7 +261,7 @@ def toggle_modal(_, opened):
 # py -m app.Dashboard.tabs
 if __name__ == "__main__":
     app.run_server(
-        # debug=True,
+        debug=True,
         # threaded=True, 
         # dev_tools_ui=True,
         # dev_tools_hot_reload= True,
