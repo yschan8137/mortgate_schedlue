@@ -209,6 +209,8 @@ def graph():
                     },
                 ) for element in dropdown_elements
             ]  # avoid duplicate label
+            
+            # filter the clicked item
             label_for_dropdown = [label for label, filter in zip(dropdown_elements, _) if filter]
             
             if len(label_for_dropdown) == 0:
