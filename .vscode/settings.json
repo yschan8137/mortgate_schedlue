@@ -1,5 +1,5 @@
 {
-    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.typeCheckingMode": "off",
     "git.ignoreLimitWarning": true,
     "editor.fontSize": 16,
     "debug.console.fontSize": 16,

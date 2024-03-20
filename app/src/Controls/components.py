@@ -48,15 +48,16 @@ class MortgageOptions:
                                 'label': {
                                     'font-weight': 'bold',
                                     'font-size': '16px',
-                                    'margin-bottom': 5,
-                                    'margin-top': 5,
+                                    # 'margin-bottom': 5,
+                                    # 'margin-top': 5,
+                                    
                                 },
                             },
                             required= True,
                             type= 'number',
                             size= 'md',
                         )
-                    ]
+                    ],
                 )
         return layout
 
@@ -64,31 +65,31 @@ class MortgageOptions:
     @classmethod
     def down_payment(cls):
         layout = html.Div(
-                     [
-                         dmc.NumberInput(
-                            id= {"index": cls.index, "type": ids.LOAN.DOWNPAYMENT},
-                            label= lan['controls']['components']['down_payment_rate']['en'],
-                            style={
-                                "width": cls.width
-                            },
-                            styles= {
-                                'label': {
-                                    'font-weight': 'bold',
-                                    'font-size': '16px',
-                                    'margin-bottom': 5,
-                                    'margin-top': 5,
-                                },
-                            },
-                            value= cls.kwargs_schema['down_payment_rate'],
-                            size= 'md',
-                            step= 10,
-                            min= 0,
-                            max= 100,
-                            type= 'number',
-                            required= True,
-                         ),
-                     ]
-                 )
+            [
+                 dmc.NumberInput(
+                    id= {"index": cls.index, "type": ids.LOAN.DOWNPAYMENT},
+                    label= lan['controls']['components']['down_payment_rate']['en'],
+                    style={
+                        "width": cls.width
+                    },
+                    styles= {
+                        'label': {
+                            'font-weight': 'bold',
+                            'font-size': '16px',
+                            'margin-bottom': 5,
+                            'margin-top': 5,
+                        },
+                    },
+                    value= cls.kwargs_schema['down_payment_rate'],
+                    size= 'md',
+                    step= 10,
+                    min= 0,
+                    max= 100,
+                    type= 'number',
+                    required= True,
+                 ),
+            ],
+        )
         return layout
 
     # Mortgage Period
@@ -102,7 +103,7 @@ class MortgageOptions:
                     order= 4,
                     style= {
                         'font-weight': 'bold',
-                        'font-size': '16px',
+                        'font-size': '18px',
                         'margin-bottom': 5,
                         'margin-top': 5,
                     },
@@ -152,8 +153,8 @@ class MortgageOptions:
                        max= 5,
                        type= 'number',
                     ),
-                    ]
-                )
+                ],
+            )
         return layout
 
     # Date picker
@@ -181,7 +182,7 @@ class MortgageOptions:
                         },
                     },                            
                 )
-            ]
+            ],
         )
         return layout
         
@@ -202,7 +203,6 @@ class MortgageOptions:
                      style= {
                         'font-weight': 'bold',
                         'font-size': '16px',
-                        'margin-top': 5,
                         'margin-bottom': 5,
                      }
                  )
@@ -223,7 +223,7 @@ class MortgageOptions:
                     order= 4,
                     style= {
                         'font-weight': 'bold',
-                        'font-size': '16px',
+                        'font-size': '18px',
                         'margin-bottom': 5,
                         'margin-top': 5,
                     },
@@ -286,7 +286,6 @@ class MortgageOptions:
         def toggle_options(
             interest_stages_type,
         ):
-            message = ''
             if interest_stages_type == 'multiple':
                 return {'display': 'flex'}, {'display': 'none'}
             else:
@@ -375,9 +374,7 @@ class AdvancedOptions(MortgageOptions):
                     order= 4,
                     style= {
                         'font-weight': 'bold',
-                        'font-size': '16px',
-                        'margin-bottom': 5,
-                        'margin-top': 5,
+                        'font-size': '18px',
                     },
                 ),
                 addon(
@@ -556,8 +553,8 @@ class AdvancedOptions(MortgageOptions):
                 'flex-direction': 'column',
                 'background-color': 'transparent',
                 'align-items': 'left',
-                'margin-top': 10,
-                'margin-bottom': 10,
+                # 'margin-top': 10,
+                # 'margin-bottom': 5,
             },
         )
 

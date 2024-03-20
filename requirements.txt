@@ -4,12 +4,12 @@ pandas
 datetime
 jsons
 BeautifulSoup4
-asyncio
+# asyncio
 dataclasses
 lxml
 # Babel
 dash
-dash-bootstrap-components
+# dash-bootstrap-components
 pandas-stubs
 plotly
 # pyyaml

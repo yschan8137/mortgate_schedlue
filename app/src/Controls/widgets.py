@@ -54,14 +54,14 @@ def addon(
             html.Div(
                 children= [
                     dmc.Select(
-                                data= [],
-                                id= {"index": index, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)},
-                                disabled=disabled,
-                                style= {
-                                    'width': '35%',
-                                },
-                                clearable= True,
-                                placeholder= lan['controls']['widgets']['time']['en'],
+                        data= [],
+                        id= {"index": index, "type": suffix_for_type(ADDON.DROPDOWN.MENU, type)},
+                        disabled=disabled,
+                        style= {
+                            'width': '35%',
+                        },
+                        clearable= True,
+                        placeholder= lan['controls']['widgets']['time']['en'],
                     ),
                     dmc.NumberInput(
                        id= {"index": index, "type": suffix_for_type(ADDON.INPUT, type)},
@@ -118,6 +118,7 @@ def addon(
                 is_open=False,
                 style= {
                     'width': '100%',
+                    'height': 'auto',
                 },
             ),
         ],
@@ -223,13 +224,13 @@ def new_checklist_item(triggered_index, type, result, checked= False):
         [
             dmc.Checkbox(
                 id={"index": triggered_index, "type": suffix_for_type('done', type)}, 
-                label= "Apply {} from the {}{}".format(
-                     [*result.values()][-1], 
-                     [*result][-1], 
-                     ('st' if c == "1" else ('nd' if c == "2" else ('rd' if c == "3" else 'th'))
+                label= "{}{}: {}".format( 
+                    [*result][-1], 
+                    ('st' if c == "1" else ('nd' if c == "2" else ('rd' if c == "3" else 'th'))
                      ) 
                      if len(c := [*result.keys()][-1]) == 1 
-                     else ('st' if c[-1] == '1' else ('nd' if c[-1] == '2' else ('rd' if c[-1] == '3' else 'th')))
+                     else ('st' if c[-1] == '1' else ('nd' if c[-1] == '2' else ('rd' if c[-1] == '3' else 'th'))),
+                     [*result.values()][-1],
                 ),
                 checked= checked,
                 style= {
@@ -283,7 +284,7 @@ def refreshable_dropdown(
                         data=[*options],
                         size= 'sm',
                         style={
-                            "marginBottom": 5,
+                            "marginBottom": 10,
                         },
                         styles= {
                             'label': {

@@ -249,7 +249,9 @@ class panel():
                     id= {'index': cls.index, 'type': 'locale-config'},
                     data= 'en'
                 )
-            ]
+            ],
+            style= {
+            }
         )
         @callback(
                 Output({'index': MATCH, 'type': 'locale-config'}, 'data'),
@@ -282,6 +284,10 @@ class panel():
                 Output(ids.LOAN.SUBSIDY.PREPAY.OPTION, "label"),
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.DROPDOWN.OPTIONS, ids.LOAN.SUBSIDY.TYPE)}, "label"),
                 Output({"index": cls.index, "type": suffix_for_type('title_for_interest_rate', ids.LOAN.SUBSIDY.TYPE)}, "children"),
+                Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.DROPDOWN.MENU, ids.LOAN.TYPE)}, 'placeholder'),
+                Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.DROPDOWN.MENU, ids.LOAN.PREPAY.TYPE)}, 'placeholder'),
+                Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.DROPDOWN.MENU, ids.LOAN.SUBSIDY.TYPE)}, 'placeholder'),
+                Output({"index": cls.index, "type": suffix_for_type(ids.ADDON.DROPDOWN.MENU, ids.LOAN.SUBSIDY.PREPAY.TYPE)}, 'placeholder'),
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.TOGGLE.BUTTON, ids.LOAN.TYPE)}, 'data'),
                 Output({"index": cls.index, "type": suffix_for_type(ids.ADVANCED.TOGGLE.BUTTON, ids.LOAN.SUBSIDY.TYPE)}, 'data'),
                 Output('show-table', 'children'),
@@ -313,6 +319,10 @@ class panel():
                 lan['controls']['components']['subsidy_prepayment'][locale],
                 lan['controls']['widgets']['repayment_methods'][locale],
                 lan['controls']['components']['interest_rate'][locale],
+                lan['controls']['widgets']['time'][locale],
+                lan['controls']['widgets']['time'][locale],
+                lan['controls']['widgets']['time'][locale],
+                lan['controls']['widgets']['time'][locale],
                 [
                     {"value": "fixed", "label": lan['controls']['components']['segmentcontrol']['fixed'][locale]},
                     {"value": "multiple", "label": lan['controls']['components']['segmentcontrol']['multi_stages'][locale]},
@@ -340,18 +350,34 @@ class panel():
     def front(cls):
         layout= html.Div(
                     [
-                        cls.mortgage.amount(),
-                        cls.mortgage.tenure(),
-                        cls.mortgage.interest_rate(type=ids.LOAN.TYPE),
-                        cls.mortgage.down_payment(),
-                        cls.mortgage.grace(),
-                        cls.mortgage.start_date(),
-                        cls.mortgage.repayment_methods(),
+                        html.Div(
+                            [
+                                cls.mortgage.amount(),
+                                cls.mortgage.tenure(),
+                                cls.mortgage.interest_rate(type=ids.LOAN.TYPE),
+                                cls.mortgage.down_payment(),
+                                cls.mortgage.grace(),
+                                cls.mortgage.start_date(),
+                                cls.mortgage.repayment_methods()
+                            ],
+                            style= {
+                                'border': '1px solid #e0e0e0',
+                                'border-radius': 5,
+                                'padding': 10,
+                            }
+                        ),
                         dmc.Space(h= 5),
-                        cls.advanced.prepayment(),
+                        html.Div(
+                            cls.advanced.prepayment(),
+                            style= {
+                                'border': '1px solid #e0e0e0',
+                                'border-radius': 5,
+                                'padding': 10,
+                            }
+                        ),
                     ],
                     style= {
-                        'width': '85%',
+                        'width': '95%',
                         'height': 'auto',
                         'margin-left': 'auto',
                         'margin-right': 'auto',
@@ -383,9 +409,7 @@ class panel():
                                 cls.advanced.subsidy()
                             ],
                             [
-                                
-                                # ),
-                                DashIconify(
+                                    DashIconify(
                                     icon="tabler:user",
                                     color=dmc.theme.DEFAULT_COLORS["red"][6],
                                 ),
